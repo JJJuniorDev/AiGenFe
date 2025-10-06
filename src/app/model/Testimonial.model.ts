@@ -1,0 +1,18 @@
+export interface Testimonial {
+  id?: string;
+  userId?: string;
+  inputText: string;
+  linkedinPost: string;
+  linkedinPostVersions: string[];
+  headline: string;
+  headlineVersions: string[];
+  shortQuote: string;
+  shortQuoteVersions: string[];
+  exportedMd?: boolean;
+  exportedPng?: boolean;
+  platform?: string;
+  createdAt?: string;
+  postType?: string;
+  tone?: number;  
+  style?: number;
+}

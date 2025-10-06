@@ -1,0 +1,97 @@
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<div class="landing-container">
+  <!-- Login / Sign-up -->
+  <div class="auth-card" *ngIf="!loggedIn">
+    <h2>Benvenuto!</h2>
+
+    <form #authForm="ngForm" novalidate>
+      <!-- Email -->
+      <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['email']?.valid }">
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Email"
+          required
+          email
+        />
+        <div *ngIf="authForm.submitted && !authForm.controls['email']?.valid" class="error">
+          ⚠️ Inserisci una email reale (es: <i>nome@gmail.com</i>, <i>john@hotmail.com</i>).
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['password']?.valid }">
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Password"
+          required
+          minlength="6"
+        />
+        <div *ngIf="authForm.submitted && !authForm.controls['password']?.valid" class="error">
+          ⚠️ La password deve avere almeno 6 caratteri.
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="buttons">
+        <button type="button" (click)="login()" [disabled]="!authForm.valid">Login</button>
+        <button type="button" (click)="signup()" [disabled]="!authForm.valid">Registrati</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div *ngIf="loggedIn" class="dashboard">
+    <button class="logout" (click)="logout()">Logout</button>
+
+    <div class="generate-card">
+      <h3>Genera contenuto da testimonianza</h3>
+      <textarea [(ngModel)]="inputText" placeholder="Inserisci testimonianza..." rows="16"></textarea>
+       <label for="platform">Piattaforma:</label>
+  <select id="platform" [(ngModel)]="platform">
+    <option value="linkedin">LinkedIn</option>
+    <option value="instagram">Instagram</option>
+    <option value="twitter">Twitter</option>
+  </select>
+
+  <div class="controls">
+  <label for="postType">Tipo di post:</label>
+  <select id="postType" [(ngModel)]="selectedPostType">
+    <option *ngFor="let t of postTypes" [value]="t">{{ t }}</option>
+  </select>
+
+  <label for="tone">Tono:</label>
+  <input type="range" id="tone" [(ngModel)]="toneValue" min="0" max="100" />
+
+  <label for="style">Stile:</label>
+  <input type="range" id="style" [(ngModel)]="styleValue" min="0" max="100" />
+</div>
+      <button (click)="generate()">Genera</button>
+    </div>
+
+    <div *ngIf="output" class="output-cards">
+   <div class="card" 
+     *ngFor="let key of outputKeys" 
+     (click)="openModal(key)">
+  <h4>{{ formatTitle(key) }}</h4>
+  <p>{{ output?.[key] }}</p>
+   <div class="view-more">Visualizza risultati →</div>
+</div>
+  <!-- Modal -->
+<div class="modal" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeModal()">×</button>
+    <h2>{{ formatTitle(selectedKey) }}</h2>
+    <div class="versions">
+      <div class="version" data-version="1" *ngFor="let v of selectedVersions; let i = index">
+        <p>{{ v }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
