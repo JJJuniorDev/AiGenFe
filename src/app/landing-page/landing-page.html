@@ -48,9 +48,178 @@
     <button class="logout" (click)="logout()">Logout</button>
 
     <div class="generate-card">
-      <h3>Genera contenuto da testimonianza</h3>
+      <h3>Genera contenuto</h3>
       <textarea [(ngModel)]="inputText" placeholder="Inserisci testimonianza..." rows="16"></textarea>
-       <label for="platform">Piattaforma:</label>
+     <div class="brand-section" *ngIf="loggedIn">
+      <button class="brand-manager-btn" (click)="openBrandModal()">
+    🎨 Gestisci Brand Memory
+  </button>
+  <div *ngIf="selectedBrand" class="selected-brand">
+    <strong>Brand selezionato:</strong> {{ selectedBrand.brandName }}
+    <span class="brand-tone">({{ selectedBrand.tone }})</span>
+  </div>
+</div>
+<!-- Modale Selezione Brand -->
+<div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeBrandModal()">×</button>
+    <h2>🎨 I Tuoi Brand</h2>
+    
+    <!-- Lista Brand -->
+    <div class="brand-list">
+      <div *ngFor="let brand of brandProfiles" 
+           class="brand-item"
+           [class.selected]="selectedBrand?.id === brand.id"
+           (click)="toggleBrandSelection(brand)">
+        
+        <div class="brand-checkbox">
+          <div class="checkmark" *ngIf="selectedBrand?.id === brand.id">✓</div>
+        </div>
+        
+        <div class="brand-info">
+          <h3>{{ brand.brandName }}</h3>
+          <p class="brand-tone">{{ brand.tone }}</p>
+          <p class="brand-description">{{ brand.brandDescription }}</p>
+          <div class="brand-tags">
+            <span *ngFor="let tag of brand.defaultHashtags.slice(0, 3)" 
+                  class="tag">{{ tag }}</span>
+          </div>
+        </div>
+        
+        <div class="brand-actions">
+          <button class="btn-edit" (click)="openBrandFormModal(brand); $event.stopPropagation()">
+            ✏️ Modifica
+          </button>
+          <button class="btn-delete" (click)="deleteBrand(brand); $event.stopPropagation()">
+            🗑️ Elimina
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="brandProfiles.length === 0" class="no-brands">
+        <p>Nessun brand creato ancora</p>
+        <button class="btn-primary" (click)="openBrandFormModal()">
+          + Crea il tuo primo brand
+        </button>
+      </div>
+    </div>
+    
+    <!-- Azioni -->
+    <div class="modal-actions">
+      <button class="btn-outline" (click)="openBrandFormModal()">
+        + Crea Nuovo Brand
+      </button>
+      <button class="btn-primary" 
+              (click)="confirmBrandSelection()"
+              [disabled]="!selectedBrand">
+        ✅ Conferma Selezione
+      </button>
+    </div>
+  </div>
+</div>
+!-- Modale Creazione/Modifica Brand -->
+<div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeBrandModal()">×</button>
+    <h2>{{ editingBrand ? 'Modifica Brand' : 'Crea Nuovo Brand' }}</h2>
+    
+    <form class="brand-form">
+      <!-- Nome Brand -->
+      <div class="form-group">
+        <label>Nome Brand *</label>
+        <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" required>
+      </div>
+
+      <!-- Tono di Voce -->
+      <div class="form-group">
+        <label>Tono di Voce</label>
+        <select [(ngModel)]="newBrand.tone" name="tone">
+          <option *ngFor="let tone of getToneOptions()" [value]="tone">
+            {{ getToneLabel(tone) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Descrizione Brand -->
+      <div class="form-group">
+        <label>Descrizione Brand</label>
+        <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3"></textarea>
+      </div>
+
+      <!-- Target Audience -->
+      <div class="form-group">
+        <label>Target Audience</label>
+        <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience">
+      </div>
+
+      <!-- Valori Brand -->
+      <div class="form-group">
+        <label>Valori del Brand</label>
+        <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues">
+      </div>
+
+      <!-- Tagline -->
+      <div class="form-group">
+        <label>Tagline</label>
+        <input type="text" [(ngModel)]="newBrand.tagline" name="tagline">
+      </div>
+
+      <!-- Keywords Preferite -->
+      <div class="form-group">
+        <label>Parole Chiave Preferite</label>
+        <div class="input-with-btn">
+          <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
+                 placeholder="Aggiungi parola chiave" (keyup.enter)="addKeyword()">
+          <button type="button" (click)="addKeyword()">+</button>
+        </div>
+        <div class="tags-list">
+          <span *ngFor="let keyword of newBrand.preferredKeywords; let i = index" class="tag">
+            {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Parole da Evitare -->
+      <div class="form-group">
+        <label>Parole da Evitare</label>
+        <div class="input-with-btn">
+          <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
+                 placeholder="Aggiungi parola da evitare" (keyup.enter)="addAvoidedWord()">
+          <button type="button" (click)="addAvoidedWord()">+</button>
+        </div>
+        <div class="tags-list">
+          <span *ngFor="let word of newBrand.avoidedWords; let i = index" class="tag avoided">
+            {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Hashtag Predefiniti -->
+      <div class="form-group">
+        <label>Hashtag Predefiniti</label>
+        <div class="input-with-btn">
+          <input type="text" [(ngModel)]="tempHashtag" name="tempHashtag" 
+                 placeholder="Aggiungi hashtag" (keyup.enter)="addHashtag()">
+          <button type="button" (click)="addHashtag()">+</button>
+        </div>
+        <div class="tags-list">
+          <span *ngFor="let hashtag of newBrand.defaultHashtags; let i = index" class="tag hashtag">
+            {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Azioni Form -->
+      <div class="form-actions">
+        <button type="button" class="btn-outline" (click)="closeBrandModal()">Annulla</button>
+        <button type="button" class="btn-primary" (click)="saveBrand()">
+          {{ editingBrand ? 'Aggiorna' : 'Crea' }} Brand
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+      <label for="platform">Piattaforma:</label>
   <select id="platform" [(ngModel)]="platform">
     <option value="linkedin">LinkedIn</option>
     <option value="instagram">Instagram</option>
@@ -62,13 +231,64 @@
   <select id="postType" [(ngModel)]="selectedPostType">
     <option *ngFor="let t of postTypes" [value]="t">{{ t }}</option>
   </select>
+  
 
+<!-- 
   <label for="tone">Tono:</label>
   <input type="range" id="tone" [(ngModel)]="toneValue" min="0" max="100" />
 
   <label for="style">Stile:</label>
-  <input type="range" id="style" [(ngModel)]="styleValue" min="0" max="100" />
+  <input type="range" id="style" [(ngModel)]="styleValue" min="0" max="100" /> -->
 </div>
+
+<div class="palette-container">
+  <h4>🎨 Control Palette</h4>
+  
+  <div class="color-palette" 
+       (mousedown)="onPaletteMouseDown($event)"
+       (mousemove)="onPaletteMouseMove($event)"
+       (mouseup)="onPaletteMouseUp()"
+       (touchstart)="onPaletteTouchStart($event)"
+       (touchmove)="onPaletteTouchMove($event)"
+       (touchend)="onPaletteTouchEnd()">
+    
+    <!-- Canvas per la palette -->
+    <div class="palette-background"></div>
+    
+    <!-- Punti di controllo draggable -->
+    <div *ngFor="let point of colorPoints" 
+         class="color-point"
+         [style.left]="point.x + '%'"
+         [style.top]="point.y + '%'"
+         [style.background]="point.color"
+         [class.selected]="selectedPoint?.id === point.id"
+         (mousedown)="selectPoint($event, point)"
+         (touchstart)="selectPoint($event, point)">
+      
+      <div class="point-tooltip">{{ point.name }}: {{ point.value }}%</div>
+    </div>
+
+    <!-- Linee di connessione (opzionale) -->
+    <svg class="connection-lines">
+      <line *ngFor="let i of [0,1,2,3]" 
+            [attr.x1]="colorPoints[i].x + '%'" 
+            [attr.y1]="colorPoints[i].y + '%'"
+            [attr.x2]="colorPoints[i+1].x + '%'" 
+            [attr.y2]="colorPoints[i+1].y + '%'"
+            [attr.stroke]="colorPoints[i].color"/>
+    </svg>
+  </div>
+
+  <!-- Legenda parametri -->
+  <div class="parameters-preview">
+    <div *ngFor="let point of colorPoints" class="param-item">
+      <div class="param-color" [style.background]="point.color"></div>
+      <span class="param-name">{{ point.name }}:</span>
+      <span class="param-value">{{ point.value }}%</span>
+    </div>
+  </div>
+</div>
+
       <button (click)="generate()">Genera</button>
     </div>
 
