@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Testimonial } from '../model/Testimonial.model';
 import { AuthService } from '../services/AuthService.service';
@@ -7,15 +7,18 @@ import { TestimonialService } from '../services/TestimonialService.service';
 import { ToastrService } from 'ngx-toastr';
 import { BrandProfile } from '../model/BrandProfile.model';
 import { BrandProfileService, ToneType } from '../services/BrandProfileService.service';
+import { MatIconModule } from '@angular/material/icon';
+import { User } from '../model/User.model';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './landing-page.html',
   styleUrls: ['./landing-page.css']
 })
-export class LandingPageComponent {
+export class LandingPageComponent implements OnInit {
+  user: User | null = null;
   // Login / Sign-up
   email = '';
   password = '';
@@ -26,12 +29,12 @@ platform = 'linkedin';
   inputText = '';
   output?: Testimonial;
 modalOpen = false;
-  selectedKey: 'linkedinPost' | 'headline' | 'shortQuote' = 'linkedinPost';
-readonly outputKeys: ('linkedinPost' | 'headline' | 'shortQuote')[] = ['linkedinPost', 'headline', 'shortQuote'];
+  selectedKey: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction' = 'socialPost';
+readonly outputKeys: ('socialPost' | 'headline' | 'shortQuote' | 'callToAction')[] = ['socialPost', 'headline', 'shortQuote', 'callToAction'];
   
 postTypes = ['testimonial', 'promozionale', 'educativo', 'storia cliente'] as const;
 selectedPostType: 'testimonial' | 'promozionale' | 'educativo' | 'storia cliente' = 'testimonial';
-
+showAuthOverlay = false;
 
 // Tono come slider (0 = neutro, 100 = massimo emozionale/rabbia)
 toneValue = 50;
@@ -60,8 +63,11 @@ styleValue = 50;
     tagline: '',
     defaultHashtags: [],
     visualStyle: '',
-    colorPalette: ''
+    colorPalette: '',
+    preferredCTAs: []
   };
+
+  tempCTA: string = '';
 
 constructor(private authService: AuthService,
               private testimonialService: TestimonialService,
@@ -74,11 +80,29 @@ constructor(private authService: AuthService,
       next: res => {
         this.authService.saveToken(res.token);
         this.loggedIn = true;
+        this.user= res.user;
+         // ✅ AZZERA E RICARICA I BRAND DEL NUOVO UTENTE
+      this.brandProfiles = [];
+      this.selectedBrand = null;
+      this.loadBrandProfiles(); // Carica i brand del nuovo utente
         this.toastr.success('Login effettuato con successo ✅');
       },
       error: () => this.toastr.error('Email o password errate ❌')
     });
   }
+
+
+ngOnInit() {
+  this.loggedIn = this.authService.isLoggedIn();
+   // ✅ Se l'utente è loggato, carica i suoi brand
+  if (this.loggedIn) {
+    this.loadBrandProfiles();
+  } else {
+    // ✅ Se non è loggato, assicurati che i brand siano azzerati
+    this.brandProfiles = [];
+    this.selectedBrand = null;
+  }
+}
 
   signup() {
     this.authService.signup({ email: this.email, password: this.password }).subscribe({
@@ -89,7 +113,14 @@ constructor(private authService: AuthService,
     });
   }
 
-  
+  closeAuthOverlay() {
+  this.showAuthOverlay = false;
+    // ✅ Se non è loggato, assicurati che i brand siano azzerati
+  if (!this.loggedIn) {
+    this.brandProfiles = [];
+    this.selectedBrand = null;
+  }
+}
 
   logout() {
     this.authService.logout();
@@ -97,11 +128,18 @@ constructor(private authService: AuthService,
     this.email = '';
     this.password = '';
     this.output = undefined;
+     // ✅ AZZERA I BRAND DELL'UTENTE PRECEDENTE
+  this.brandProfiles = [];
+  this.selectedBrand = null;
+  this.brandModalOpen = false;
+  this.brandFormModalOpen = false;
+  this.editingBrand = null;
+  this.resetBrandForm();
     this.toastr.info('Logout effettuato 👋');
   }
 
   // Apri modal con la card cliccata
-  openModal(key: 'linkedinPost' | 'headline' | 'shortQuote') {
+  openModal(key: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction') {
     this.selectedKey = key;
     this.modalOpen = true;
   }
@@ -111,18 +149,20 @@ constructor(private authService: AuthService,
   }
 
   // Formatta il titolo della card
-  formatTitle(key: 'linkedinPost' | 'headline' | 'shortQuote') {
-    return key === 'linkedinPost' ? 'LinkedIn Post'
+  formatTitle(key: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction'): string {
+    return key === 'socialPost' ? 'Social Post'
          : key === 'headline' ? 'Headline'
+         : key === 'callToAction' ? 'Call to Action'
          : 'Short Quote';
   }
 
   get selectedVersions(): string[] {
   if (!this.output) return [];
   switch (this.selectedKey) {
-    case 'linkedinPost': return this.output.linkedinPostVersions;
+    case 'socialPost': return this.output.socialPostVersions;
     case 'headline': return this.output.headlineVersions;
     case 'shortQuote': return this.output.shortQuoteVersions;
+    case 'callToAction': return this.output.callToActionVersions;
   }
 }
 
@@ -196,67 +236,17 @@ constructor(private authService: AuthService,
     this.isDragging = true;
   }
 
-  onPaletteMouseDown(event: MouseEvent) {
-    if (!this.selectedPoint) return;
-    this.isDragging = true;
-  }
-
-  onPaletteMouseMove(event: MouseEvent) {
-    if (!this.isDragging || !this.selectedPoint) return;
-    this.dragPoint(event.clientX, event.clientY);
-  }
-
-  onPaletteMouseUp() {
-    this.isDragging = false;
-    this.selectedPoint = null;
-  }
-
-  // METODI PER TOUCH (MANCANTI - AGGIUNGI QUESTI)
-  onPaletteTouchStart(event: TouchEvent) {
-    event.preventDefault();
-    // Se clicchi direttamente su un punto, selectPoint viene chiamato
-  }
-
-  onPaletteTouchMove(event: TouchEvent) {
-    if (!this.isDragging || !this.selectedPoint) return;
-    const touch = event.touches[0];
-    this.dragPoint(touch.clientX, touch.clientY);
-  }
-
-  onPaletteTouchEnd() {
-    this.isDragging = false;
-    this.selectedPoint = null;
-  }
-
-  // METODO DRAG CONDIVISO
-  dragPoint(clientX: number, clientY: number) {
-    const palette = document.querySelector('.color-palette') as HTMLElement;
-    if (!palette) return;
-
-    const rect = palette.getBoundingClientRect();
-    
-    // Calcola posizione percentuale
-    const x = ((clientX - rect.left) / rect.width) * 100;
-    const y = ((clientY - rect.top) / rect.height) * 100;
-    
-    // Limita ai bordi
-    const clampedX = Math.max(5, Math.min(95, x));
-    const clampedY = Math.max(5, Math.min(95, y));
-    
-    // Aggiorna posizione
-    this.selectedPoint.x = clampedX;
-    this.selectedPoint.y = clampedY;
-    
-    // Calcola valore basato sulla posizione (Y = intensità)
-    this.selectedPoint.value = 100 - Math.round(clampedY);
-  }
 
   // METODO GENERATE AGGIORNATO
   generate() {
+     if (!this.loggedIn) {
+    this.showAuthOverlay = true;
+    return;
+  }
     this.testimonialService.generate({
       inputText: this.inputText,
       platform: this.platform,
-      postType: this.selectedPostType,
+      selectedPostType: this.selectedPostType,
       // Mappa i punti colore ai parametri
       emotion: this.colorPoints.find(p => p.parameter === 'emotion')?.value || 50,
       creativity: this.colorPoints.find(p => p.parameter === 'creativity')?.value || 50,
@@ -281,6 +271,11 @@ constructor(private authService: AuthService,
 
   // Apri modale selezione brand
   openBrandModal() {
+     // ✅ Controlla che l'utente sia loggato prima di aprire il modal
+  if (!this.loggedIn) {
+    this.showAuthOverlay = true;
+    return;
+  }
     this.brandModalOpen = true;
     this.loadBrandProfiles();
   }
@@ -335,6 +330,21 @@ constructor(private authService: AuthService,
     this.brandFormModalOpen = true;
   }
 
+  // Aggiungi questi metodi
+addCTA() {
+  if (this.tempCTA && this.tempCTA.trim() !== '') {
+    if (!this.newBrand.preferredCTAs) {
+      this.newBrand.preferredCTAs = [];
+    }
+    this.newBrand.preferredCTAs.push(this.tempCTA.trim());
+    this.tempCTA = '';
+  }
+}
+
+removeCTA(index: number) {
+  this.newBrand.preferredCTAs.splice(index, 1);
+}
+
   // Reset form brand
   resetBrandForm() {
     this.newBrand = {
@@ -346,6 +356,8 @@ constructor(private authService: AuthService,
       targetAudience: '',
       brandValues: '',
       tagline: '',
+      positioning: '',
+    preferredCTAs: [],
       defaultHashtags: [],
       visualStyle: '',
       colorPalette: ''
@@ -353,6 +365,7 @@ constructor(private authService: AuthService,
     this.tempKeyword = '';
     this.tempHashtag = '';
     this.tempAvoidedWord = '';
+    this.tempCTA = '';
   }
 
   // Aggiungi keyword
@@ -466,5 +479,99 @@ getToneLabel(tone: string): string {
   };
   return labels[tone] || tone;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+draggingPoint: any = null;
+
+startDrag(point: any, event: MouseEvent) {
+  this.draggingPoint = point;
+  this.updateBarValue(event);
+}
+
+onDrag(event: MouseEvent) {
+  if (!this.draggingPoint) return;
+  this.updateBarValue(event);
+}
+
+stopDrag() {
+  this.draggingPoint = null;
+}
+
+// --- Touch support ---
+startTouch(point: any, event: TouchEvent) {
+  event.preventDefault();
+  this.draggingPoint = point;
+  this.updateBarValue(event.touches[0]);
+}
+
+onTouchMove(event: TouchEvent) {
+  if (!this.draggingPoint) return;
+  this.updateBarValue(event.touches[0]);
+}
+
+// --- Calcolo percentuale ---
+updateBarValue(event: MouseEvent | Touch) {
+  if (!this.draggingPoint) return;
+
+  // Ottieni il target dell'evento (l'elemento cliccato/toccato)
+  const target = (event as any).target as HTMLElement;
+  const barElement = target.closest('.bar-item') as HTMLElement;
+  if (!barElement) return;
+
+  // Coordinate corrette (supporta anche touch)
+  const clientY = event instanceof MouseEvent ? event.clientY : event.clientY ?? 0;
+
+  const rect = barElement.getBoundingClientRect();
+  const relativeY = (clientY - rect.top) / rect.height;
+
+  // Inverti: 0 in basso → 100 in alto
+  const value = 100 - Math.round(relativeY * 100);
+
+  // Clamp (0–100)
+  this.draggingPoint.value = Math.max(0, Math.min(100, value));
+}
+
+
+
+
+
+
+
+
+
+
+
+  dropdownOpen = false;
+
+platformOptions = [
+    { value: 'linkedin', name: 'LinkedIn', icon: 'linkedin' },
+    { value: 'instagram', name: 'Instagram', icon: 'photo_camera' },
+    { value: 'twitter', name: 'Twitter', icon: 'flutter_dash' }
+  ];
+
+  selectPlatform(value: string) {
+    this.platform = value;
+    this.dropdownOpen = false;
+  }
+
+  getPlatformIcon(platform: string): string {
+    const option = this.platformOptions.find(p => p.value === platform);
+    return option ? option.icon : 'link';
+  }
+
+  getPlatformName(platform: string): string {
+    const option = this.platformOptions.find(p => p.value === platform);
+    return option ? option.name : 'Seleziona';
+  }
 }
 

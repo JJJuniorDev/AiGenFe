@@ -1,7 +1,7 @@
 export interface TestimonialRequest {
   inputText: string;
   platform: string;
-  postType: string;
+  selectedPostType: string;
   emotion: number;
   creativity: number;
   formality: number;

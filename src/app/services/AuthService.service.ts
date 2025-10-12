@@ -28,4 +28,6 @@ getToken(): string | null { return localStorage.getItem(this.tokenKey); }
  
 logout() { localStorage.removeItem(this.tokenKey); }
 
+isLoggedIn(): boolean { return this.getToken() !== null; }
+
 }

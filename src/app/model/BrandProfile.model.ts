@@ -11,4 +11,6 @@ export interface BrandProfile {
   defaultHashtags: string[];
   visualStyle?: string;
   colorPalette?: string;
+  preferredCTAs: string[];
+  positioning?: string;
 }
