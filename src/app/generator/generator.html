@@ -1,0 +1,409 @@
+<div class="generator-page">
+  <div class="generator-container">
+    
+    <!-- Header Generator -->
+    <div class="generator-header">
+      <div class="header-left">
+        <h1>🎨 SocialCraft Generator</h1>
+        <p>Trasforma le tue idee in contenuti virali</p>
+      </div>
+      
+      <div class="header-right">
+        <div class="user-info">
+          <div class="credits-display">
+            <span class="credits-icon">🪙</span>
+            <span class="credits-count">{{ user?.credits }} crediti</span>
+            <span class="plan-badge">{{ user?.plan || 'Free' }}</span>
+          </div>
+          <button class="logout-btn" (click)="logout()">
+            <span class="btn-icon">👋</span>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Area Generazione -->
+     <div class="dashboard-container">
+    <div class="dashboard">
+      <div class="generate-card">
+        <h3>Genera contenuto</h3>
+        <textarea [(ngModel)]="inputText" placeholder="Inserisci un'idea di post o input..." rows="16"></textarea>
+       
+        <!-- Brand Section -->
+        <div class="brand-section">
+          <button class="brand-manager-btn" (click)="openBrandModal()">
+            🎨 Seleziona o crea Brand Memory
+          </button>
+          <div *ngIf="selectedBrand" class="selected-brand">
+            <strong>Brand selezionato:</strong> {{ selectedBrand.brandName }}
+            <span class="brand-tone">({{ selectedBrand.tone }})</span>
+          </div>
+        </div>
+
+        <!-- Avatar Section
+        <div class="avatar-section">
+          <button class="avatar-manager-btn" (click)="openAvatarModal()">
+            👤 Seleziona Personaggio
+          </button>
+          <div *ngIf="selectedAvatar" class="selected-avatar">
+            <strong>Personaggio:</strong> {{ selectedAvatar.name }}
+            <span class="avatar-category">({{ selectedAvatar.category }})</span>
+            <button class="btn-small" (click)="showAvatarParameters = !showAvatarParameters">
+              {{ showAvatarParameters ? 'Nascondi' : 'Mostra' }} parametri
+            </button>
+            <button class="btn-small btn-outline" (click)="clearAvatar()">✕</button>
+          </div>
+          
+          <div *ngIf="showAvatarParameters && selectedAvatar" class="avatar-parameters">
+            <h5>Parametri di {{ selectedAvatar.name }}</h5>
+            <div class="parameters-preview">
+              <div class="param-item">
+                <span class="param-name">Emozione:</span>
+                <span class="param-value">{{ selectedAvatar.defaultEmotion }}%</span>
+              </div>
+              <div class="param-item">
+                <span class="param-name">Creatività:</span>
+                <span class="param-value">{{ selectedAvatar.defaultCreativity }}%</span>
+              </div>
+              <div class="param-item">
+                <span class="param-name">Formalità:</span>
+                <span class="param-value">{{ selectedAvatar.defaultFormality }}%</span>
+              </div>
+              <div class="param-item">
+                <span class="param-name">Urgenza:</span>
+                <span class="param-value">{{ selectedAvatar.defaultUrgency }}%</span>
+              </div>
+              <div class="param-item">
+                <span class="param-name">Lunghezza:</span>
+                <span class="param-value">{{ selectedAvatar.defaultLength }}%</span>
+              </div>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- Platform Selector -->
+        <div class="platform-selector">
+          <label for="platform">Piattaforma:</label>
+          <div class="custom-dropdown" [class.open]="dropdownOpen">
+            <div class="dropdown-trigger" (click)="dropdownOpen = !dropdownOpen">
+              <div class="selected-option">
+                <mat-icon class="social-icon" [class]="platform">{{ getPlatformIcon(platform) }}</mat-icon>
+                <span>{{ getPlatformName(platform) }}</span>
+                <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
+              </div>
+            </div>
+            <div class="dropdown-menu" *ngIf="dropdownOpen">
+              <div class="dropdown-option" 
+                   *ngFor="let platformOption of platformOptions" 
+                   (click)="selectPlatform(platformOption.value)"
+                   [class.selected]="platform === platformOption.value">
+                <mat-icon class="social-icon" [class]="platformOption.value">{{ platformOption.icon }}</mat-icon>
+                <span>{{ platformOption.name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Type -->
+        <div class="controls">
+          <label for="postType">Tipo di post:</label>
+          <select id="postType" [(ngModel)]="selectedPostType">
+            <option *ngFor="let t of postTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <!-- Control Bars -->
+        <div class="histogram-container">
+          <h4>🎚️ Control Bars</h4>
+          <div class="bars-wrapper">
+            <div 
+              *ngFor="let point of colorPoints"
+              class="bar-item"
+              (mousedown)="startDrag(point, $event)"
+              (mousemove)="onDrag($event)"
+              (mouseup)="stopDrag()"
+              (mouseleave)="stopDrag()"
+              (touchstart)="startTouch(point, $event)"
+              (touchmove)="onTouchMove($event)"
+              (touchend)="stopDrag()"
+            >
+              <div class="bar" [style.height.%]="point.value" [style.background]="point.color"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legenda parametri -->
+        <div class="parameters-preview">
+          <div *ngFor="let point of colorPoints" class="param-item">
+            <div class="param-color" [style.background]="point.color"></div>
+            <span class="param-name">{{ point.name }}:</span>
+            <span class="param-value">{{ point.value }}%</span>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="generate-section">
+          <button (click)="generate()" [disabled]="isGenerating">
+            {{ isGenerating ? 'Generando...' : 'Genera' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Output Cards -->
+      <div *ngIf="output" class="output-cards">
+        <div class="card" 
+          *ngFor="let key of outputKeys" 
+          (click)="openModal(key)">
+          <h4>{{ formatTitle(key) }}</h4>
+          <p>{{ output?.[key] }}</p>
+          <div class="view-more">Visualizza risultati →</div>
+        </div>
+      </div>
+    </div>
+</div>
+    <!-- Modali Brand (copiare esattamente come nel codice originale) -->
+    <!-- Modale Selezione Brand -->
+    <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeBrandModal()">×</button>
+        <h2>🎪 Brand & Clienti</h2>
+        
+        <!-- Lista Brand -->
+        <div class="brand-list">
+          <div *ngFor="let brand of brandProfiles" 
+               class="brand-item"
+               [class.selected]="selectedBrand?.id === brand.id"
+               (click)="toggleBrandSelection(brand)">
+            
+            <div class="brand-checkbox">
+              <div class="checkmark" *ngIf="selectedBrand?.id === brand.id">✓</div>
+            </div>
+            
+            <div class="brand-info">
+              <h3>{{ brand.brandName }}</h3>
+              <p class="brand-tone">{{ brand.tone }}</p>
+              <p class="brand-description">{{ brand.brandDescription }}</p>
+              <div class="brand-tags">
+                <span *ngFor="let tag of brand.defaultHashtags.slice(0, 3)" 
+                      class="tag">{{ tag }}</span>
+              </div>
+            </div>
+            
+            <div class="brand-actions">
+              <button class="btn-edit" (click)="openBrandFormModal(brand); $event.stopPropagation()">
+                 Modifica
+              </button>
+              <button class="btn-delete" (click)="deleteBrand(brand); $event.stopPropagation()">
+                Elimina
+              </button>
+            </div>
+          </div>
+          
+          <div *ngIf="brandProfiles.length === 0" class="no-brands">
+            <p>Nessun brand creato ancora</p>
+            <button class="btn-primary" (click)="openBrandFormModal()">
+              + Crea il tuo primo brand
+            </button>
+          </div>
+        </div>
+        
+        <!-- Azioni -->
+        <div class="modal-actions">
+          <button class="btn-outline" (click)="openBrandFormModal()">
+            + Crea Nuovo Brand
+          </button>
+          <button class="btn-primary" 
+                  (click)="confirmBrandSelection()"
+                  [disabled]="!selectedBrand">
+            ✅ Conferma Selezione
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Creazione/Modifica Brand -->
+    <div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
+      <div class="modal-content large" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeBrandModal()">×</button>
+        <h2>{{ editingBrand ? 'Modifica Brand' : 'Crea Nuovo Brand' }}</h2>
+        
+        <form class="brand-form">
+          <!-- Nome Brand -->
+          <div class="form-group">
+            <label>Nome Brand *</label>
+            <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" required>
+          </div>
+
+          <!-- Positioning -->
+          <div class="form-group">
+            <label>Posizionamento di Mercato</label>
+            <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
+                   placeholder="Es: Leader innovativo nel settore tech, Marca accessibile per giovani...">
+            <small>Come vuoi che il brand sia percepito nel mercato</small>
+          </div>
+
+          <!-- Tono di Voce -->
+          <div class="form-group">
+            <label>Tono di Voce</label>
+            <select [(ngModel)]="newBrand.tone" name="tone">
+              <option *ngFor="let tone of getToneOptions()" [value]="tone">
+                {{ getToneLabel(tone) }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Descrizione Brand -->
+          <div class="form-group">
+            <label>Descrizione Brand</label>
+            <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3"></textarea>
+          </div>
+
+          <!-- Target Audience -->
+          <div class="form-group">
+            <label>Target Audience</label>
+            <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience">
+          </div>
+
+          <!-- Valori Brand -->
+          <div class="form-group">
+            <label>Valori del Brand</label>
+            <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues">
+          </div>
+
+          <!-- Tagline -->
+          <div class="form-group">
+            <label>Tagline</label>
+            <input type="text" [(ngModel)]="newBrand.tagline" name="tagline">
+          </div>
+
+          <!-- Preferred CTAs -->
+          <div class="form-group">
+            <label>Call-to-Action Preferite</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempCTA" name="tempCTA" 
+                     placeholder="Es: Prenota una demo, Scopri di più..." (keyup.enter)="addCTA()">
+              <button type="button" (click)="addCTA()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let cta of newBrand.preferredCTAs; let i = index" class="tag cta">
+                {{ cta }} <span class="remove-tag" (click)="removeCTA(i)">×</span>
+              </span>
+            </div>
+            <small>Frasi di invito all'azione che usi tipicamente</small>
+          </div>
+
+          <!-- Keywords Preferite -->
+          <div class="form-group">
+            <label>Parole Chiave Preferite</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
+                     placeholder="Aggiungi parola chiave" (keyup.enter)="addKeyword()">
+              <button type="button" (click)="addKeyword()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let keyword of newBrand.preferredKeywords; let i = index" class="tag">
+                {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Parole da Evitare -->
+          <div class="form-group">
+            <label>Parole da Evitare</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
+                     placeholder="Aggiungi parola da evitare" (keyup.enter)="addAvoidedWord()">
+              <button type="button" (click)="addAvoidedWord()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let word of newBrand.avoidedWords; let i = index" class="tag avoided">
+                {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Hashtag Predefiniti -->
+          <div class="form-group">
+            <label>Hashtag Predefiniti</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempHashtag" name="tempHashtag" 
+                     placeholder="Aggiungi hashtag" (keyup.enter)="addHashtag()">
+              <button type="button" (click)="addHashtag()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let hashtag of newBrand.defaultHashtags; let i = index" class="tag hashtag">
+                {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Azioni Form -->
+          <div class="form-actions">
+            <button type="button" class="btn-outline" (click)="closeBrandModal()">Annulla</button>
+            <button type="button" class="btn-primary" (click)="saveBrand()">
+              {{ editingBrand ? 'Aggiorna' : 'Crea' }} Brand
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+ 
+    <!-- Modale Avatar -->
+     <!--
+    <div class="modal avatar-modal" *ngIf="avatarModalOpen" (click)="closeAvatarModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeAvatarModal()">×</button>
+        <h2>👤 Scegli un Personaggio</h2>
+        
+        <div class="avatar-categories">
+          <button *ngFor="let category of getAvatarCategories()" 
+                  class="category-btn"
+                  (click)="filterAvatarsByCategory(category)">
+            {{ category }}
+          </button>
+        </div>
+        
+        <div class="avatar-grid">
+          <div *ngFor="let avatar of filteredAvatars" 
+               class="avatar-card"
+               [class.selected]="selectedAvatar?.id === avatar.id"
+               (click)="selectAvatar(avatar)">
+            
+            <div class="avatar-icon">{{ avatar.icon }}</div>
+            <div class="avatar-info">
+              <h3>{{ avatar.name }}</h3>
+              <p class="avatar-description">{{ avatar.description }}</p>
+              <div class="avatar-stats">
+                <span>🎭 {{ avatar.defaultTone }}</span>
+                <span>📊 {{ avatar.defaultEmotion }}% Emozione</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn-outline" (click)="closeAvatarModal()">Annulla</button>
+          <button class="btn-primary" 
+                  (click)="confirmAvatarSelection()"
+                  [disabled]="!selectedAvatar">
+            ✅ Conferma Personaggio
+          </button>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Modal Risultati -->
+    <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeModal()">×</button>
+        <h2>{{ formatTitle(selectedKey) }}</h2>
+        <div class="versions">
+          <div class="version" data-version="1" *ngFor="let v of selectedVersions; let i = index">
+            <p>{{ v }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

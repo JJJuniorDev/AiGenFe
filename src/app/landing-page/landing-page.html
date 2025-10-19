@@ -1,381 +1,297 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-<div class="landing-container">
+
+<!-- Hero Section -->
+<section class="hero-section">
   
-  <!-- Banner Login/Registrazione (solo quando non loggato e cliccato Genera) -->
-  <div class="auth-overlay" *ngIf="showAuthOverlay && !loggedIn">
-    <div class="auth-card">
-      <button class="close-overlay" (click)="closeAuthOverlay()">×</button>
-      <h2>Accedi per Generare Contenuti</h2>
-
-      <form #authForm="ngForm" novalidate>
-        <!-- Email -->
-        <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['email']?.valid }">
-          <input
-            type="email"
-            [(ngModel)]="email"
-            name="email"
-            placeholder="Email"
-            required
-            email
-          />
-          <div *ngIf="authForm.submitted && !authForm.controls['email']?.valid" class="error">
-            ⚠️ Inserisci una email reale (es: <i>nome@gmail.com</i>, <i>john@hotmail.com</i>).
-          </div>
-        </div>
-
-        <!-- Password -->
-        <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['password']?.valid }">
-          <input
-            type="password"
-            [(ngModel)]="password"
-            name="password"
-            placeholder="Password"
-            required
-            minlength="6"
-          />
-          <div *ngIf="authForm.submitted && !authForm.controls['password']?.valid" class="error">
-            ⚠️ La password deve avere almeno 6 caratteri.
-          </div>
-        </div>
-
-        <!-- Buttons -->
-        <div class="buttons">
-          <button type="button" (click)="login()" [disabled]="!authForm.valid">Login</button>
-          <button type="button" (click)="signup()" [disabled]="!authForm.valid">Registrati</button>
-        </div>
-      </form>
-    </div>
+  <!-- Header con login/logout -->
+  <div *ngIf="!loggedIn" class="guest-info">
+    <button class="login-btn" (click)="showAuthOverlay = true">
+      <span class="btn-icon">🚀</span>
+      Accedi
+    </button>
   </div>
-<!-- Header Elegante -->
-<div class="header">
-  <div class="header-content">
-    <div class="logo-section">
-      <div class="logo">
-        <div class="logo-icon">🎯</div>
-        <h1 class="app-title">SocialCraft</h1>
-      </div>
-      <p class="app-tagline elegant">
-  <span class="tagline-icon"></span>
-  Dai forma alla tua voce sui social
-</p>
-    </div>
-    
-    <div class="auth-buttons">
-     <!-- Se non loggato: mostra messaggio crediti e login -->
-      <div *ngIf="!loggedIn" class="guest-info">
-        <div class="credits-message">
-          <span class="info-icon">ℹ️</span>
-          <span>Accedi per vedere i tuoi crediti</span>
-        </div>
-        <button class="login-btn" (click)="showAuthOverlay = true">
-          <span class="btn-icon">🚀</span>
-          Accedi
-        </button>
-      </div>
-      <!-- Se loggato: mostra crediti e logout -->
-      <div *ngIf="loggedIn" class="user-info">
-        <div class="credits-display">
-          <span class="credits-icon">🪙</span>
-          <span class="credits-count">{{ user?.credits || 0 }} crediti</span>
-          <span class="plan-badge">{{ user?.plan || 'Free' }}</span>
-        </div>
-        <button class="logout-btn" (click)="logout()">
-          <span class="btn-icon">👋</span>
-          Logout
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-  <!-- Dashboard - Sempre visibile -->
-  <div class="dashboard">
-    
-    <div class="generate-card">
-      <h3>Genera contenuto</h3>
-      <textarea [(ngModel)]="inputText" placeholder="Inserisci un'idea di post o input..." rows="16"></textarea>
-     
-     <div class="brand-section">
-      <button class="brand-manager-btn" (click)="openBrandModal()">
-        🎨 Seleziona o crea Brand Memory
+  <div *ngIf="loggedIn" class="user-info">
+    <div class="credits-display">
+      <span class="credits-icon">🪙</span>
+      <span class="credits-count">{{ user?.credits || 0 }} crediti</span>
+      <span class="plan-badge">{{ user?.plan || 'Free' }}</span>
+    </div>
+    <button class="logout-btn" (click)="logout()">
+      <span class="btn-icon">👋</span>
+      Logout
+    </button>
+  </div>
+  
+  <div class="hero-content">
+    <!-- Main Title -->
+    <div class="title-container">
+      <h1 class="main-title">
+        <span class="title-word title-word-1">SOCIAL CRAFT</span>
+      </h1>
+    </div>
+
+    <!-- Tagline -->
+    <p class="hero-tagline">
+      Dalla tua idea al contenuto perfetto. 
+      <span class="tagline-highlight">Intelligenza artificiale che comprende il tuo brand.</span>
+    </p>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">🎯</div>
+        <h3>Brand-Conscious</h3>
+        <p>Mantiene coerenza con la voce del tuo marchio in ogni contenuto</p>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <h3>Lightning Fast</h3>
+        <p>Genera contenuti di qualità in pochi secondi, non ore</p>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-icon">🎨</div>
+        <h3>Multi-Platform</h3>
+        <p>Ottimizzato per Instagram, LinkedIn, Twitter e oltre</p>
+      </div>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="hero-actions">
+      <button class="cta-primary" (click)="startCreating()">
+        <span class="btn-icon">🚀</span>
+        Inizia a Creare
       </button>
-      <div *ngIf="selectedBrand" class="selected-brand">
-        <strong>Brand selezionato:</strong> {{ selectedBrand.brandName }}
-        <span class="brand-tone">({{ selectedBrand.tone }})</span>
-      </div>
+      <button class="cta-secondary" (click)="showAuthOverlay = true">
+        <span class="btn-icon">📽️</span>
+        Vedi Demo
+      </button>
     </div>
 
-    <!-- Modale Selezione Brand -->
-    <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <button class="close-btn" (click)="closeBrandModal()">×</button>
-       <h2>🎪 Brand & Clienti</h2>
-        
-        <!-- Lista Brand -->
-        <div class="brand-list">
-          <div *ngFor="let brand of brandProfiles" 
-               class="brand-item"
-               [class.selected]="selectedBrand?.id === brand.id"
-               (click)="toggleBrandSelection(brand)">
-            
-            <div class="brand-checkbox">
-              <div class="checkmark" *ngIf="selectedBrand?.id === brand.id">✓</div>
-            </div>
-            
-            <div class="brand-info">
-              <h3>{{ brand.brandName }}</h3>
-              <p class="brand-tone">{{ brand.tone }}</p>
-              <p class="brand-description">{{ brand.brandDescription }}</p>
-              <div class="brand-tags">
-                <span *ngFor="let tag of brand.defaultHashtags.slice(0, 3)" 
-                      class="tag">{{ tag }}</span>
-              </div>
-            </div>
-            
-            <div class="brand-actions">
-              <button class="btn-edit" (click)="openBrandFormModal(brand); $event.stopPropagation()">
-                 Modifica
-              </button>
-              <button class="btn-delete" (click)="deleteBrand(brand); $event.stopPropagation()">
-                Elimina
-              </button>
-            </div>
-          </div>
-          
-          <div *ngIf="brandProfiles.length === 0" class="no-brands">
-            <p>Nessun brand creato ancora</p>
-            <button class="btn-primary" (click)="openBrandFormModal()">
-              + Crea il tuo primo brand
-            </button>
-          </div>
-        </div>
-        
-        <!-- Azioni -->
-        <div class="modal-actions">
-          <button class="btn-outline" (click)="openBrandFormModal()">
-            + Crea Nuovo Brand
-          </button>
-          <button class="btn-primary" 
-                  (click)="confirmBrandSelection()"
-                  [disabled]="!selectedBrand">
-            ✅ Conferma Selezione
-          </button>
-        </div>
+    <!-- Stats -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Disponibilità</div>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Modale Creazione/Modifica Brand -->
-    <div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
-      <div class="modal-content large" (click)="$event.stopPropagation()">
-        <button class="close-btn" (click)="closeBrandModal()">×</button>
-        <h2>{{ editingBrand ? 'Modifica Brand' : 'Crea Nuovo Brand' }}</h2>
-        
-        <form class="brand-form">
-          <!-- Nome Brand -->
-          <div class="form-group">
-            <label>Nome Brand *</label>
-            <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" required>
-          </div>
-
-          <!-- Positioning -->
-          <div class="form-group">
-            <label>Posizionamento di Mercato</label>
-            <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
-                   placeholder="Es: Leader innovativo nel settore tech, Marca accessibile per giovani...">
-            <small>Come vuoi che il brand sia percepito nel mercato</small>
-          </div>
-
-          <!-- Tono di Voce -->
-          <div class="form-group">
-            <label>Tono di Voce</label>
-            <select [(ngModel)]="newBrand.tone" name="tone">
-              <option *ngFor="let tone of getToneOptions()" [value]="tone">
-                {{ getToneLabel(tone) }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Descrizione Brand -->
-          <div class="form-group">
-            <label>Descrizione Brand</label>
-            <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3"></textarea>
-          </div>
-
-          <!-- Target Audience -->
-          <div class="form-group">
-            <label>Target Audience</label>
-            <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience">
-          </div>
-
-          <!-- Valori Brand -->
-          <div class="form-group">
-            <label>Valori del Brand</label>
-            <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues">
-          </div>
-
-          <!-- Tagline -->
-          <div class="form-group">
-            <label>Tagline</label>
-            <input type="text" [(ngModel)]="newBrand.tagline" name="tagline">
-          </div>
-
-          <!-- Preferred CTAs -->
-          <div class="form-group">
-            <label>Call-to-Action Preferite</label>
-            <div class="input-with-btn">
-              <input type="text" [(ngModel)]="tempCTA" name="tempCTA" 
-                     placeholder="Es: Prenota una demo, Scopri di più..." (keyup.enter)="addCTA()">
-              <button type="button" (click)="addCTA()">+</button>
-            </div>
-            <div class="tags-list">
-              <span *ngFor="let cta of newBrand.preferredCTAs; let i = index" class="tag cta">
-                {{ cta }} <span class="remove-tag" (click)="removeCTA(i)">×</span>
-              </span>
-            </div>
-            <small>Frasi di invito all'azione che usi tipicamente</small>
-          </div>
-
-          <!-- Keywords Preferite -->
-          <div class="form-group">
-            <label>Parole Chiave Preferite</label>
-            <div class="input-with-btn">
-              <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
-                     placeholder="Aggiungi parola chiave" (keyup.enter)="addKeyword()">
-              <button type="button" (click)="addKeyword()">+</button>
-            </div>
-            <div class="tags-list">
-              <span *ngFor="let keyword of newBrand.preferredKeywords; let i = index" class="tag">
-                {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Parole da Evitare -->
-          <div class="form-group">
-            <label>Parole da Evitare</label>
-            <div class="input-with-btn">
-              <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
-                     placeholder="Aggiungi parola da evitare" (keyup.enter)="addAvoidedWord()">
-              <button type="button" (click)="addAvoidedWord()">+</button>
-            </div>
-            <div class="tags-list">
-              <span *ngFor="let word of newBrand.avoidedWords; let i = index" class="tag avoided">
-                {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Hashtag Predefiniti -->
-          <div class="form-group">
-            <label>Hashtag Predefiniti</label>
-            <div class="input-with-btn">
-              <input type="text" [(ngModel)]="tempHashtag" name="tempHashtag" 
-                     placeholder="Aggiungi hashtag" (keyup.enter)="addHashtag()">
-              <button type="button" (click)="addHashtag()">+</button>
-            </div>
-            <div class="tags-list">
-              <span *ngFor="let hashtag of newBrand.defaultHashtags; let i = index" class="tag hashtag">
-                {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Azioni Form -->
-          <div class="form-actions">
-            <button type="button" class="btn-outline" (click)="closeBrandModal()">Annulla</button>
-            <button type="button" class="btn-primary" (click)="saveBrand()">
-              {{ editingBrand ? 'Aggiorna' : 'Crea' }} Brand
-            </button>
-          </div>
-        </form>
-      </div>
+<!-- Brand Memory Section -->
+<section class="brand-memory-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Brand Memory</h2>
+      <p class="section-subtitle">Non solo AI. La tua identità di marca, ricordata per sempre.</p>
     </div>
- 
-    <div class="platform-selector">
-      <label for="platform">Piattaforma:</label>
-      
-      <div class="custom-dropdown" [class.open]="dropdownOpen">
-        <div class="dropdown-trigger" (click)="dropdownOpen = !dropdownOpen">
-          <div class="selected-option">
-            <mat-icon class="social-icon" [class]="platform">{{ getPlatformIcon(platform) }}</mat-icon>
-            <span>{{ getPlatformName(platform) }}</span>
-            <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
+
+    <div class="brand-features-grid">
+      <!-- Feature 1: Multi-Brand -->
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Multi-Brand Management</h3>
+        <p>Gestisci infinite identità di marca con profili separati e switcha istantaneamente tra di esse</p>
+        <div class="feature-demo">
+          <div class="brand-switcher-demo">
+            <div class="brand-pill active">Nike</div>
+            <div class="brand-pill">Apple</div>
+            <div class="brand-pill">Starbucks</div>
+            <div class="brand-pill">+</div>
           </div>
         </div>
-        
-        <div class="dropdown-menu" *ngIf="dropdownOpen">
-          <div class="dropdown-option" 
-               *ngFor="let platformOption of platformOptions" 
-               (click)="selectPlatform(platformOption.value)"
-               [class.selected]="platform === platformOption.value">
-            <mat-icon class="social-icon" [class]="platformOption.value">{{ platformOption.icon }}</mat-icon>
-            <span>{{ platformOption.name }}</span>
+      </div>
+
+      <!-- Feature 2: Voice & Tone -->
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <h3>Voice & Tone Consistency</h3>
+        <p>Mantieni coerenza nel tono di voce attraverso tutti i contenuti e le piattaforme</p>
+        <div class="feature-demo">
+          <div class="tone-selector-demo">
+            <div class="tone-option">
+              <span class="tone-name">Professionale</span>
+              <div class="tone-bar" style="width: 90%"></div>
+            </div>
+            <div class="tone-option">
+              <span class="tone-name">Creativo</span>
+              <div class="tone-bar" style="width: 70%"></div>
+            </div>
+            <div class="tone-option">
+              <span class="tone-name">Amichevole</span>
+              <div class="tone-bar" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Target Audience -->
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Target Audience Precision</h3>
+        <p>Definisci il tuo pubblico target e genera contenuti specificamente per loro</p>
+        <div class="feature-demo">
+          <div class="audience-demo">
+            <div class="audience-tag">Millennials</div>
+            <div class="audience-tag">Professionisti Tech</div>
+            <div class="audience-tag">Imprenditori</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 4: Brand Vocabulary -->
+      <div class="feature-card">
+        <div class="feature-icon">📝</div>
+        <h3>Brand Vocabulary</h3>
+        <p>Parole chiave preferite e termini da evitare per mantenere l'identità linguistica</p>
+        <div class="feature-demo">
+          <div class="vocabulary-demo">
+            <div class="words-list preferred">
+              <span class="word-tag">Innovazione</span>
+              <span class="word-tag">Sostenibilità</span>
+              <span class="word-tag">Eccellenza</span>
+            </div>
+            <div class="words-list avoided">
+              <span class="word-tag">Costoso</span>
+              <span class="word-tag">Complicato</span>
+              <span class="word-tag">Vecchio</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 5: Hashtag Strategy -->
+      <div class="feature-card">
+        <div class="feature-icon">🏷️</div>
+        <h3>Hashtag Strategy</h3>
+        <p>Hashtag predefiniti e CTAs specifiche per ogni piattaforma e campagna</p>
+        <div class="feature-demo">
+          <div class="hashtag-demo">
+            <div class="hashtag-tag">#Innovazione</div>
+            <div class="hashtag-tag">#FuturoSostenibile</div>
+            <div class="hashtag-tag">#DesignItaliano</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 6: Positioning -->
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>Market Positioning</h3>
+        <p>Definisci il posizionamento di mercato e i valori del brand per contenuti allineati</p>
+        <div class="feature-demo">
+          <div class="positioning-demo">
+            <div class="positioning-item">
+              <span class="positioning-label">Posizionamento:</span>
+              <span class="positioning-value">Leader innovativo</span>
+            </div>
+            <div class="positioning-item">
+              <span class="positioning-label">Valori:</span>
+              <span class="positioning-value">Qualità, Innovazione, Design</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="controls">
-      <label for="postType">Tipo di post:</label>
-      <select id="postType" [(ngModel)]="selectedPostType">
-        <option *ngFor="let t of postTypes" [value]="t">{{ t }}</option>
-      </select>
-    </div>
-
-    <div class="histogram-container">
-      <h4>🎚️ Control Bars</h4>
-
-      <div class="bars-wrapper">
-        <div 
-          *ngFor="let point of colorPoints"
-          class="bar-item"
-          (mousedown)="startDrag(point, $event)"
-          (mousemove)="onDrag($event)"
-          (mouseup)="stopDrag()"
-          (mouseleave)="stopDrag()"
-          (touchstart)="startTouch(point, $event)"
-          (touchmove)="onTouchMove($event)"
-          (touchend)="stopDrag()"
-        >
-          <div class="bar" [style.height.%]="point.value" [style.background]="point.color"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Legenda parametri -->
-    <div class="parameters-preview">
-      <div *ngFor="let point of colorPoints" class="param-item">
-        <div class="param-color" [style.background]="point.color"></div>
-        <span class="param-name">{{ point.name }}:</span>
-        <span class="param-value">{{ point.value }}%</span>
-      </div>
-    </div>
- <div class="generate-section">
-    <button (click)="generate()">Genera</button>
-    </div>
-    </div>
-
-    <div *ngIf="output" class="output-cards">
-      <div class="card" 
-        *ngFor="let key of outputKeys" 
-        (click)="openModal(key)">
-        <h4>{{ formatTitle(key) }}</h4>
-        <p>{{ output?.[key] }}</p>
-        <div class="view-more">Visualizza risultati →</div>
+    <div class="comparison-section">
+      <div class="comparison-header">
+        <h3>AI Generica vs. Brand Memory</h3>
+        <p>La differenza che conta</p>
       </div>
       
-      <!-- Modal Risultati -->
-      <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <button class="close-btn" (click)="closeModal()">×</button>
-          <h2>{{ formatTitle(selectedKey) }}</h2>
-          <div class="versions">
-            <div class="version" data-version="1" *ngFor="let v of selectedVersions; let i = index">
-              <p>{{ v }}</p>
-            </div>
+      <div class="comparison-grid">
+        <div class="comparison-column">
+          <div class="column-header generic">
+            <h4>🤖 AI Generica</h4>
+            <p>Prompt manuali ogni volta</p>
           </div>
+          <ul class="feature-list">
+            <li class="negative">❌ Devi ricordare il tono ogni volta</li>
+            <li class="negative">❌ Consistenza brand a rischio</li>
+            <li class="negative">❌ Ripeti le stesse istruzioni</li>
+            <li class="negative">❌ Nessuna memoria del target</li>
+            <li class="negative">❌ Gestione manuale hashtag</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-divider">
+          <div class="divider-line"></div>
+          <span class="vs-badge">VS</span>
+          <div class="divider-line"></div>
+        </div>
+        
+        <div class="comparison-column">
+          <div class="column-header brand">
+            <h4>🎨 Brand Memory</h4>
+            <p>Configura una volta, usa per sempre</p>
+          </div>
+          <ul class="feature-list">
+            <li class="positive">✅ Tono di voce sempre coerente</li>
+            <li class="positive">✅ Identità brand preservata</li>
+            <li class="positive">✅ Switch tra brand in 1 click</li>
+            <li class="positive">✅ Target audience integrato</li>
+            <li class="positive">✅ Hashtag strategy automatica</li>
+          </ul>
         </div>
       </div>
     </div>
+
+    <div class="cta-section">
+      <h3>Pronto a rivoluzionare la tua content strategy?</h3>
+      <p>Crea il tuo primo Brand Memory e sperimenta la differenza</p>
+      <button class="cta-button" (click)="startCreating()">
+        <span class="btn-icon">🚀</span>
+        Inizia Ora - Crea il Tuo Brand
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Auth Overlay -->
+<div class="auth-overlay" *ngIf="showAuthOverlay && !loggedIn">
+  <div class="auth-card">
+    <button class="close-overlay" (click)="closeAuthOverlay()">×</button>
+    <h2>Accedi per Generare Contenuti</h2>
+
+    <form #authForm="ngForm" novalidate>
+      <!-- Email -->
+      <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['email']?.valid }">
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Email"
+          required
+          email
+        />
+        <div *ngIf="authForm.submitted && !authForm.controls['email']?.valid" class="error">
+          ⚠️ Inserisci una email reale (es: <i>nome@gmail.com</i>, <i>john@hotmail.com</i>).
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group" [ngClass]="{ 'invalid': authForm.submitted && !authForm.controls['password']?.valid }">
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Password"
+          required
+          minlength="6"
+        />
+        <div *ngIf="authForm.submitted && !authForm.controls['password']?.valid" class="error">
+          ⚠️ La password deve avere almeno 6 caratteri.
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="buttons">
+        <button type="button" (click)="login()" [disabled]="!authForm.valid">Login</button>
+        <button type="button" (click)="signup()" [disabled]="!authForm.valid">Registrati</button>
+      </div>
+    </form>
   </div>
 </div>
