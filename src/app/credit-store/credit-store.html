@@ -1,0 +1,36 @@
+<div class="credit-store">
+  <div class="packages-grid">
+    <div *ngFor="let pkg of packages" 
+         class="package-card" 
+       >
+      
+      <div class="package-header">
+        <h3>{{ pkg.name }}</h3>
+        <div class="price">€{{ pkg.price }}</div>
+      </div>
+      
+      <div class="package-content">
+        <div class="credits-amount">
+          <span class="credits">{{ pkg.credits }}</span>
+          <span class="credits-label">CREDITI</span>
+        </div>
+        
+        <p class="description">{{ pkg.description }}</p>
+        
+        <ul class="features">
+          <li>Generazione contenuti premium</li>
+          <li>Supporto dedicato 24/7</li>
+          <li>Aggiornamenti gratuiti</li>
+          <li>Nessun limite d'uso</li>
+        </ul>
+      </div>
+      
+      <button 
+        class="buy-btn" 
+        (click)="buyPackage(pkg)"
+        [disabled]="isProcessing">
+        {{ isProcessing ? 'PROCESSING...' : 'ACQUISTA ORA' }}
+      </button>
+    </div>
+  </div>
+</div>

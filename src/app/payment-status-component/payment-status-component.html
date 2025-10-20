@@ -1,0 +1,20 @@
+<p>payment-status-component works!</p>
+<div class="payment-status">
+      <div *ngIf="status === 'success'" class="status success">
+        <div class="icon">✅</div>
+        <h2>Pagamento Completato!</h2>
+        <p>I tuoi crediti sono stati aggiunti con successo.</p>
+        <button (click)="goToGenerator()" class="btn-primary">
+          Torna al Generatore
+        </button>
+      </div>
+      
+      <div *ngIf="status === 'cancel'" class="status cancel">
+        <div class="icon">❌</div>
+        <h2>Pagamento Annullato</h2>
+        <p>Il pagamento è stato annullato. Puoi riprovare quando vuoi.</p>
+        <button (click)="goToGenerator()" class="btn-secondary">
+          Torna al Generatore
+        </button>
+      </div>
+    </div>

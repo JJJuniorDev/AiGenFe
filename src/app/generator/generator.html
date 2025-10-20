@@ -10,11 +10,13 @@
       
       <div class="header-right">
         <div class="user-info">
+          <button *ngIf="user" class="credit-balance" (click)="openCreditStore()">
           <div class="credits-display">
             <span class="credits-icon">🪙</span>
             <span class="credits-count">{{ user?.credits }} crediti</span>
             <span class="plan-badge">{{ user?.plan || 'Free' }}</span>
           </div>
+          </button>
           <button class="logout-btn" (click)="logout()">
             <span class="btn-icon">👋</span>
             Logout
@@ -28,8 +30,75 @@
     <div class="dashboard">
       <div class="generate-card">
         <h3>Genera contenuto</h3>
-        <textarea [(ngModel)]="inputText" placeholder="Inserisci un'idea di post o input..." rows="16"></textarea>
-       
+        <!-- 👇 SELEZIONE MODALITÀ -->
+      <div class="mode-selector">
+        <button class="mode-btn" 
+                [class.active]="inputMode === 'manual'"
+                (click)="switchToManualMode()">
+          ✍️ Manuale
+        </button>
+        <button class="mode-btn" 
+                [class.active]="inputMode === 'guided'"
+                (click)="switchToGuidedMode()">
+          🚀 Guidato
+        </button>
+      </div>
+         <!-- 👇 MODALITÀ MANUALE (ESISTENTE) -->
+      <div *ngIf="inputMode === 'manual'" class="manual-section">
+        <textarea [(ngModel)]="inputText" placeholder="Descrivi cosa vuoi comunicare, un prodotto da promuovere, un'idea di post..." rows="12"></textarea>
+        </div>
+         <!-- 👇 MODALITÀ GUIDATA (NUOVA) -->
+      <div *ngIf="inputMode === 'guided'" class="guided-section">
+          <!-- Settore/Argomento -->
+        <div class="guided-field">
+          <label>🏷️ Argomento Principale</label>
+          <select [(ngModel)]="guidedInput.topic">
+            <option value="">Di cosa vuoi parlare?</option>
+            <option value="food">🍕 Cibo & Ricette</option>
+            <option value="fitness">💪 Fitness & Salute</option>
+            <option value="tech">💻 Tecnologia</option>
+            <option value="fashion">👗 Moda & Beauty</option>
+            <option value="business">💼 Business & Startup</option>
+            <option value="travel">✈️ Viaggi & Avventura</option>
+            <option value="lifestyle">🏡 Lifestyle</option>
+            <option value="education">🎓 Educazione</option>
+            <option value="entertainment">🎬 Intrattenimento</option>
+            <option value="sports">⚽ Sport</option>
+            <option value="finance">💰 Finanza Personale</option>
+          </select>
+        </div>
+
+         <!-- Obiettivo -->
+        <div class="guided-field">
+          <label>🎯 Obiettivo del Post</label>
+          <select [(ngModel)]="guidedInput.goal">
+            <option value="">Cosa vuoi ottenere?</option>
+            <option value="awareness">👀 Aumentare visibilità</option>
+            <option value="engagement">💬 Generare like/commenti</option>
+            <option value="conversion">🛒 Vendere prodotti/servizi</option>
+            <option value="leads">📩 Raccolta contatti</option>
+            <option value="community">👥 Costruire community</option>
+            <option value="traffic">🌐 Portare traffico al sito</option>
+          </select>
+        </div>
+
+        <!-- Messaggio Specifico -->
+        <div class="guided-field">
+          <label>💡 Dettagli specifici (opzionale)</label>
+          <textarea [(ngModel)]="guidedInput.keyMessage" 
+                    placeholder="Qualche dettaglio in più? Es: 'Nuovo prodotto X', 'Offerta speciale', 'Evento del weekend'..."
+                    rows="2"></textarea>
+        </div>
+           <!-- Anteprima Input Generato -->
+        <div *ngIf="generatedPrompt" class="preview-section">
+          <h4>📋 Questo è ciò che verrà generato:</h4>
+          <div class="preview-box">
+            {{ generatedPrompt }}
+          </div>
+        </div>
+        </div>
+
+
         <!-- Brand Section -->
         <div class="brand-section">
           <button class="brand-manager-btn" (click)="openBrandModal()">
@@ -397,9 +466,19 @@
     <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="closeModal()">×</button>
+          <div class="modal-header">
         <h2>{{ formatTitle(selectedKey) }}</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+     <div class="versions-container">
         <div class="versions">
-          <div class="version" data-version="1" *ngFor="let v of selectedVersions; let i = index">
+          <div class="version" [attr.data-version]="i+1" *ngFor="let v of selectedVersions; let i = index">
+             <!-- 👇 PULSANTE COPIA -->
+          <button class="copy-btn" 
+                  (click)="copyToClipboard(v, $event, i)"
+                  [class.copied]="copiedIndex === i">
+            {{ copiedIndex === i ? '✅ Copiato!' : '📋 Copia' }}
+          </button>
             <p>{{ v }}</p>
           </div>
         </div>
@@ -407,3 +486,16 @@
     </div>
   </div>
 </div>
+
+<div *ngIf="creditStoreModalOpen" class="modal-overlay" (click)="closeCreditStore()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Acquista Credit</h2>
+      <button class="close-btn" (click)="closeCreditStore()">×</button>
+    </div>
+    <div class="modal-body">
+      <app-credit-store></app-credit-store>
+    </div>
+  </div>
+</div>
+

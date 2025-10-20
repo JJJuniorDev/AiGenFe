@@ -15,10 +15,11 @@ import { Avatar } from '../model/Avatar.model';
 import { Router } from '@angular/router';
 import { UserStateService } from '../services/UserStateService.service';
 import { Subject, takeUntil } from 'rxjs';
+import { CreditStore } from "../credit-store/credit-store";
 
 @Component({
   selector: 'app-generator',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, CreditStore],
   templateUrl: './generator.html',
   styleUrl: './generator.css'
 })
@@ -139,8 +140,13 @@ export class Generator implements OnInit, OnDestroy{
   avatarModalOpen = false;
   showAvatarParameters = false;
   filteredAvatars: Avatar[] = [];
+
+
   private destroy$ = new Subject<void>();
   
+
+  creditStoreModalOpen = false;
+
   constructor(
     private authService: AuthService,
     private testimonialService: TestimonialService,
@@ -238,6 +244,15 @@ private loadUserSpecificData() {
     // this.user!.credits = oldCredits - 1;
    this.isGenerating = true;
 
+   // Se siamo in modalità guidata, usa il prompt generato automaticamente
+  if (this.inputMode === 'guided') {
+    this.inputText = this.generatedPrompt;
+  }
+    // Verifica che ci sia un input valido
+  if (!this.inputText || this.inputText.trim().length === 0) {
+    alert('Inserisci un contenuto o seleziona le opzioni nella modalità guidata');
+    return;
+  }
     this.testimonialService.generate({
       inputText: this.inputText,
       platform: this.platform,
@@ -607,11 +622,29 @@ showNoCreditsWarning() {
     {
       enableHtml: true,
       timeOut: 10000, // 10 secondi
-      positionClass: 'toast-top-center'
+      positionClass: 'toast-top-center',
+      tapToDismiss: false
     }
   );
+    // Aggiungi event listener al button nel toast
+  setTimeout(() => {
+    const button = document.getElementById('toast-purchase-btn');
+    if (button) {
+      button.onclick = () => {
+        this.openCreditStore();
+        this.toastr.clear();
+      };
+    }
+  }, 100);
 }
 
+openCreditStore() {
+  this.creditStoreModalOpen = true;
+}
+
+closeCreditStore() {
+  this.creditStoreModalOpen = false;
+}
 
   logout() {
     this.authService.logout();
@@ -620,6 +653,105 @@ showNoCreditsWarning() {
     this.router.navigate(['/']);
   }
 
+// 👇 VARIABILE PER TRACCIARE COSA È STATO COPIATO
+copiedIndex: number = -1;
+
+// 👇 FUNZIONE PER COPIARE IL TESTO
+copyToClipboard(text: string, event: Event, index: number) {
+  event.stopPropagation(); // 👈 Impedisce la chiusura del modal
+  
+  navigator.clipboard.writeText(text).then(() => {
+    this.copiedIndex = index;
+    
+    // 👇 Reset dopo 2 secondi
+    setTimeout(() => {
+      this.copiedIndex = -1;
+    }, 2000);
+  }).catch(err => {
+    console.error('Errore nella copia: ', err);
+    // 👇 Fallback per browser vecchi
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    this.copiedIndex = index;
+    setTimeout(() => {
+      this.copiedIndex = -1;
+    }, 2000);
+  });
+}
+
+inputMode: 'manual' | 'guided' = 'manual'; // Default a manuale
+
+guidedInput = {
+  topic: '',
+  goal: '',
+  keyMessage: ''
+};
+
+// 👇 METODI PER CAMBIARE MODALITÀ
+switchToManualMode() {
+  this.inputMode = 'manual';
+  // Reset dell'input guidato se si torna al manuale
+  this.guidedInput = { topic: '', goal: '', keyMessage: '' };
+}
+
+switchToGuidedMode() {
+  this.inputMode = 'guided';
+  // Se c'è testo nel manuale, lo puliamo
+  this.inputText = '';
+}
+
+// 👇 GENERA PROMPT AUTOMATICO PER MODALITÀ GUIDATA
+get generatedPrompt(): string {
+  if (this.inputMode === 'manual') {
+    return this.inputText;
+  }
+  
+  const parts = [];
+  
+  if (this.guidedInput.topic) {
+    const topicLabels = {
+      'food': 'sul tema cibo e ricette',
+      'fitness': 'sul tema fitness e salute',
+      'tech': 'sul tema tecnologia e innovazione',
+      'fashion': 'sul tema moda e beauty',
+      'business': 'sul tema business e startup',
+      'travel': 'sul tema viaggi e avventura',
+      'lifestyle': 'sul tema lifestyle',
+      'education': 'sul tema educazione e apprendimento',
+      'entertainment': 'sul tema intrattenimento',
+      'sports': 'sul tema sport',
+      'finance': 'sul tema finanza personale'
+    };
+    parts.push(
+      (this.guidedInput.topic in topicLabels
+        ? topicLabels[this.guidedInput.topic as keyof typeof topicLabels]
+        : this.guidedInput.topic)
+    );
+  }
+  
+  if (this.guidedInput.goal) {
+    const goalLabels = {
+      'awareness': 'con obiettivo aumentare la visibilità del brand',
+      'engagement': 'con obiettivo generare like, commenti e condivisioni',
+      'conversion': 'con obiettivo vendere prodotti o servizi',
+      'leads': 'con obiettivo raccogliere contatti e lead',
+      'community': 'con obiettivo costruire una community fedele',
+      'traffic': 'con obiettivo portare traffico al sito web'
+    };
+    parts.push(goalLabels[this.guidedInput.goal as keyof typeof goalLabels] || this.guidedInput.goal);
+  }
+  
+  if (this.guidedInput.keyMessage) {
+    parts.push(`Dettaglio specifico: ${this.guidedInput.keyMessage}`);
+  }
+  
+  return parts.join(' - ');
+}
 
 //  loadCreditPackages() {
 //     this.creditPackageService.getActivePackages().subscribe({

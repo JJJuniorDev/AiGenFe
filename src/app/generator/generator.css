@@ -112,7 +112,7 @@ body {
 }
 
 .credits-count {
-  color: #00ffff;
+  color: #000000;
   font-weight: 600;
   font-size: 0.85rem;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
@@ -163,8 +163,8 @@ body {
 }
 
 .dashboard {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column; /* 👈 Cambia da grid a colonna */
   gap: 30px;
   width: 100%;
 }
@@ -182,6 +182,9 @@ body {
   min-height: 500px;
   display: flex;
   flex-direction: column;
+  width: 70%; /* 👈 RIDUCI LA LARGHEZZA al 70% */
+  max-width: 800px; /* 👈 LARGHEZZA MASSIMA */
+  margin: 0 auto; /* 👈 CENTRATURA */
 }
 
 .generate-card:hover {
@@ -628,7 +631,6 @@ body {
   padding: 15px;
   box-sizing: border-box;
 }
-
 .modal-content {
   background: linear-gradient(145deg, 
     rgba(40, 40, 40, 0.95) 0%, 
@@ -688,6 +690,13 @@ body {
   line-height: 1.2;
 }
 
+/* 👇 CONTENITORE PRINCIPALE SCORREVOLE */
+.versions-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 5px;
+}
+
 .versions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -702,7 +711,7 @@ body {
     rgba(50, 50, 50, 0.7) 100%);
   border: 1px solid rgba(0, 255, 255, 0.2);
   border-radius: 12px;
-  padding: 25px 20px;
+   padding: 50px 20px 20px 20px; 
   display: flex;
   flex-direction: column;
   height: calc(100% - 20px);
@@ -711,6 +720,10 @@ body {
   overflow-y: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
+   /* 👇 AGGIUNGI queste proprietà per testo */
+  min-width: 0; /* 👈 Importante per flexbox */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .version:hover {
@@ -736,13 +749,14 @@ body {
 
 .version p {
   margin: 40px 0 0 0;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.95rem; /* 👈 Leggermente più grande */
+  line-height: 1.7;   /* 👈 Più spaziatura */
   color: #e0e0e0;
   flex-grow: 1;
   text-align: left;
+  word-break: break-word; /* 👈 Evita parole troppo lunghe */
+  hyphens: auto; /* 👈 Divisione parole intelligente */
 }
-
 .version::-webkit-scrollbar {
   width: 5px;
 }
@@ -759,6 +773,38 @@ body {
 
 .version::-webkit-scrollbar-thumb:hover {
   background: #008b8b;
+}
+
+/* 👇 PULSANTE COPIA IN ALTO A DESTRA */
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 255, 255, 0.15);
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #00ffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.copy-btn:hover {
+  background: #00ffff;
+  color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+}
+
+.copy-btn.copied {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #1a1a1a;
+  transform: scale(1.05);
 }
 
 /* Brand Modal Styles */
@@ -1226,6 +1272,26 @@ body {
   animation: formSlideIn 0.4s ease-out;
 }
 
+/* 👇 DESKTOP - 3 COLONNE */
+@media (min-width: 1025px) {
+  .modal-content {
+    width: 138vw; /* 👈 Più largo */
+    max-width: 1400px; /* 👈 Massimo più ampio */
+  }
+
+  .versions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .version {
+    height: calc(100% - 20px);
+  }
+}
+
 /* ==================== RESPONSIVE DESIGN ==================== */
 
 /* Tablet (768px - 1024px) */
@@ -1263,9 +1329,11 @@ body {
     padding: 18px;
   }
   
-  .versions {
+ .versions {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+    height: 100%;
   }
 }
 
@@ -1328,7 +1396,8 @@ body {
     margin-top: 20px;
   }
   
-  .modal-content {
+   .modal-content {
+    height: 90vh;
     padding: 20px 15px;
   }
   
@@ -1337,17 +1406,23 @@ body {
     margin-bottom: 20px;
   }
   
-  .versions {
-    grid-template-columns: 1fr;
+ .versions {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    height: auto;
   }
   
   .version {
-    height: auto;
     min-height: 180px;
-    padding: 20px 15px;
+    flex-shrink: 0;
   }
-  
+
+   .versions-container {
+    overflow-y: auto;
+    padding: 5px;
+  }
+
   .brand-modal .modal-content,
   .brand-form-modal .modal-content.large {
     max-width: 95vw;
@@ -1664,4 +1739,254 @@ body {
   .generate-section button {
     display: none !important;
   }
+}
+
+/* Modal Overlay per Credit Store - VERSIONE COMPATTA */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  animation: modalAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 👇 HEADER FISSO CON TITOLO E CHIUSURA */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 20px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  flex-shrink: 0; /* 👈 Impedisce che si restringa */
+}
+
+.modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+.modal-header h2 {
+  background: linear-gradient(135deg, #00ffff, #008b8b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.8rem;
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.close-btn {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.close-btn:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.1) rotate(90deg);
+}
+
+.modal-body {
+  padding: 0;
+  max-height: calc(80vh - 80px);
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+/* Toast button styles */
+#toast-purchase-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  margin-top: 12px !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+#toast-purchase-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 15px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: 400px;
+  }
+  
+  .modal-header {
+    padding: 18px 20px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    width: 100%;
+    max-height: 85vh;
+  }
+}
+
+
+/* 👇 SELEZIONE MODALITÀ */
+.mode-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #333;
+  border-radius: 10px;
+  color: #b0b0b0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.mode-btn.active {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: #00ffff;
+  color: #00ffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+}
+
+.mode-btn:hover:not(.active) {
+  border-color: #555;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+/* 👇 SEZIONE GUIDATA */
+.guided-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.guided-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guided-field label {
+  color: #00ffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guided-field select,
+.guided-field textarea {
+  padding: 12px 14px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 2px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.guided-field select:focus,
+.guided-field textarea:focus {
+  border-color: #00ffff;
+  background: rgba(20, 25, 25, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+/* 👇 ANTEPRIMA PROMPT */
+.preview-section {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 255, 255, 0.05);
+  border-radius: 10px;
+  border-left: 4px solid #00ffff;
+}
+
+.preview-section h4 {
+  color: #00ffff;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.preview-box {
+  background: rgba(15, 15, 15, 0.8);
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.1);
 }

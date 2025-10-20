@@ -11,8 +11,10 @@ export class CreditPackageService {
   
   constructor(private http: HttpClient) {}
   
-  getActivePackages(): Observable<CreditPackage[]> {
-    return this.http.get<CreditPackage[]>('/api/credit-packages');
+   private apiUrl = 'http://localhost:8080/api/credit-packages';
+
+   getActivePackages(): Observable<CreditPackage[]> {
+    return this.http.get<CreditPackage[]>(`${this.apiUrl}/active`);
   }
   
   purchasePackage(packageId: number): Observable<any> {

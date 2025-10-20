@@ -1,9 +1,9 @@
 export interface CreditPackage {
-  id: number;
+ id: number;
   name: string;
-  code: string;
+  description: string;
   credits: number;
   price: number;
-  description: string;
-  validityDays: number;
+  active: boolean;
+  stripePriceId?: string;
 }
