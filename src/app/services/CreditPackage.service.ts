@@ -17,7 +17,10 @@ export class CreditPackageService {
     return this.http.get<CreditPackage[]>(`${this.apiUrl}/active`);
   }
   
-  purchasePackage(packageId: number): Observable<any> {
-    return this.http.post(`/api/payments/purchase-package`, { packageId });
+purchasePackage(packageId: number): Observable<any> {
+    // ✅ CORREGGI L'URL - usa create-checkout-session
+    return this.http.post(`http://localhost:8080/api/payments/create-checkout-session`, { 
+      packageId 
+    });
   }
 }

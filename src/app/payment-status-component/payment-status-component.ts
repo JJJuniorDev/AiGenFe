@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { UserStateService } from '../services/UserStateService.service';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../services/AuthService.service';
 
 @Component({
   selector: 'app-payment-status-component',
@@ -17,7 +18,8 @@ export class PaymentStatusComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private toastr: ToastrService,
-    private userStateService: UserStateService
+    private userStateService: UserStateService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -25,6 +27,7 @@ export class PaymentStatusComponent implements OnInit {
     const url = window.location.href;
     if (url.includes('/payment/success')) {
       this.status = 'success';
+       this.handleSuccessfulPayment();
     } else if (url.includes('/payment/cancel')) {
       this.status = 'cancel';
     }
@@ -34,6 +37,24 @@ export class PaymentStatusComponent implements OnInit {
       // Ricarica i dati utente per aggiornare i crediti
       this.userStateService.getUser();
     }
+  }
+
+   // ✅ AGGIUNGI QUESTO METODO
+  private handleSuccessfulPayment() {
+    this.toastr.info('Verifica aggiornamento crediti...');
+    
+    // ✅ FORZA IL RELOAD COMPLETO DELL'UTENTE
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        this.userStateService.setUser(user);
+        this.toastr.success(`Crediti aggiornati! Ora hai ${user.credits} crediti 🎉`);
+        console.log('💰 Credits updated:', user.credits);
+      },
+      error: (error) => {
+        console.error('Errore aggiornamento crediti:', error);
+        this.toastr.info('I crediti potrebbero essere già stati aggiunti. Ricarica la pagina.');
+      }
+    });
   }
 
   goToGenerator() {

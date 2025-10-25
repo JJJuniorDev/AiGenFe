@@ -4,14 +4,14 @@
 <section class="hero-section">
   
   <!-- Header con login/logout -->
-  <div *ngIf="!loggedIn" class="guest-info">
+  <div *ngIf="loggedIn === false" class="guest-info">
     <button class="login-btn" (click)="showAuthOverlay = true">
       <span class="btn-icon">🚀</span>
       Accedi
     </button>
   </div>
 
-  <div *ngIf="loggedIn" class="user-info">
+  <div *ngIf="loggedIn === true" class="user-info">
     <div class="credits-display">
       <span class="credits-icon">🪙</span>
       <span class="credits-count">{{ user?.credits || 0 }} crediti</span>
@@ -22,6 +22,10 @@
       Logout
     </button>
   </div>
+
+  <div *ngIf="loggedIn === null" class="loading-auth">
+  Caricamento...
+</div>
   
   <div class="hero-content">
     <!-- Main Title -->

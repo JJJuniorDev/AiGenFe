@@ -27,7 +27,7 @@ export class LandingPageComponent implements OnInit {
   user: User | null = null;
   email = '';
   password = '';
-  loggedIn = false;
+  loggedIn: boolean | null = null;
   showAuthOverlay = false;
   creditPackages: CreditPackage[] = [];
 

@@ -16,10 +16,13 @@ import { Router } from '@angular/router';
 import { UserStateService } from '../services/UserStateService.service';
 import { Subject, takeUntil } from 'rxjs';
 import { CreditStore } from "../credit-store/credit-store";
+import { TranslationService } from '../services/TranslationService.service';
+import { SocialCraftService } from '../services/SocialCraftService.service';
+import { PostSalvato } from '../model/PostSalvato.model';
 
 @Component({
   selector: 'app-generator',
-  imports: [CommonModule, FormsModule, MatIconModule, CreditStore],
+  imports: [ CommonModule, FormsModule, MatIconModule, CreditStore],
   templateUrl: './generator.html',
   styleUrl: './generator.css'
 })
@@ -30,9 +33,15 @@ export class Generator implements OnInit, OnDestroy{
   inputText = '';
   output?: Testimonial;
   modalOpen = false;
-  selectedKey: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction' = 'socialPost';
-  readonly outputKeys: ('socialPost' | 'headline' | 'shortQuote' | 'callToAction')[] = ['socialPost', 'headline', 'shortQuote', 'callToAction'];
-  
+   // ✅ CORREGGI: Definisci un tipo union esplicito
+  selectedKey: keyof Testimonial = 'socialPostVersions';
+  readonly outputKeys: (keyof Testimonial)[] = [
+    'socialPostVersions', 
+    'headlineVersions', 
+    'shortQuoteVersions', 
+    'callToActionVersions'
+  ];
+
   postTypes = ['testimonial', 'promozionale', 'educativo', 'storia cliente'] as const;
   selectedPostType: 'testimonial' | 'promozionale' | 'educativo' | 'storia cliente' = 'testimonial';
   platform = 'linkedin';
@@ -155,8 +164,17 @@ export class Generator implements OnInit, OnDestroy{
     private avatarService: AvatarService,
     private creditPackageService: CreditPackageService,
     private router: Router,
-    private userStateService: UserStateService
-  ) {}
+    private userStateService: UserStateService,
+    private translationService: TranslationService,
+    private socialCraftService: SocialCraftService
+  ) {
+    // Carica lingua preferita
+    const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
+    if (savedLang) {
+      this.currentLang = savedLang;
+      this.translationService.setLanguage(savedLang);
+    }
+  }
 
   ngOnDestroy() {
      this.destroy$.next();
@@ -241,6 +259,67 @@ private loadUserSpecificData() {
    // METODO GENERATE AGGIORNATO
   generate() {
 
+      // Reset errori
+  this.showBrandError = false;
+  this.showManualWarning = false;
+  this.showTopicError = false;
+  this.showGoalError = false;
+
+  // Validazione 1: Brand
+  if (!this.selectedBrand) {
+    this.showBrandError = true;
+    this.showNotification(
+      '🚫 Seleziona un brand prima di generare il contenuto!', 
+      'error', 
+      5000
+    );
+    return;
+  }
+
+  // Validazione 2: Contenuto in base alla modalità
+  if (this.inputMode === 'manual') {
+    if (!this.inputText || this.inputText.trim().length < 10) {
+      this.showManualWarning = true;
+      this.showNotification(
+        '📝 Inserisci almeno 10 caratteri di descrizione nella modalità manuale', 
+        'warning', 
+        4000
+      );
+      return;
+    }
+  } else if (this.inputMode === 'guided') {
+    // Validazione per modalità guidata
+    if (!this.guidedInput.topic) {
+      this.showTopicError = true;
+      this.showNotification(
+        '🎯 Seleziona un argomento principale', 
+        'warning', 
+        3000
+      );
+      return;
+    }
+    
+    if (!this.guidedInput.goal) {
+      this.showGoalError = true;
+      this.showNotification(
+        '🎯 Seleziona un obiettivo per il post', 
+        'warning', 
+        3000
+      );
+      return;
+    }
+  }
+
+  // Validazione 3: Crediti
+  if (this.user && this.user.credits < 1) {
+    this.showNotification(
+      '💳 Crediti insufficienti! Acquista crediti per generare contenuti.', 
+      'error', 
+      5000
+    );
+    this.openCreditStore();
+    return;
+  }
     // this.user!.credits = oldCredits - 1;
    this.isGenerating = true;
 
@@ -296,7 +375,7 @@ private loadUserSpecificData() {
 }
 
   // Apri modal con la card cliccata
-  openModal(key: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction') {
+  openModal(key: keyof Testimonial) {
     this.selectedKey = key;
     this.modalOpen = true;
   }
@@ -306,22 +385,20 @@ private loadUserSpecificData() {
   }
 
   // Formatta il titolo della card
-  formatTitle(key: 'socialPost' | 'headline' | 'shortQuote' | 'callToAction'): string {
-    return key === 'socialPost' ? 'Social Post'
-         : key === 'headline' ? 'Headline'
-         : key === 'callToAction' ? 'Call to Action'
-         : 'Short Quote';
+  formatTitle(key: keyof Testimonial): string {
+    const titles: { [key in keyof Testimonial]?: string } = {
+      'socialPostVersions': 'Social Post',
+      'headlineVersions': 'Headline', 
+      'shortQuoteVersions': 'Short Quote',
+      'callToActionVersions': 'Call to Action'
+    };
+    return titles[key] || key.toString();
   }
 
   get selectedVersions(): string[] {
-  if (!this.output) return [];
-  switch (this.selectedKey) {
-    case 'socialPost': return this.output.socialPostVersions;
-    case 'headline': return this.output.headlineVersions;
-    case 'shortQuote': return this.output.shortQuoteVersions;
-    case 'callToAction': return this.output.callToActionVersions;
+    if (!this.output) return [];
+    return this.output[this.selectedKey] as string[];
   }
-}
 
 
 
@@ -753,6 +830,48 @@ get generatedPrompt(): string {
   return parts.join(' - ');
 }
 
+currentLang: 'it' | 'en' = 'it';
+
+
+  async toggleLanguage() {
+    const newLang = this.currentLang === 'it' ? 'en' : 'it';
+    this.currentLang = newLang;
+    this.translationService.setLanguage(newLang);
+    
+    // 👇 TRADUCI ANCHE I CONTENUTI GENERATI SE PRESENTI
+    if (this.output && newLang === 'en') {
+      await this.translateExistingContent();
+    }
+  }
+
+  private async translateExistingContent() {
+    if (!this.output) return;
+    
+    // Traduci ogni sezione dell'output
+     const keys: (keyof Testimonial)[] = [
+      'socialPostVersions', 
+      'headlineVersions', 
+      'shortQuoteVersions', 
+      'callToActionVersions'
+    ];
+    for (const key of keys) {
+      const content = this.output[key];
+       if (content && Array.isArray(content)) {
+        // Qui puoi aggiungere la logica di traduzione se vuoi
+        // Per ora lascia il contenuto così com'è
+        console.log(`Contenuto da tradurre per ${key}:`, content);
+      }
+    }
+  }
+
+   // 👇 Se vuoi davvero tradurre i contenuti, aggiungi questo metodo
+  private async translateContentArray(texts: string[]): Promise<string[]> {
+    // Implementa la traduzione qui se necessario
+    // Per ora restituisci i testi originali
+    return texts;
+  }
+
+
 //  loadCreditPackages() {
 //     this.creditPackageService.getActivePackages().subscribe({
 //       next: (packages) => {
@@ -763,4 +882,87 @@ get generatedPrompt(): string {
 //       }
 //     });
 //   }
+
+
+
+// Aggiungi queste proprietà alla classe del componente
+notification: any = null;
+private notificationTimeout: any;
+showBrandError: boolean = false;
+showManualWarning: boolean = false;
+showTopicError: boolean = false;
+showGoalError: boolean = false;
+
+
+// Metodo per mostrare notifiche
+showNotification(message: string, type: 'error' | 'warning' | 'success' = 'error', duration: number = 5000) {
+  this.notification = { message, type };
+  
+  // Auto-dismiss dopo la durata
+  clearTimeout(this.notificationTimeout);
+  this.notificationTimeout = setTimeout(() => {
+    this.dismissNotification();
+  }, duration);
+}
+
+// Metodo per chiudere la notifica
+dismissNotification() {
+  this.notification = null;
+  clearTimeout(this.notificationTimeout);
+}
+
+
+
+ openArchive() {
+  console.log('🔄 Navigazione a archive...');
+  this.router.navigate(['/archive']).then(success => {
+    console.log('✅ Navigazione riuscita:', success);
+  }).catch(error => {
+    console.error('❌ Errore navigazione:', error);
+  });
+}
+
+
+// Metodo helper per mappare le chiavi ai tipi
+getTipoFromKey(key: string): string {
+  const tipoMap: { [key: string]: string } = {
+    'postIdeas': 'social_post',
+    'ctaVariations': 'cta', 
+    'hashtagSuggestions': 'short_quote',
+    'captionOptions': 'headline'
+    // Aggiungi altri mapping secondo le tue esigenze
+  };
+  
+  return tipoMap[key] || key;
+}
+// Metodo per salvare i post
+savePost(contenuto: string, key: string) {
+  const tipo = this.getTipoFromKey(key);
+  
+  const postData: PostSalvato = {
+    contenuto: contenuto,
+    tipo: tipo,
+    piattaforma: this.platform,
+    categoria: this.selectedPostType,
+    brandId: this.selectedBrand?.id,
+    brandName: this.selectedBrand?.brandName,
+     userId: this.user?.id
+  };
+
+  this.socialCraftService.salvaPost(postData).subscribe({
+    next: (response) => {
+      this.showNotification('✅ Contenuto salvato in archivio!', 'success', 2000);
+    },
+    error: (error) => {
+      console.error('Errore salvataggio:', error);
+      this.showNotification('❌ Errore nel salvataggio', 'error', 3000);
+    }
+  });
+}
+
+
+getOutputValue(key: keyof Testimonial): string[] {
+  if (!this.output) return [];
+  return this.output[key] as string[];
+}
 }

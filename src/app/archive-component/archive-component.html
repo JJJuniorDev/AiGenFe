@@ -1,0 +1,89 @@
+<p>archive-component works!</p>
+<!-- archive.component.html -->
+<div class="archive-page">
+  <!-- Header -->
+  <div class="archive-header">
+    <button class="back-btn" (click)="goBack()">
+      ← Torna al Generatore
+    </button>
+    <h1>📁 Archivio Contenuti</h1>
+    <div class="header-stats">
+      <span class="stat">{{ savedPosts.length }} contenuti salvati</span>
+    </div>
+  </div>
+
+  <!-- Filtri e Ricerca -->
+  <div class="archive-controls">
+    <div class="search-box">
+      <input type="text" 
+             [(ngModel)]="searchTerm" 
+             (input)="onSearchChange()"
+             placeholder="🔍 Cerca nei contenuti o per brand...">
+    </div>
+    
+    <div class="category-filters">
+      <div *ngFor="let category of categories" 
+           class="category-filter"
+           [class.active]="selectedCategory === category.id"
+           (click)="onCategoryChange(category.id)">
+        <span class="category-icon">{{ category.icon }}</span>
+        <span class="category-name">{{ category.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenuto -->
+  <div class="archive-content">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Caricamento contenuti...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredPosts.length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>Nessun contenuto trovato</h3>
+      <p *ngIf="selectedCategory !== 'all' || searchTerm">
+        Prova a cambiare filtro o termine di ricerca
+      </p>
+      <p *ngIf="selectedCategory === 'all' && !searchTerm">
+        Non hai ancora salvato nessun contenuto. Torna al generatore per crearne!
+      </p>
+    </div>
+
+    <!-- Grid dei contenuti -->
+    <div *ngIf="!isLoading && filteredPosts.length > 0" class="posts-grid">
+      <div *ngFor="let post of filteredPosts" class="post-card">
+        <div class="post-header">
+          <div class="post-meta">
+            <span class="post-type">
+              {{ getCategoryIcon(post.tipo) }}
+            </span>
+            <span class="post-platform">
+              {{ getPlatformIcon(post.piattaforma) }} {{ post.piattaforma }}
+            </span>
+            <span class="post-date">
+              {{ post.dataSalvataggio | date:'dd/MM/yy HH:mm' }}
+            </span>
+          </div>
+          
+          <div class="post-actions">
+            <button class="btn-copy" (click)="copyToClipboard(post.contenuto)">
+              📋
+            </button>
+            <button class="btn-delete" (click)="deletePost(post.id)">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div class="post-content">
+          {{ post.contenuto }}
+        </div>
+
+        <div *ngIf="post.brandName" class="post-brand">
+          <strong>Brand:</strong> {{ post.brandName }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
