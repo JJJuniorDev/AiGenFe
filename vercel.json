@@ -2,18 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/flotilla-ui/browser/**",
+      "src": "dist/flotilla-ui/browser/**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*\\.(js|css|ico|json))",
+      "src": "/(.*\\.(js|css|ico))",
       "dest": "/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
     },
     {
       "src": "/(.*)",
