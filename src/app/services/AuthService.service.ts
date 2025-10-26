@@ -6,12 +6,13 @@ import { AuthRequest } from '../model/AuthRequest.model';
 import { AuthResponse } from '../model/AuthResponse.model';
 import { User } from '../model/User.model';
 import { UserStateService } from './UserStateService.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = 'http://localhost:8080/api/auth';
+  private baseUrl = `${environment.apiUrl}/auth`;
  private readonly TOKEN_KEY = 'auth_token';
 
   constructor(private http: HttpClient,

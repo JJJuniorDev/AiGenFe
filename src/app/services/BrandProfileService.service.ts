@@ -3,14 +3,14 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { BrandProfile } from "../model/BrandProfile.model";
 import { AuthService } from "./AuthService.service";
+import { environment } from "../../environments/environment";
 
 // brand-profile.service.ts
 @Injectable({
   providedIn: 'root'
 })
 export class BrandProfileService {
-  private apiUrl = 'http://localhost:8080/api/brand-profiles';
-
+  private apiUrl = `${environment.apiUrl}/brand-profiles`;
   constructor(private http: HttpClient
   ) {}
 

@@ -3,13 +3,13 @@ import { PostSalvato } from "../model/PostSalvato.model";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { AuthService } from "./AuthService.service";
 import { Injectable } from "@angular/core";
+import { environment } from "../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocialCraftService {
-  private apiUrl = 'http://localhost:8080/api'; // Modifica con il tuo URL backend
-
+   private apiUrl = environment.apiUrl;
   constructor(
     private http: HttpClient,
     private authService: AuthService

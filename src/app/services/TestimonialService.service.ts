@@ -5,13 +5,13 @@ import { Observable } from 'rxjs';
 import { AuthService } from './AuthService.service';
 import { Testimonial } from '../model/Testimonial.model';
 import { TestimonialRequest } from '../model/TestimonialRequest.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TestimonialService {
-  private baseUrl = 'http://localhost:8080/api/testimonial';
-
+  private baseUrl = `${environment.apiUrl}/testimonial`;
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   generate(testimonial: TestimonialRequest): Observable<Testimonial> {

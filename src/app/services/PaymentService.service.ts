@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface CheckoutRequest {
   packageId: number;
@@ -20,8 +21,7 @@ export interface CheckoutResponse {
 })
 export class PaymentService {
   
-  private apiUrl = 'http://localhost:8080/api/payments';
-
+  private apiUrl = `${environment.apiUrl}/payments`;
   constructor(private http: HttpClient) {}
 
   createCheckoutSession(request: CheckoutRequest): Observable<CheckoutResponse> {
