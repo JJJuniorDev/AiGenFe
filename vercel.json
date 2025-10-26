@@ -1,14 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/flotilla-ui/browser/**/*",
-      "use": "@vercel/static"
-    }
-  ],
+  "buildCommand": "npm run build -- --configuration=production",
+  "outputDirectory": "dist/flotilla-ui/browser",
   "routes": [
     {
-      "src": "/(.*\\.(js|css|ico))",
+      "src": "/(.*\\.(js|css|ico|txt))",
       "dest": "/$1"
     },
     {
