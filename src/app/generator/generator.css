@@ -182,7 +182,7 @@ body {
   min-height: 500px;
   display: flex;
   flex-direction: column;
-  width: 70%; /* 👈 RIDUCI LA LARGHEZZA al 70% */
+  width: 100%; /* 👈 RIDUCI LA LARGHEZZA al 70% */
   max-width: 800px; /* 👈 LARGHEZZA MASSIMA */
   margin: 0 auto; /* 👈 CENTRATURA */
 }
@@ -1382,6 +1382,7 @@ body {
   }
   
   .dashboard {
+    width: 100%;
     grid-template-columns: 1fr;
     gap: 20px;
   }
