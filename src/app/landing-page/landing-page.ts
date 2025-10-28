@@ -92,8 +92,6 @@ export class LandingPageComponent implements OnInit {
         this.authService.saveToken(res.token);
         this.userStateService.setUser(res.user);
       const savedToken = localStorage.getItem('auth_token');
-      console.log('💾 Token salvato in localStorage:', savedToken);
-      console.log('🔍 Contenuto completo localStorage:', {...localStorage})
         this.toastr.success('Login effettuato con successo ✅');
         this.closeAuthOverlay();
         // Reindirizza al generatore dopo il login

@@ -257,14 +257,39 @@
               <span class="param-value">{{ point.value }}%</span>
             </div>
           </div>
-
-          <!-- Generate Button -->
-          <div class="generate-section">
-            <button (click)="generate()" [disabled]="isGenerating">
-              {{ isGenerating ? 'Generando...' : 'Genera' }}
-            </button>
-          </div>
-        </div>
+<!-- ✅ PULSANTE GENERA ATTIVO -->
+<div class="generate-section">
+  <button (click)="generate()" 
+          [disabled]="isGenerating || generationStatus === 'queued'">
+    {{ isGenerating ? 'Generando...' : 'Genera Contenuto' }}
+  </button>
+</div>
+        <!-- ✅ AGGIUNGI QUESTA SEZIONE NEL TEMPLATE -->
+<div *ngIf="generationStatus === 'queued'" class="queue-status">
+  <div class="queue-info">
+    <div class="spinner"></div>
+    <h3>⏳ In coda di elaborazione</h3>
+    <p>Posizione: <strong>#{{ queuePosition }}</strong></p>
+    <p>Tempo stimato: <strong>{{ estimatedWaitTime }} secondi</strong></p>
+    <p class="queue-note">Elaborazione automatica in corso...</p>
+    <button class="btn-cancel" (click)="cancelGeneration()">
+      ❌ Cancella
+    </button>
+  </div>
+</div>
+        <!-- ✅ MODIFICA LO STATO DI CARICAMENTO -->
+<div *ngIf="isGenerating && generationStatus === 'processing'" class="generating-status">
+  <div class="generating-info">
+    <div class="spinner"></div>
+    <h3>🎨 Creazione contenuto in corso...</h3>
+    <p>Stiamo generando il tuo contenuto premium</p>
+    <p class="generating-steps">
+      <span>✓ Analisi contesto</span><br>
+      <span>✓ Generazione approcci</span><br>
+      <span>↻ Ottimizzazione finale</span>
+    </p>
+  </div>
+</div>
 
         <!-- Output Cards -->
         <div *ngIf="output" class="output-cards">

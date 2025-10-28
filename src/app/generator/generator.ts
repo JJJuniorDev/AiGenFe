@@ -187,7 +187,7 @@ export class Generator implements OnInit, OnDestroy{
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.user = user;
-        console.log('👤 Generator - User aggiornato:', user?.email);
+        console.log('👤 Generator - User aggiornato:', user?.credits);
         
         if (user) {
           this.loadUserSpecificData();
@@ -322,7 +322,7 @@ private loadUserSpecificData() {
   }
     // this.user!.credits = oldCredits - 1;
    this.isGenerating = true;
-
+ this.generationStatus = 'processing';
    // Se siamo in modalità guidata, usa il prompt generato automaticamente
   if (this.inputMode === 'guided') {
     this.inputText = this.generatedPrompt;
@@ -356,22 +356,63 @@ private loadUserSpecificData() {
       next: (res) => {
         this.output = res;
         this.isGenerating = false;
+        this.generationStatus = 'completed';
          // ✅ VERIFICA FINALE (in caso di discrepanze di rete)
       this.updateUserCredits();
         this.toastr.success('Contenuto generato con successo 🎉');
       },
      error: (error) => {
        this.isGenerating = false;
-      console.log("USER", this.user)
-      if (error.status === 402) {
-        // ✅ CREDITI ESAURITI - Mostra toast speciale
+       this.generationStatus = 'error';
+        // ✅ GESTIONE ERRORI SPECIFICI
+      if (error.status === 429) {
+        // SERVIZIO OCCUPATO - MOSTRA STATO DI CODA
+        this.generationStatus = 'queued';
+        this.queuePosition = error.error?.queue_position || 1;
+        this.estimatedWaitTime = error.error?.retry_after || 30;
+        
+        this.showNotification(
+          `⏳ Servizio occupato. Posizione in coda: ${this.queuePosition}. ` +
+          `Tempo stimato: ${this.estimatedWaitTime}s`, 
+          'warning', 
+          10000
+        );
+       // ✅ PROVA AUTOMATICA DOPO IL TIMEOUT
+        setTimeout(() => {
+          if (this.generationStatus === 'queued') {
+            this.retryGeneration();
+          }
+        }, this.estimatedWaitTime * 1000);
+        
+      } else if (error.status === 402) {
+        // CREDITI ESAURITI
+        this.generationStatus = 'error';
         this.showNoCreditsWarning();
-        this.updateUserCredits(); // ✅ Aggiorna con valori reali dal server
+        this.updateUserCredits();
       } else {
+        // ALTRI ERRORI
+        this.generationStatus = 'error';
         this.toastr.error('Errore durante la generazione 😢');
       }
     }
   });
+}
+
+
+// ✅ NUOVO: METODO PER RITENTARE AUTOMATICAMENTE
+retryGeneration() {
+  console.log('🔄 Tentativo di generazione automatica...');
+  this.generationStatus = 'processing';
+  this.generate(); // Richiama il metodo generate originale
+}
+
+// ✅ NUOVO: METODO PER CANCELLARE LA CODA
+cancelGeneration() {
+  this.generationStatus = 'idle';
+  this.isGenerating = false;
+  this.queuePosition = 0;
+  this.estimatedWaitTime = 0;
+  this.toastr.info('Generazione cancellata');
 }
 
   // Apri modal con la card cliccata
@@ -687,6 +728,16 @@ updateUserCredits() {
   //     console.error('Errore aggiornamento crediti:', error);
   //   }
   // });
+  //QUI
+  //  this.authService.getCurrentUser().subscribe({
+  //   next: (user) => {
+  //     this.user = user;
+  //     this.userStateService.setUser(user); // Aggiorna anche lo state
+  //   },
+  //   error: (error) => {
+  //     console.error('Errore aggiornamento crediti:', error);
+  //   }
+  // });
 }
 
 // ✅ NUOVO: Metodo per mostrare avviso crediti esauriti
@@ -965,4 +1016,10 @@ getOutputValue(key: keyof Testimonial): string[] {
   if (!this.output) return [];
   return this.output[key] as string[];
 }
+
+
+// ✅ AGGIUNGI QUESTE PROPRIETÀ AL COMPONENTE
+generationStatus: 'idle' | 'queued' | 'processing' | 'completed' | 'error' = 'idle';
+queuePosition: number = 0;
+estimatedWaitTime: number = 0;
 }
