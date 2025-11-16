@@ -360,6 +360,9 @@ private loadUserSpecificData() {
          // ✅ VERIFICA FINALE (in caso di discrepanze di rete)
       this.updateUserCredits();
         this.toastr.success('Contenuto generato con successo 🎉');
+          if (this.user && this.user.credits >= 1) {
+    this.user.credits = this.user.credits - 1;
+  }
       },
      error: (error) => {
        this.isGenerating = false;
@@ -389,6 +392,7 @@ private loadUserSpecificData() {
         this.generationStatus = 'error';
         this.showNoCreditsWarning();
         this.updateUserCredits();
+        this.ngOnInit();
       } else {
         // ALTRI ERRORI
         this.generationStatus = 'error';
@@ -719,6 +723,15 @@ updateBarValue(event: MouseEvent | Touch) {
 
 // ✅ NUOVO: Metodo per aggiornare i crediti utente
 updateUserCredits() {
+   this.authService.getCurrentUser().subscribe({
+    next: (user) => {
+      this.user = user;
+      this.userStateService.setUser(user); // Aggiorna anche lo state
+    },
+    error: (error) => {
+      console.error('Errore aggiornamento crediti:', error);
+    }
+  });
   // this.authService.getCurrentUser().subscribe({
   //   next: (user) => {
   //     this.user = user;

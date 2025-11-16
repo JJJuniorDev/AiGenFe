@@ -30,10 +30,10 @@ private destroy$ = new Subject<void>();
   // Categorie corrispondenti ai tipi di output
   categories = [
     { id: 'all', name: 'Tutti i contenuti', icon: '📁' },
-    { id: 'social_post', name: 'Social Post', icon: '📱' },
+    { id: 'social_post', name: 'socialPostVersions', icon: '📱' },
     { id: 'short_quote', name: 'Short Quote', icon: '💬' },
     { id: 'cta', name: 'Call to Action', icon: '👆' },
-    { id: 'headline', name: 'Headline', icon: '📰' }
+    { id: 'headline', name: 'headlineVersions', icon: '📰' }
   ];
 
   constructor(
