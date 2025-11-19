@@ -9,6 +9,19 @@ export const authInterceptorFn: HttpInterceptorFn = (req: HttpRequest<unknown>, 
  const token = localStorage.getItem(TOKEN_KEY);
  
   if (token) {
+     try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const isExpired = payload.exp * 1000 < Date.now();
+      
+      if (isExpired) {
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+        return throwError(() => new Error('Token scaduto'));
+      }
+    } catch {
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+      return throwError(() => new Error('Token invalido'));
+    }
+    
     const cloned = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`)
     });

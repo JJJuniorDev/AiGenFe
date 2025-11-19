@@ -1117,3 +1117,119 @@ body {
     font-size: 0.9rem;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Verification Message Styles */
+.verification-message {
+  text-align: center;
+  padding: 20px;
+}
+
+.verification-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.verification-message h3 {
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+.verification-message p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.verification-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Verification Banner */
+.verification-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.banner-icon {
+  font-size: 1.5rem;
+}
+
+.banner-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.banner-text strong {
+  font-weight: 600;
+}
+
+.banner-text span {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.banner-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.banner-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.auth-note {
+  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}

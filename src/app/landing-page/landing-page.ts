@@ -30,6 +30,8 @@ export class LandingPageComponent implements OnInit {
   loggedIn: boolean | null = null;
   showAuthOverlay = false;
   creditPackages: CreditPackage[] = [];
+  verificationEmailSent = false;
+showVerificationMessage = false;
 
   constructor(
     private authService: AuthService,
@@ -45,6 +47,15 @@ export class LandingPageComponent implements OnInit {
       this.user = user;
       this.loggedIn = !!user;
       console.log('🏠 LandingPage - User:', user?.email);
+        // Se l'utente è già loggato, reindirizza automaticamente al generator
+    if (this.loggedIn) {
+      this.router.navigate(['/generator']);
+    }
+  });
+
+     // Sottoscrizione allo stato di verifica email
+    this.authService.emailVerificationRequired$.subscribe(required => {
+      this.showVerificationMessage = required;
     });
     
      this.loadInitialUser();
@@ -89,13 +100,22 @@ export class LandingPageComponent implements OnInit {
   login() {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: res => {
+        
         this.authService.saveToken(res.token);
         this.userStateService.setUser(res.user);
       const savedToken = localStorage.getItem('auth_token');
-        this.toastr.success('Login effettuato con successo ✅');
-        this.closeAuthOverlay();
-        // Reindirizza al generatore dopo il login
-        this.router.navigate(['/generator']);
+          if (!res.user.emailVerified) {
+          this.toastr.warning(
+            'Email non verificata. Controlla la tua email per il link di verifica.',
+            'Verifica Richiesta',
+            { timeOut: 8000 }
+          );
+        }
+     else {
+          this.toastr.success('Login effettuato con successo ✅');
+          this.closeAuthOverlay();
+          this.router.navigate(['/generator']);
+        }
       },
       error: () => this.toastr.error('Email o password errate ❌')
     });
@@ -104,9 +124,21 @@ export class LandingPageComponent implements OnInit {
   signup() {
     this.authService.signup({ email: this.email, password: this.password }).subscribe({
       next: res => {
-        this.toastr.info('Registrazione completata! 📧 Controlla la tua mail per confermare.');
+       this.toastr.success(
+          'Registrazione completata! 📧 Controlla la tua email per confermare l\'account.',
+          'Verifica Email Richiesta',
+          { timeOut: 10000 }
+        );
+         this.verificationEmailSent = true;
+        this.closeAuthOverlay();
       },
-      error: () => this.toastr.warning('Email già registrata ⚠️')
+        error: (error) => {
+        if (error.status === 409) {
+          this.toastr.warning('Email già registrata ⚠️');
+        } else {
+          this.toastr.error('Errore durante la registrazione ❌');
+        }
+      }
     });
   }
 
@@ -128,6 +160,17 @@ export class LandingPageComponent implements OnInit {
     } else {
       this.showAuthOverlay = true;
     }
+  }
+
+    resendVerification() {
+    this.authService.resendVerificationEmail(this.email).subscribe({
+      next: () => {
+        this.toastr.info('Email di verifica inviata! Controlla la tua posta.', 'Email Inviata');
+      },
+      error: () => {
+        this.toastr.error('Errore nell\'invio dell\'email di verifica');
+      }
+    });
   }
 
   private loadUserData() {

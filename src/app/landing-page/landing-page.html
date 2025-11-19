@@ -4,14 +4,14 @@
 <section class="hero-section">
   
   <!-- Header con login/logout -->
-  <div *ngIf="loggedIn === false" class="guest-info">
+  <div class="guest-info">
     <button class="login-btn" (click)="showAuthOverlay = true">
       <span class="btn-icon">🚀</span>
       Accedi
     </button>
   </div>
 
-  <div *ngIf="loggedIn === true" class="user-info">
+  <!-- <div *ngIf="loggedIn === true" class="user-info">
     <div class="credits-display">
       <span class="credits-icon">🪙</span>
       <span class="credits-count">{{ user?.credits || 0 }} crediti</span>
@@ -21,7 +21,7 @@
       <span class="btn-icon">👋</span>
       Logout
     </button>
-  </div>
+  </div> -->
 
   <div *ngIf="loggedIn === null" class="loading-auth">
   Caricamento...
@@ -253,6 +253,23 @@
 <div class="auth-overlay" *ngIf="showAuthOverlay && !loggedIn">
   <div class="auth-card">
     <button class="close-overlay" (click)="closeAuthOverlay()">×</button>
+    <!-- Messaggio di verifica email -->
+    <div *ngIf="verificationEmailSent" class="verification-message">
+      <div class="verification-icon">📧</div>
+      <h3>Verifica la tua Email</h3>
+      <p>Ti abbiamo inviato un link di verifica all'indirizzo <strong>{{ email }}</strong></p>
+      <p>Controlla la tua posta e clicca sul link per attivare il tuo account e ricevere 5 crediti gratuiti!</p>
+      <div class="verification-actions">
+        <button class="btn-secondary" (click)="resendVerification()">
+          📨 Re-invia Email
+        </button>
+        <button class="btn-primary" (click)="closeAuthOverlay()">
+          👍 Ho capito
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!verificationEmailSent">
     <h2>Accedi per Generare Contenuti</h2>
 
     <form #authForm="ngForm" novalidate>
@@ -292,5 +309,20 @@
         <button type="button" (click)="signup()" [disabled]="!authForm.valid">Registrati</button>
       </div>
     </form>
+  </div>
+</div>
+</div>
+
+<!-- Banner di verifica email (quando loggato ma non verificato) -->
+<div *ngIf="showVerificationMessage && loggedIn" class="verification-banner">
+  <div class="banner-content">
+    <span class="banner-icon">📧</span>
+    <div class="banner-text">
+      <strong>Verifica la tua email per sbloccare tutti i crediti!</strong>
+      <span>Controlla la tua posta per il link di verifica</span>
+    </div>
+    <button class="banner-btn" (click)="resendVerification()">
+      Re-invia Email
+    </button>
   </div>
 </div>

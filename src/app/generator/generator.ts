@@ -182,6 +182,11 @@ export class Generator implements OnInit, OnDestroy{
   }
 
     ngOnInit() {
+        // ✅ VERIFICA DOPPIA: CLIENT + SERVER
+  if (!this.authService.isLoggedIn()) {
+    this.authService.logout();
+    return;
+  }
     // Sottoscrizione ai cambiamenti dell'user
     this.userStateService.currentUser$
       .pipe(takeUntil(this.destroy$))

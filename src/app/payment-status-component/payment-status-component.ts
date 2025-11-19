@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { UserStateService } from '../services/UserStateService.service';
 import { CommonModule } from '@angular/common';
@@ -7,7 +7,7 @@ import { AuthService } from '../services/AuthService.service';
 
 @Component({
   selector: 'app-payment-status-component',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './payment-status-component.html',
   styleUrl: './payment-status-component.css'
 })

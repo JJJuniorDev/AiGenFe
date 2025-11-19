@@ -5,4 +5,5 @@ export interface User {
   credits: number;
   brandLogoUrl?: string;
   primaryColor?: string;
+  emailVerified: boolean;
 }
