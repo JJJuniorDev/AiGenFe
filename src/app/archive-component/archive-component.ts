@@ -2,9 +2,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SocialCraftService } from '../services/SocialCraftService.service';
-import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { UserStateService } from '../services/UserStateService.service';
 import { User } from '../model/User.model';
 import { AuthService } from '../services/AuthService.service';
@@ -12,8 +11,7 @@ import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-archive',
-  imports: [CommonModule, 
-    FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: 'archive-component.html',
   styleUrls: ['./archive-component.css']
 })
@@ -23,17 +21,22 @@ export class ArchiveComponent implements OnInit {
   selectedCategory: string = 'all';
   searchTerm: string = '';
   isLoading: boolean = false;
-currentUser: User | null= null;
-private destroy$ = new Subject<void>();
+  currentUser: User | null = null;
+  private destroy$ = new Subject<void>();
 
+  // ✅ PAGINAZIONE
+  currentPage: number = 1;
+  pageSize: number = 9; // 3x3 grid
+  totalPages: number = 1;
+  paginatedPosts: any[] = [];
 
-  // Categorie corrispondenti ai tipi di output
+  // Categorie
   categories = [
-    { id: 'all', name: 'Tutti i contenuti', icon: '📁' },
-    { id: 'social_post', name: 'socialPostVersions', icon: '📱' },
-    { id: 'short_quote', name: 'Short Quote', icon: '💬' },
-    { id: 'cta', name: 'Call to Action', icon: '👆' },
-    { id: 'headline', name: 'headlineVersions', icon: '📰' }
+    { id: 'all', name: 'Tutti i contenuti', icon: '📁', color: '#6c757d' },
+    { id: 'socialPostVersions', name: 'Social Posts', icon: '📱', color: '#007bff' },
+    { id: 'headlineVersions', name: 'Headlines', icon: '📰', color: '#28a745' },
+    { id: 'shortQuoteVersions', name: 'Short Quotes', icon: '💬', color: '#ffc107' },
+    { id: 'callToActionVersions', name: 'Call to Action', icon: '👆', color: '#dc3545' }
   ];
 
   constructor(
@@ -50,17 +53,12 @@ private destroy$ = new Subject<void>();
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    console.log('🔴 ArchiveComponent - Componente distrutto, unsubscribe effettuato');
   }
 
-
-   loadCurrentUser() {
-    // 👇 SOTTOSCRIVI ALL'OBSERVABLE DELLO USER STATE
+  loadCurrentUser() {
     this.userStateService.currentUser$.subscribe({
       next: (user) => {
         this.currentUser = user;
-        console.log('👤 Archive - User aggiornato:', user?.email);
-        
         if (user) {
           this.loadSavedPosts();
         } else {
@@ -75,35 +73,23 @@ private destroy$ = new Subject<void>();
   }
 
   private handleNoUser() {
-    console.log('🔒 Nessun utente in Archive, verifica autenticazione...');
-    
-    // Se c'è il token ma non l'user nello state, prova a ricaricare
     if (this.authService.isLoggedIn()) {
-      console.log('🔄 Token presente, ricarico user...');
       this.authService.getCurrentUser().subscribe({
-        next: (user) => {
-          this.userStateService.setUser(user);
-        },
-        error: (error) => {
-          console.error('❌ Errore ricaricamento user:', error);
-          this.redirectToLogin();
-        }
+        next: (user) => this.userStateService.setUser(user),
+        error: () => this.redirectToLogin()
       });
     } else {
       this.redirectToLogin();
     }
   }
 
-   private redirectToLogin() {
-    console.log('🚨 Reindirizzamento a login...');
+  private redirectToLogin() {
     this.router.navigate(['/login']);
   }
 
   loadSavedPosts() {
-     if (!this.currentUser) {
-      console.error('❌ Impossibile caricare posts: utente nullo');
-      return;
-    }
+    if (!this.currentUser) return;
+    
     this.isLoading = true;
     this.socialCraftService.getPostSalvati().subscribe({
       next: (posts) => {
@@ -127,6 +113,60 @@ private destroy$ = new Subject<void>();
       
       return categoryMatch && searchMatch;
     });
+
+    this.updatePagination();
+  }
+
+  // ✅ METODI PAGINAZIONE
+  updatePagination() {
+    this.totalPages = Math.ceil(this.filteredPosts.length / this.pageSize);
+    this.currentPage = 1; // Reset alla prima pagina quando cambia il filtro
+    this.updatePaginatedPosts();
+  }
+
+  updatePaginatedPosts() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedPosts = this.filteredPosts.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedPosts();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedPosts();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedPosts();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   }
 
   onCategoryChange(category: string) {
@@ -140,7 +180,8 @@ private destroy$ = new Subject<void>();
 
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(() => {
-      // Mostra feedback visivo
+      // Potresti aggiungere un toast notification qui
+      console.log('✅ Contenuto copiato!');
     });
   }
 
@@ -167,6 +208,11 @@ private destroy$ = new Subject<void>();
     return category?.icon || '📄';
   }
 
+  getCategoryColor(tipo: string): string {
+    const category = this.categories.find(cat => cat.id === tipo);
+    return category?.color || '#6c757d';
+  }
+
   getPlatformIcon(platform: string): string {
     const platformIcons: { [key: string]: string } = {
       'instagram': '📷',
@@ -177,4 +223,16 @@ private destroy$ = new Subject<void>();
     };
     return platformIcons[platform] || '📱';
   }
+
+  getCategoryCount(categoryId: string): number {
+  if (categoryId === 'all') {
+    return this.savedPosts.length;
+  }
+  return this.savedPosts.filter(post => post.tipo === categoryId).length;
+}
+
+getCategoryName(tipo: string): string {
+  const category = this.categories.find(cat => cat.id === tipo);
+  return category?.name || tipo;
+}
 }

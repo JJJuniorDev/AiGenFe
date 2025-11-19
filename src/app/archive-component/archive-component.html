@@ -1,4 +1,3 @@
-<p>archive-component works!</p>
 <!-- archive.component.html -->
 <div class="archive-page">
   <!-- Header -->
@@ -8,7 +7,9 @@
     </button>
     <h1>📁 Archivio Contenuti</h1>
     <div class="header-stats">
-      <span class="stat">{{ savedPosts.length }} contenuti salvati</span>
+      <span class="stat">
+        {{ filteredPosts.length }} di {{ savedPosts.length }} contenuti
+      </span>
     </div>
   </div>
 
@@ -25,9 +26,15 @@
       <div *ngFor="let category of categories" 
            class="category-filter"
            [class.active]="selectedCategory === category.id"
+           [style.border-color]="category.color"
            (click)="onCategoryChange(category.id)">
-        <span class="category-icon">{{ category.icon }}</span>
+        <span class="category-icon" [style.color]="category.color">
+          {{ category.icon }}
+        </span>
         <span class="category-name">{{ category.name }}</span>
+        <span class="category-count">
+          {{ getCategoryCount(category.id) }}
+        </span>
       </div>
     </div>
   </div>
@@ -51,38 +58,74 @@
     </div>
 
     <!-- Grid dei contenuti -->
-    <div *ngIf="!isLoading && filteredPosts.length > 0" class="posts-grid">
-      <div *ngFor="let post of filteredPosts" class="post-card">
-        <div class="post-header">
-          <div class="post-meta">
-            <span class="post-type">
+    <div *ngIf="!isLoading && filteredPosts.length > 0" class="content-section">
+      <div class="results-info">
+        <span>Mostrando {{ paginatedPosts.length }} di {{ filteredPosts.length }} risultati</span>
+      </div>
+
+      <div class="posts-grid">
+        <div *ngFor="let post of paginatedPosts" class="post-card">
+          <div class="post-header">
+            <div class="post-type-badge" [style.background]="getCategoryColor(post.tipo)">
               {{ getCategoryIcon(post.tipo) }}
-            </span>
-            <span class="post-platform">
-              {{ getPlatformIcon(post.piattaforma) }} {{ post.piattaforma }}
-            </span>
-            <span class="post-date">
-              {{ post.dataSalvataggio | date:'dd/MM/yy HH:mm' }}
-            </span>
+              <span>{{ getCategoryName(post.tipo) }}</span>
+            </div>
+            <div class="post-actions">
+              <button class="btn-copy" 
+                      (click)="copyToClipboard(post.contenuto)"
+                      title="Copia negli appunti">
+                📋
+              </button>
+              <button class="btn-delete" 
+                      (click)="deletePost(post.id)"
+                      title="Elimina contenuto">
+                🗑️
+              </button>
+            </div>
           </div>
-          
-          <div class="post-actions">
-            <button class="btn-copy" (click)="copyToClipboard(post.contenuto)">
-              📋
-            </button>
-            <button class="btn-delete" (click)="deletePost(post.id)">
-              🗑️
-            </button>
+
+          <div class="post-content">
+            {{ post.contenuto }}
+          </div>
+
+          <div class="post-footer">
+            <div class="post-meta">
+              <span class="post-platform">
+                {{ getPlatformIcon(post.piattaforma) }} {{ post.piattaforma }}
+              </span>
+              <span class="post-date">
+                {{ post.dataSalvataggio | date:'dd/MM/yy HH:mm' }}
+              </span>
+            </div>
+            <div *ngIf="post.brandName" class="post-brand">
+              <strong>Brand:</strong> {{ post.brandName }}
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="post-content">
-          {{ post.contenuto }}
+      <!-- Paginazione -->
+      <div *ngIf="totalPages > 1" class="pagination">
+        <button class="pagination-btn" 
+                [disabled]="currentPage === 1"
+                (click)="prevPage()">
+          ‹ Precedente
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let page of getPageNumbers()" 
+                  class="page-btn"
+                  [class.active]="page === currentPage"
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
         </div>
-
-        <div *ngIf="post.brandName" class="post-brand">
-          <strong>Brand:</strong> {{ post.brandName }}
-        </div>
+        
+        <button class="pagination-btn" 
+                [disabled]="currentPage === totalPages"
+                (click)="nextPage()">
+          Successiva ›
+        </button>
       </div>
     </div>
   </div>
