@@ -290,6 +290,8 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+    display: flex;
+  align-items: center;
 }
 
 .dropdown-trigger:hover {
@@ -312,6 +314,7 @@ body {
   border-radius: 6px;
   font-size: 16px;
   color: white;
+  flex-shrink: 0;
 }
 
 .social-icon.linkedin {
@@ -2302,4 +2305,19 @@ select.error {
 .archive-btn:disabled:hover {
   transform: none;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Platform Selector Styles */
+.platform-name {
+  font-weight: 500;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.dropdown-option .platform-name {
+  color: inherit;
+}
+
+.selected-option .platform-name {
+  color: #ffffff;
 }

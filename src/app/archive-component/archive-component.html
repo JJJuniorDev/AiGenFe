@@ -22,6 +22,61 @@
              placeholder="🔍 Cerca nei contenuti o per brand...">
     </div>
     
+     <div class="advanced-filters">
+      <!-- Filtro Brand -->
+      <div class="filter-dropdown">
+        <button class="filter-toggle" 
+                (click)="toggleBrandDropdown()"
+                [class.active]="selectedBrand !== 'all'">
+          <span>🏷️ {{ selectedBrand === 'all' ? 'Tutti i brand' : selectedBrand }}</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu" *ngIf="isBrandDropdownOpen">
+          <div class="dropdown-item" 
+               [class.active]="selectedBrand === 'all'"
+               (click)="onBrandChange('all')">
+            🏷️ Tutti i brand
+          </div>
+          <div *ngFor="let brand of availableBrands" 
+               class="dropdown-item"
+               [class.active]="selectedBrand === brand"
+               (click)="onBrandChange(brand)">
+            {{ brand }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro Piattaforma -->
+      <div class="filter-dropdown">
+        <button class="filter-toggle" 
+                (click)="togglePlatformDropdown()"
+                [class.active]="selectedPlatform !== 'all'">
+          <span>📱 {{ selectedPlatform === 'all' ? 'Tutte le piattaforme' : selectedPlatform }}</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu" *ngIf="isPlatformDropdownOpen">
+          <div class="dropdown-item" 
+               [class.active]="selectedPlatform === 'all'"
+               (click)="onPlatformChange('all')">
+            📱 Tutte le piattaforme
+          </div>
+          <div *ngFor="let platform of availablePlatforms" 
+               class="dropdown-item"
+               [class.active]="selectedPlatform === platform"
+               (click)="onPlatformChange(platform)">
+            {{ getPlatformIcon(platform) }} {{ platform }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Pulsante Reset Filtri -->
+      <button class="clear-filters-btn" 
+              (click)="clearAllFilters()"
+              *ngIf="selectedCategory !== 'all' || selectedBrand !== 'all' || selectedPlatform !== 'all' || searchTerm">
+        ❌ Reset filtri
+      </button>
+    </div>
+    
     <div class="category-filters">
       <div *ngFor="let category of categories" 
            class="category-filter"

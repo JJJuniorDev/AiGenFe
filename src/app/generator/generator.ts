@@ -42,8 +42,8 @@ export class Generator implements OnInit, OnDestroy{
     'callToActionVersions'
   ];
 
-  postTypes = ['testimonial', 'promozionale', 'educativo', 'storia cliente'] as const;
-  selectedPostType: 'testimonial' | 'promozionale' | 'educativo' | 'storia cliente' = 'testimonial';
+  postTypes = ['promozionale', 'testimonial', 'educativo', 'storia cliente'] as const;
+  selectedPostType: 'testimonial' | 'promozionale' | 'educativo' | 'storia cliente' = 'promozionale';
   platform = 'linkedin';
 
   // ✅ BRAND MEMORY (tutto)

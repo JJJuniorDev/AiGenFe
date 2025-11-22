@@ -596,3 +596,118 @@
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #764ba2, #667eea);
 }
+
+/* Filtri Avanzati */
+.advanced-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-toggle {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  min-width: 180px;
+  justify-content: space-between;
+}
+
+.filter-toggle:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
+}
+
+.filter-toggle.active {
+  border-color: #007bff;
+  background: #e7f3ff;
+  font-weight: 600;
+}
+
+.dropdown-arrow {
+  font-size: 0.8em;
+  transition: transform 0.3s ease;
+}
+
+.filter-toggle.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f9fa;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: black;
+}
+
+.dropdown-item:hover {
+  /* background: #f8f9fa; */
+}
+
+.dropdown-item.active {
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.clear-filters-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .advanced-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-toggle {
+    min-width: auto;
+    width: 100%;
+  }
+}

@@ -205,8 +205,8 @@
               <div class="dropdown-trigger" (click)="dropdownOpen = !dropdownOpen">
                 <div class="selected-option">
                   <mat-icon class="social-icon" [class]="platform">{{ getPlatformIcon(platform) }}</mat-icon>
-                  <span>{{ getPlatformName(platform) }}</span>
-                  <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
+                   <span class="platform-name">{{ getPlatformName(platform) }}</span>
+                  <mat-icon class="dropdown-arrow">▼</mat-icon>
                 </div>
               </div>
               <div class="dropdown-menu" *ngIf="dropdownOpen">
@@ -215,7 +215,7 @@
                      (click)="selectPlatform(platformOption.value)"
                      [class.selected]="platform === platformOption.value">
                   <mat-icon class="social-icon" [class]="platformOption.value">{{ platformOption.icon }}</mat-icon>
-                  <span>{{ platformOption.name }}</span>
+                  <span class="platform-name">{{ platformOption.name }}</span>
                 </div>
               </div>
             </div>

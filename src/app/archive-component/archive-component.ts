@@ -8,10 +8,13 @@ import { UserStateService } from '../services/UserStateService.service';
 import { User } from '../model/User.model';
 import { AuthService } from '../services/AuthService.service';
 import { Subject } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../dialog/confirm-dialog-component/confirm-dialog-component';
 
 @Component({
   selector: 'app-archive',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatDialogModule],
   templateUrl: 'archive-component.html',
   styleUrls: ['./archive-component.css']
 })
@@ -23,6 +26,8 @@ export class ArchiveComponent implements OnInit {
   isLoading: boolean = false;
   currentUser: User | null = null;
   private destroy$ = new Subject<void>();
+selectedBrand: string = 'all';
+  selectedPlatform: string = 'all';
 
   // ✅ PAGINAZIONE
   currentPage: number = 1;
@@ -39,11 +44,21 @@ export class ArchiveComponent implements OnInit {
     { id: 'callToActionVersions', name: 'Call to Action', icon: '👆', color: '#dc3545' }
   ];
 
+    // Brand e Piattaforme disponibili
+  availableBrands: string[] = [];
+  availablePlatforms: string[] = [];
+
+  // Filtri aperti/chiusi
+  isBrandDropdownOpen: boolean = false;
+  isPlatformDropdownOpen: boolean = false;
+
   constructor(
     private socialCraftService: SocialCraftService,
     private router: Router,
     private userStateService: UserStateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -94,6 +109,7 @@ export class ArchiveComponent implements OnInit {
     this.socialCraftService.getPostSalvati().subscribe({
       next: (posts) => {
         this.savedPosts = posts;
+         this.extractFiltersData();
         this.filterPosts();
         this.isLoading = false;
       },
@@ -104,17 +120,34 @@ export class ArchiveComponent implements OnInit {
     });
   }
 
+
   filterPosts() {
     this.filteredPosts = this.savedPosts.filter(post => {
       const categoryMatch = this.selectedCategory === 'all' || post.tipo === this.selectedCategory;
+      const brandMatch = this.selectedBrand === 'all' || post.brandName === this.selectedBrand;
+      const platformMatch = this.selectedPlatform === 'all' || post.piattaforma === this.selectedPlatform;
       const searchMatch = !this.searchTerm || 
         post.contenuto.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         post.brandName?.toLowerCase().includes(this.searchTerm.toLowerCase());
       
-      return categoryMatch && searchMatch;
+      return categoryMatch && brandMatch && platformMatch && searchMatch;
     });
 
     this.updatePagination();
+  }
+
+    extractFiltersData() {
+    // Estrai brand unici
+    const brands = this.savedPosts
+      .map(post => post.brandName)
+      .filter((brand): brand is string => !!brand && brand.trim() !== '');
+    this.availableBrands = [...new Set(brands)].sort();
+
+    // Estrai piattaforme uniche
+    const platforms = this.savedPosts
+      .map(post => post.piattaforma)
+      .filter((platform): platform is string => !!platform && platform.trim() !== '');
+    this.availablePlatforms = [...new Set(platforms)].sort();
   }
 
   // ✅ METODI PAGINAZIONE
@@ -178,6 +211,40 @@ export class ArchiveComponent implements OnInit {
     this.filterPosts();
   }
 
+   onBrandChange(brand: string) {
+    this.selectedBrand = brand;
+    this.isBrandDropdownOpen = false;
+    this.filterPosts();
+  }
+
+  onPlatformChange(platform: string) {
+    this.selectedPlatform = platform;
+    this.isPlatformDropdownOpen = false;
+    this.filterPosts();
+  }
+
+   toggleBrandDropdown() {
+    this.isBrandDropdownOpen = !this.isBrandDropdownOpen;
+    if (this.isBrandDropdownOpen) {
+      this.isPlatformDropdownOpen = false;
+    }
+  }
+
+  togglePlatformDropdown() {
+    this.isPlatformDropdownOpen = !this.isPlatformDropdownOpen;
+    if (this.isPlatformDropdownOpen) {
+      this.isBrandDropdownOpen = false;
+    }
+  }
+
+    clearAllFilters() {
+    this.selectedCategory = 'all';
+    this.selectedBrand = 'all';
+    this.selectedPlatform = 'all';
+    this.searchTerm = '';
+    this.filterPosts();
+  }
+
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(() => {
       // Potresti aggiungere un toast notification qui
@@ -186,17 +253,50 @@ export class ArchiveComponent implements OnInit {
   }
 
   deletePost(postId: number) {
-    if (confirm('Sei sicuro di voler eliminare questo contenuto?')) {
-      this.socialCraftService.eliminaPostSalvato(postId).subscribe({
-        next: () => {
-          this.savedPosts = this.savedPosts.filter(post => post.id !== postId);
-          this.filterPosts();
-        },
-        error: (error) => {
-          console.error('Errore nell\'eliminazione:', error);
-        }
-      });
-    }
+      const token = localStorage.getItem('auth_token');
+  console.log('🔐 Token al momento della eliminazione:', token);
+   const dialogData: ConfirmDialogData = {
+      title: 'Conferma Eliminazione',
+      message: 'Sei sicuro di voler eliminare questo contenuto?',
+      confirmText: 'Elimina',
+      cancelText: 'Annulla',
+      type: 'delete'
+    };
+     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      disableClose: true,
+      data: dialogData,
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.confirmDelete(postId);
+      }
+    });
+  }
+
+  private confirmDelete(postId: number) {
+    const token = localStorage.getItem('auth_token');
+    console.log('🔐 Token al momento della eliminazione:', token);
+    
+    this.socialCraftService.eliminaPostSalvato(postId).subscribe({
+      next: () => {
+        this.savedPosts = this.savedPosts.filter(post => post.id !== postId);
+        this.filterPosts();
+        this.toastr.success('Post eliminato con successo.', 'Operazione Completata', {
+          positionClass: 'toast-top-center',
+          timeOut: 3000
+        });
+      },
+      error: (error) => {
+        console.error('Errore nell\'eliminazione:', error);
+        this.toastr.error('Si è verificato un errore durante l\'eliminazione del post.', 'Errore', {
+          positionClass: 'toast-top-center',
+          timeOut: 4000
+        });
+      }
+    });
   }
 
   goBack() {
