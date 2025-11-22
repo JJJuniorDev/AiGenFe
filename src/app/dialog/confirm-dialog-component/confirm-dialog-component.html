@@ -1,0 +1,28 @@
+<div class="confirm-dialog" [class]="data.type">
+  <div class="dialog-header">
+    <h2>{{ getIcon() }} {{ data.title }}</h2>
+  </div>
+  
+  <div class="dialog-content">
+    <p>{{ data.message }}</p>
+    <p *ngIf="data.type === 'delete'" class="warning-text">
+      Questa azione non può essere annullata.
+    </p>
+  </div>
+  
+  <div class="dialog-actions">
+    <button 
+      class="btn-cancel" 
+      mat-button 
+      (click)="onNoClick()">
+      {{ data.cancelText || 'Annulla' }}
+    </button>
+    <button 
+      class="btn-confirm" 
+      mat-button 
+      [class]="data.type" 
+      (click)="onYesClick()">
+      {{ data.confirmText || 'Conferma' }}
+    </button>
+  </div>
+</div>
