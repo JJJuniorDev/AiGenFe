@@ -539,7 +539,10 @@
     <!-- Modal Risultati -->
     <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
-        <button class="close-btn" (click)="closeModal()">×</button>
+        <!-- <button class="close-btn" (click)="closeModal()">×</button> -->
+     <button class="close-btn large-close-btn" (click)="closeModal()" title="Chiudi">
+      ×
+    </button>
         <div class="modal-header">
           <h2>{{ formatTitle(selectedKey) }}</h2>
           <button class="close-btn" (click)="closeModal()">×</button>
