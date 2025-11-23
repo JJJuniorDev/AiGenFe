@@ -145,11 +145,19 @@
                     [class.error]="showBrandError"
                     (click)="openBrandModal()">
               🎨 Seleziona o crea Brand Memory
+               <span class="brand-counter" *ngIf="maxBrands > 0">
+      ({{ currentBrands }}/{{ maxBrands }})
+    </span>
             </button>
             <div *ngIf="selectedBrand" class="selected-brand">
               <strong>Brand selezionato:</strong> {{ selectedBrand!.brandName! }}
               <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
             </div>
+
+              <!-- Indicatore limite -->
+  <div *ngIf="!canCreateMoreBrands" class="limit-warning">
+    ⚠️ Limite brand raggiunto! Upgrade per crearne di più.
+  </div>
             <div *ngIf="showBrandError" class="field-error">
               ⚠️ Seleziona un brand prima di generare
             </div>
@@ -310,7 +318,15 @@
       <div class="modal-content" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="closeBrandModal()">×</button>
         <h2>🎪 Brand & Clienti</h2>
-        
+          <!-- 👇 AGGIUNGI INDICATORE LIMITE -->
+    <div class="brand-limit-header">
+      <span class="limit-text">
+        Brand creati: {{ currentBrands }}/{{ maxBrands }}
+      </span>
+      <div class="limit-bar">
+        <div class="limit-fill" [style.width.%]="(currentBrands / maxBrands) * 100"></div>
+      </div>
+    </div>
         <!-- Lista Brand -->
         <div class="brand-list">
           <div *ngFor="let brand of brandProfiles" 
@@ -352,7 +368,7 @@
         
         <!-- Azioni -->
         <div class="modal-actions">
-          <button class="btn-outline" (click)="openBrandFormModal()">
+          <button class="btn-outline" (click)="openBrandFormModal()"  [disabled]="!canCreateMoreBrands">
             + Crea Nuovo Brand
           </button>
           <button class="btn-primary" 

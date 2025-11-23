@@ -6,4 +6,5 @@ export interface User {
   brandLogoUrl?: string;
   primaryColor?: string;
   emailVerified: boolean;
+  maxBrands: number; 
 }

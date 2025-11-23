@@ -149,7 +149,9 @@ export class Generator implements OnInit, OnDestroy{
   avatarModalOpen = false;
   showAvatarParameters = false;
   filteredAvatars: Avatar[] = [];
-
+  maxBrands: number = 3; // Default
+  currentBrands: number = 0;
+  canCreateMoreBrands: boolean = true;
 
   private destroy$ = new Subject<void>();
   
@@ -205,6 +207,11 @@ export class Generator implements OnInit, OnDestroy{
     this.loadInitialUser();
   }
 
+    // 👇 AGGIUNGI QUESTO METODO
+  updateBrandCreationStatus() {
+    this.canCreateMoreBrands = this.currentBrands < this.maxBrands;
+  }
+
   private loadInitialUser() {
     // 1. Prova a recuperare dallo state
     const cachedUser = this.userStateService.getUser();
@@ -220,6 +227,7 @@ export class Generator implements OnInit, OnDestroy{
       this.authService.getCurrentUser().subscribe({
         next: (user) => {
           this.userStateService.setUser(user);
+          this.maxBrands = user.maxBrands || 3;
         },
         error: (error) => {
           console.error('❌ Errore caricamento user:', error);
@@ -471,6 +479,8 @@ cancelGeneration() {
     this.brandProfileService.getUserBrandProfiles().subscribe({
       next: (profiles) => {
         this.brandProfiles = profiles;
+         this.currentBrands = profiles.length;
+           this.updateBrandCreationStatus(); 
       },
       error: (error) => {
         console.error('Errore caricamento brand profiles:', error);
@@ -496,17 +506,24 @@ cancelGeneration() {
 
   // Apri modale creazione/modifica brand
   openBrandFormModal(brand?: BrandProfile) {
-    if (brand) {
-      // Modifica brand esistente
-      this.editingBrand = brand;
-      this.newBrand = { ...brand };
-    } else {
-      // Crea nuovo brand
-      this.editingBrand = null;
-      this.resetBrandForm();
-    }
-    this.brandFormModalOpen = true;
+      if (!brand && !this.canCreateMoreBrands) {
+        this.toastr.error(
+      `Limite brand raggiunto! Hai ${this.currentBrands} brand su ${this.maxBrands} disponibili.`,
+      'Limite Raggiunto'
+    );
+    return;
   }
+      if (brand) {
+    // Modifica brand esistente
+    this.editingBrand = brand;
+    this.newBrand = { ...brand };
+  } else {
+    // Crea nuovo brand
+    this.editingBrand = null;
+    this.resetBrandForm();
+  }
+  this.brandFormModalOpen = true;
+}
 
   
   // Aggiungi questi metodi
@@ -614,12 +631,17 @@ removeCTA(index: number) {
         } else {
           // Aggiungi alla lista
           this.brandProfiles.push(savedBrand);
+           this.currentBrands = this.brandProfiles.length;
           this.toastr.success('Brand creato con successo!');
         }
         this.closeBrandModal();
       },
-      error: () => {
+      error: (error) => {
+         if (error.message && error.message.includes('Limite brand raggiunto')) {
+        this.toastr.error(error.message, 'Limite Raggiunto');
+      } else {
         this.toastr.error('Errore nel salvataggio del brand');
+      }
       }
     });
   }
