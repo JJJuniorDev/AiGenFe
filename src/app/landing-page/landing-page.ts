@@ -42,6 +42,8 @@ showVerificationMessage = false;
   ) {}
 
   ngOnInit() {
+      // ✅ Controlla se siamo tornati da una verifica email
+    this.checkEmailVerificationReturn();
     // ✅ SOTTOSCRIVI AI CAMBIAMENTI
     this.userStateService.currentUser$.subscribe(user => {
       this.user = user;
@@ -84,6 +86,52 @@ showVerificationMessage = false;
         console.error('Errore caricamento pacchetti:', error);
       }
     });
+  }
+
+  // ✅ NUOVO METODO: Controlla se siamo tornati da una verifica email
+  private checkEmailVerificationReturn() {
+    // Controlla i flag nel localStorage
+    const emailJustVerified = localStorage.getItem('emailJustVerified');
+    const pendingEmailLogin = localStorage.getItem('pendingEmailLogin');
+    
+    if (emailJustVerified === 'true' || pendingEmailLogin === 'true') {
+      console.log('🔄 Ritorno da verifica email - tentativo auto-login');
+      
+      // Pulisci i flag
+      localStorage.removeItem('emailJustVerified');
+      localStorage.removeItem('pendingEmailLogin');
+      
+      // Prova a fare auto-login
+      this.attemptAutoLoginAfterVerification();
+    }
+  }
+
+  // ✅ NUOVO METODO: Tentativo di auto-login dopo verifica
+  private attemptAutoLoginAfterVerification() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // Verifica se il token è ancora valido
+      this.authService.getCurrentUser().subscribe({
+        next: (user) => {
+          this.userStateService.setUser(user);
+          this.toastr.success('Email verificata con successo! ✅');
+          this.showAuthOverlay = false;
+          this.verificationEmailSent = false;
+          
+          // Reindirizza al generator
+          this.router.navigate(['/generator']);
+        },
+        error: () => {
+          // Token non valido, mostra il form di login
+          this.showAuthOverlay = true;
+          this.toastr.info('Email verificata! Ora accedi con le tue credenziali.');
+        }
+      });
+    } else {
+      // Nessun token, mostra il form di login
+      this.showAuthOverlay = true;
+      this.toastr.info('Email verificata! Ora accedi con le tue credenziali.');
+    }
   }
 
   purchaseCredits(creditPackage: CreditPackage) {
@@ -130,7 +178,7 @@ showVerificationMessage = false;
           { timeOut: 10000 }
         );
          this.verificationEmailSent = true;
-        this.closeAuthOverlay();
+       // this.closeAuthOverlay();
       },
         error: (error) => {
         if (error.status === 409) {
@@ -144,6 +192,12 @@ showVerificationMessage = false;
 
   closeAuthOverlay() {
     this.showAuthOverlay = false;
+     this.verificationEmailSent = false;
+    
+    // Se l'utente è loggato, reindirizza
+    if (this.loggedIn) {
+      this.router.navigate(['/generator']);
+    }
   }
 
   logout() {
