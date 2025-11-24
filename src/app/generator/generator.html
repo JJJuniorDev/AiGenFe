@@ -386,18 +386,29 @@
         <button class="close-btn" (click)="closeBrandModal()">×</button>
         <h2>{{ editingBrand ? 'Modifica Brand' : 'Crea Nuovo Brand' }}</h2>
         
+          <div class="brand-creation-tips">
+      <h4>💡 Suggerimenti per un Brand Memory efficace:</h4>
+      <ul>
+        <li>Più dettagli fornisci, più i contenuti saranno personalizzati</li>
+        <li>Usa esempi reali dal tuo business attuale</li>
+        <li>Pensa al linguaggio che usi con i tuoi clienti ideali</li>
+      </ul>
+    </div>
+    
         <form class="brand-form">
           <!-- Nome Brand -->
           <div class="form-group">
             <label>Nome Brand *</label>
-            <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" required>
+            <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" 
+            placeholder="Es: TechInnovate, FashionGuru, GreenLife..." required>
+            <small>Il nome del tuo brand, azienda o progetto</small>
           </div>
 
           <!-- Positioning -->
           <div class="form-group">
             <label>Posizionamento di Mercato</label>
             <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
-                   placeholder="Es: Leader innovativo nel settore tech, Marca accessibile per giovani...">
+                   placeholder="Es: Leader innovativo nel settore tech, Marca accessibile per giovani professionisti, Eccellenza artigianale italiana...">
             <small>Come vuoi che il brand sia percepito nel mercato</small>
           </div>
 
@@ -409,30 +420,37 @@
                 {{ getToneLabel(tone) }}
               </option>
             </select>
+              <small>Il linguaggio che useremo per i tuoi contenuti</small>
           </div>
 
           <!-- Descrizione Brand -->
           <div class="form-group">
             <label>Descrizione Brand</label>
-            <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3"></textarea>
+            <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3" 
+            placeholder="Descrivi la tua attività, mission e valori... Es: 'Siamo un brand di moda sostenibile che crea abiti eco-friendly per persone moderne che cercano stile e consapevolezza ambientale'"></textarea>
+          <small>Chi sei e cosa fai? Questa descrizione aiuta l'AI a capire il tuo business</small>
           </div>
 
           <!-- Target Audience -->
           <div class="form-group">
             <label>Target Audience</label>
             <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience">
+          placeholder="Es: Donne 25-40 anni professioniste, Giovani startup founder, Famiglie con bambini piccoli...">
+        <small>A chi ti rivolgi principalmente?</small>
           </div>
 
           <!-- Valori Brand -->
           <div class="form-group">
             <label>Valori del Brand</label>
-            <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues">
+            <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues"
+              placeholder="Es: Innovazione, Sostenibilità, Qualità, Trasparenza, Community...">
           </div>
 
           <!-- Tagline -->
           <div class="form-group">
             <label>Tagline</label>
-            <input type="text" [(ngModel)]="newBrand.tagline" name="tagline">
+            <input type="text" [(ngModel)]="newBrand.tagline" name="tagline"
+            placeholder="Es: Innovazione che ispira, La moda che rispetta il pianeta, Semplicità è genio...">
           </div>
 
           <!-- Preferred CTAs -->
@@ -440,7 +458,7 @@
             <label>Call-to-Action Preferite</label>
             <div class="input-with-btn">
               <input type="text" [(ngModel)]="tempCTA" name="tempCTA" 
-                     placeholder="Es: Prenota una demo, Scopri di più..." (keyup.enter)="addCTA()">
+                     placeholder="Es: Prenota una demo, Scopri di più, Acquista ora..." (keyup.enter)="addCTA()">
               <button type="button" (click)="addCTA()">+</button>
             </div>
             <div class="tags-list">
@@ -456,7 +474,7 @@
             <label>Parole Chiave Preferite</label>
             <div class="input-with-btn">
               <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
-                     placeholder="Aggiungi parola chiave" (keyup.enter)="addKeyword()">
+                     placeholder="Es: innovazione, design, sostenibilità, qualità, community..." (keyup.enter)="addKeyword()">
               <button type="button" (click)="addKeyword()">+</button>
             </div>
             <div class="tags-list">
@@ -464,6 +482,7 @@
                 {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
               </span>
             </div>
+             <small>Termini che vuoi vengano usati frequentemente nei tuoi contenuti</small>
           </div>
 
           <!-- Parole da Evitare -->
@@ -471,7 +490,7 @@
             <label>Parole da Evitare</label>
             <div class="input-with-btn">
               <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
-                     placeholder="Aggiungi parola da evitare" (keyup.enter)="addAvoidedWord()">
+                     placeholder="Es: costoso, complicato, vecchio, noioso, difficile..." (keyup.enter)="addAvoidedWord()">
               <button type="button" (click)="addAvoidedWord()">+</button>
             </div>
             <div class="tags-list">
@@ -479,6 +498,7 @@
                 {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
               </span>
             </div>
+             <small>Termini che NON vuoi vengano usati nei tuoi contenuti</small>
           </div>
 
           <!-- Hashtag Predefiniti -->
@@ -494,6 +514,7 @@
                 {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
               </span>
             </div>
+             <small>Hashtag che verranno aggiunti ai tuoi post</small>
           </div>
 
           <!-- Azioni Form -->

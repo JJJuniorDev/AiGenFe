@@ -24,7 +24,9 @@
   </div> -->
 
   <div *ngIf="loggedIn === null" class="loading-auth">
-  Caricamento...
+  <div class="loading-spinner"></div>
+   <p>Stiamo risvegliando il sistema...</p>
+  <small>Primo accesso? Potrebbe richiedere qualche secondo ⏳</small>
 </div>
   
   <div class="hero-content">
@@ -253,6 +255,15 @@
 <div class="auth-overlay" *ngIf="showAuthOverlay && !loggedIn">
   <div class="auth-card">
     <button class="close-overlay" (click)="closeAuthOverlay()">×</button>
+      <!-- 👇 AGGIUNGI QUESTA PARTE - Loading durante il risveglio backend -->
+    <div *ngIf="backendWakingUp" class="loading-auth">
+      <div class="loading-spinner"></div>
+      <p>Stiamo risvegliando il sistema...</p>
+      <small>Primo accesso? Potrebbe richiedere qualche secondo ⏳</small>
+    </div>
+
+    <!-- 👇 MODIFICA QUESTA PARTE - Aggiungi *ngIf="!backendWakingUp" -->
+    <div *ngIf="!backendWakingUp">
     <!-- Messaggio di verifica email -->
     <div *ngIf="verificationEmailSent" class="verification-message">
       <div class="verification-icon">📧</div>
@@ -306,9 +317,10 @@
       <!-- Buttons -->
       <div class="buttons">
         <button type="button" (click)="login()" [disabled]="!authForm.valid">Login</button>
-        <button type="button" (click)="signup()" [disabled]="!authForm.valid">Registrati</button>
+        <button type="button" (click)="signup()" [disabled]="!authForm.valid"> {{ backendWakingUp ? 'Sistema in avvio...' : 'Registrati' }}</button>
       </div>
     </form>
+  </div>
   </div>
 </div>
 </div>

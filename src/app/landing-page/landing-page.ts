@@ -32,6 +32,8 @@ export class LandingPageComponent implements OnInit {
   creditPackages: CreditPackage[] = [];
   verificationEmailSent = false;
 showVerificationMessage = false;
+backendWakingUp = false;
+backendReady = false;
 
   constructor(
     private authService: AuthService,
@@ -146,9 +148,10 @@ showVerificationMessage = false;
   }
 
   login() {
+      this.backendWakingUp = true;
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: res => {
-        
+        this.backendWakingUp = false;
         this.authService.saveToken(res.token);
         this.userStateService.setUser(res.user);
       const savedToken = localStorage.getItem('auth_token');
@@ -165,7 +168,11 @@ showVerificationMessage = false;
           this.router.navigate(['/generator']);
         }
       },
-      error: () => this.toastr.error('Email o password errate ❌')
+      error: () =>
+      {
+        this.backendWakingUp = false;
+       this.toastr.error('Email o password errate ❌')
+      }
     });
   }
 
@@ -238,6 +245,7 @@ showVerificationMessage = false;
     //   error: (error) => console.error('Errore caricamento utente:', error)
     // });
   }
+
 }
 
 
