@@ -3,10 +3,11 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 import { routes } from './app.routes';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/AuthService.service';
+import { AnalyticsComponent } from './analytics-component/analytics-component';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, AnalyticsComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
