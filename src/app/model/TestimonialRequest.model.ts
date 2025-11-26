@@ -16,4 +16,5 @@ export interface TestimonialRequest {
     urgency?: number;
     length?: number;
   };
+   language?: string; 
 }

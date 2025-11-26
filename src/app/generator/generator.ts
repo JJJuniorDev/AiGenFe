@@ -42,9 +42,16 @@ export class Generator implements OnInit, OnDestroy{
     'callToActionVersions'
   ];
 
-  postTypes = ['promozionale', 'testimonial', 'educativo', 'storia cliente'] as const;
-  selectedPostType: 'testimonial' | 'promozionale' | 'educativo' | 'storia cliente' = 'promozionale';
-  platform = 'linkedin';
+ postTypes = [
+  { valueIt: 'promozionale', valueEn: 'promotional', displayIt: 'promozionale', displayEn: 'promotional' },
+  { valueIt: 'testimonial', valueEn: 'testimonial', displayIt: 'testimonial', displayEn: 'testimonial' },
+  { valueIt: 'educativo', valueEn: 'educational', displayIt: 'educativo', displayEn: 'educational' },
+  { valueIt: 'storia cliente', valueEn: 'customer_story', displayIt: 'storia cliente', displayEn: 'customer story' }
+] as const;
+
+
+selectedPostType: string = 'promozionale';
+platform = 'linkedin';
 
   // ✅ BRAND MEMORY (tutto)
   brandProfiles: BrandProfile[] = [];
@@ -83,49 +90,39 @@ export class Generator implements OnInit, OnDestroy{
 
   // ✅ CONTROL BARS (tutto)
  // Control Bars
-  colorPoints = [
+   colorPoints = [
     { 
       id: 1, 
-      name: 'Tono Emotivo',
+      name: 'emotion', // 👈 USA CHIAVE DI TRADUZIONE
       color: '#EF4444',
-      x: 20, 
-      y: 80,
       value: 50,
       parameter: 'emotion'
     },
     { 
       id: 2, 
-      name: 'Creatività',
+      name: 'creativity',
       color: '#8B5CF6',
-      x: 40, 
-      y: 30,
       value: 50,
       parameter: 'creativity'
     },
     { 
       id: 3, 
-      name: 'Formalità',
+      name: 'formality',
       color: '#3B82F6',
-      x: 60, 
-      y: 60,
       value: 50,
       parameter: 'formality'
     },
     { 
       id: 4, 
-      name: 'Urgenza',
+      name: 'urgency',
       color: '#F59E0B',
-      x: 70, 
-      y: 20,
       value: 50,
       parameter: 'urgency'
     },
     { 
       id: 5, 
-      name: 'Lunghezza',
+      name: 'length',
       color: '#10B981',
-      x: 85, 
-      y: 70,
       value: 50,
       parameter: 'length'
     }
@@ -157,6 +154,8 @@ export class Generator implements OnInit, OnDestroy{
   
 
   creditStoreModalOpen = false;
+  
+currentLang: 'it' | 'en' = 'it';
 
   constructor(
     private authService: AuthService,
@@ -167,7 +166,7 @@ export class Generator implements OnInit, OnDestroy{
     private creditPackageService: CreditPackageService,
     private router: Router,
     private userStateService: UserStateService,
-    private translationService: TranslationService,
+    public translationService: TranslationService,
     private socialCraftService: SocialCraftService
   ) {
     // Carica lingua preferita
@@ -184,7 +183,7 @@ export class Generator implements OnInit, OnDestroy{
   }
 
     ngOnInit() {
-        // ✅ VERIFICA DOPPIA: CLIENT + SERVER
+       // ✅ VERIFICA DOPPIA: CLIENT + SERVER
   if (!this.authService.isLoggedIn()) {
     this.authService.logout();
     return;
@@ -348,7 +347,7 @@ private loadUserSpecificData() {
     this.testimonialService.generate({
       inputText: this.inputText,
       platform: this.platform,
-      selectedPostType: this.selectedPostType,
+      selectedPostType: this.getPostTypeValue(),
       // Mappa i punti colore ai parametri
       emotion: this.colorPoints.find(p => p.parameter === 'emotion')?.value || 50,
       creativity: this.colorPoints.find(p => p.parameter === 'creativity')?.value || 50,
@@ -363,8 +362,9 @@ private loadUserSpecificData() {
       creativity: this.selectedAvatar.defaultCreativity,
       formality: this.selectedAvatar.defaultFormality,
       urgency: this.selectedAvatar.defaultUrgency,
-      length: this.selectedAvatar.defaultLength
-    } : undefined
+      length: this.selectedAvatar.defaultLength,
+    } : undefined,
+     language: this.currentLang
     }).subscribe({
       next: (res) => {
         this.output = res;
@@ -664,22 +664,63 @@ removeCTA(index: number) {
     }
   }
   // Metodi helper per i toni
-getToneOptions(): string[] {
-  return Object.values(ToneType);
+
+getToneOptions(): { value: string, label: string }[] {
+  const toneOptions = [
+    { value: 'FORMALE_PROFESSIONALE', it: 'Formale Professionale', en: 'Formal Professional' },
+    { value: 'CASUALE_FRIENDLY', it: 'Casuale e Friendly', en: 'Casual and Friendly' },
+    { value: 'ENTUSIASTA_ENERGETICO', it: 'Entusiasta ed Energetico', en: 'Enthusiastic and Energetic' },
+    { value: 'TECNICO_DETTAGLIATO', it: 'Tecnico e Dettagliato', en: 'Technical and Detailed' },
+    { value: 'MOTIVAZIONALE_ISPIRAZIONE', it: 'Motivazionale e Ispirazionale', en: 'Motivational and Inspirational' },
+    { value: 'UMORISMO_SCHERZO', it: 'Umoristico e Scherzoso', en: 'Humorous and Playful' },
+    { value: 'LUSSUOSO_SOFISTICATO', it: 'Lussuoso e Sofisticato', en: 'Luxurious and Sophisticated' },
+    { value: 'EDUCATIVO_INFORMATIVO', it: 'Educativo e Informativo', en: 'Educational and Informative' }
+  ];
+
+  return toneOptions.map(option => ({
+    value: option.value,
+    label: option[this.currentLang]
+  }));
 }
 
 getToneLabel(tone: string): string {
-  const labels: { [key: string]: string } = {
-    'FORMALE_PROFESSIONALE': 'Formale Professionale',
-    'CASUALE_FRIENDLY': 'Casuale e Friendly',
-    'ENTUSIASTA_ENERGETICO': 'Entusiasta ed Energetico',
-    'TECNICO_DETTAGLIATO': 'Tecnico e Dettagliato',
-    'MOTIVAZIONALE_ISPIRAZIONE': 'Motivazionale e Ispirazionale',
-    'UMORISMO_SCHERZO': 'Umoristico e Scherzoso',
-    'LUSSUOSO_SOFISTICATO': 'Lussuoso e Sofisticato',
-    'EDUCATIVO_INFORMATIVO': 'Educativo e Informativo'
+  const labels: { [key: string]: { it: string, en: string } } = {
+    'FORMALE_PROFESSIONALE': { 
+      it: 'Formale Professionale', 
+      en: 'Formal Professional' 
+    },
+    'CASUALE_FRIENDLY': { 
+      it: 'Casuale e Friendly', 
+      en: 'Casual and Friendly' 
+    },
+    'ENTUSIASTA_ENERGETICO': { 
+      it: 'Entusiasta ed Energetico', 
+      en: 'Enthusiastic and Energetic' 
+    },
+    'TECNICO_DETTAGLIATO': { 
+      it: 'Tecnico e Dettagliato', 
+      en: 'Technical and Detailed' 
+    },
+    'MOTIVAZIONALE_ISPIRAZIONE': { 
+      it: 'Motivazionale e Ispirazionale', 
+      en: 'Motivational and Inspirational' 
+    },
+    'UMORISMO_SCHERZO': { 
+      it: 'Umoristico e Scherzoso', 
+      en: 'Humorous and Playful' 
+    },
+    'LUSSUOSO_SOFISTICATO': { 
+      it: 'Lussuoso e Sofisticato', 
+      en: 'Luxurious and Sophisticated' 
+    },
+    'EDUCATIVO_INFORMATIVO': { 
+      it: 'Educativo e Informativo', 
+      en: 'Educational and Informative' 
+    }
   };
-  return labels[tone] || tone;
+  
+  const label = labels[tone];
+  return label ? label[this.currentLang] : tone;
 }
 
 
@@ -873,108 +914,98 @@ switchToGuidedMode() {
   this.inputText = '';
 }
 
-// 👇 GENERA PROMPT AUTOMATICO PER MODALITÀ GUIDATA
-get generatedPrompt(): string {
-  if (this.inputMode === 'manual') {
-    return this.inputText;
-  }
-  
-  const parts = [];
-  
-  if (this.guidedInput.topic) {
-    const topicLabels = {
-      'food': 'sul tema cibo e ricette',
-      'fitness': 'sul tema fitness e salute',
-      'tech': 'sul tema tecnologia e innovazione',
-      'fashion': 'sul tema moda e beauty',
-      'business': 'sul tema business e startup',
-      'travel': 'sul tema viaggi e avventura',
-      'lifestyle': 'sul tema lifestyle',
-      'education': 'sul tema educazione e apprendimento',
-      'entertainment': 'sul tema intrattenimento',
-      'sports': 'sul tema sport',
-      'finance': 'sul tema finanza personale'
-    };
-    parts.push(
-      (this.guidedInput.topic in topicLabels
-        ? topicLabels[this.guidedInput.topic as keyof typeof topicLabels]
-        : this.guidedInput.topic)
-    );
-  }
-  
-  if (this.guidedInput.goal) {
-    const goalLabels = {
-      'awareness': 'con obiettivo aumentare la visibilità del brand',
-      'engagement': 'con obiettivo generare like, commenti e condivisioni',
-      'conversion': 'con obiettivo vendere prodotti o servizi',
-      'leads': 'con obiettivo raccogliere contatti e lead',
-      'community': 'con obiettivo costruire una community fedele',
-      'traffic': 'con obiettivo portare traffico al sito web'
-    };
-    parts.push(goalLabels[this.guidedInput.goal as keyof typeof goalLabels] || this.guidedInput.goal);
-  }
-  
-  if (this.guidedInput.keyMessage) {
-    parts.push(`Dettaglio specifico: ${this.guidedInput.keyMessage}`);
-  }
-  
-  return parts.join(' - ');
-}
-
-currentLang: 'it' | 'en' = 'it';
 
 
-  async toggleLanguage() {
+    // 👇 METODO PER CAMBIARE LINGUA
+  toggleLanguage() {
     const newLang = this.currentLang === 'it' ? 'en' : 'it';
+    
     this.currentLang = newLang;
     this.translationService.setLanguage(newLang);
-    
-    // 👇 TRADUCI ANCHE I CONTENUTI GENERATI SE PRESENTI
-    if (this.output && newLang === 'en') {
-      await this.translateExistingContent();
+  }
+  
+  // 👇 MODIFICA IL GETTER generatedPrompt
+  get generatedPrompt(): string {
+    if (this.inputMode === 'manual') {
+      return this.inputText;
     }
-  }
-
-  private async translateExistingContent() {
-    if (!this.output) return;
     
-    // Traduci ogni sezione dell'output
-     const keys: (keyof Testimonial)[] = [
-      'socialPostVersions', 
-      'headlineVersions', 
-      'shortQuoteVersions', 
-      'callToActionVersions'
-    ];
-    for (const key of keys) {
-      const content = this.output[key];
-       if (content && Array.isArray(content)) {
-        // Qui puoi aggiungere la logica di traduzione se vuoi
-        // Per ora lascia il contenuto così com'è
-        console.log(`Contenuto da tradurre per ${key}:`, content);
-      }
+    const parts = [];
+    
+    if (this.guidedInput.topic) {
+      // Per i topic, usa traduzioni condizionali
+      const topicTranslations: {[key: string]: {it: string, en: string}} = {
+        'food': { it: '🍕 Cibo & Ricette', en: '🍕 Food & Recipes' },
+        'fitness': { it: '💪 Fitness & Salute', en: '💪 Fitness & Health' },
+        'tech': { it: '💻 Tecnologia', en: '💻 Technology' },
+        'fashion': { it: '👗 Moda & Beauty', en: '👗 Fashion & Beauty' },
+        'business': { it: '💼 Business & Startup', en: '💼 Business & Startup' },
+        'travel': { it: '✈️ Viaggi & Avventura', en: '✈️ Travel & Adventure' },
+        'lifestyle': { it: '🏡 Lifestyle', en: '🏡 Lifestyle' },
+        'education': { it: '🎓 Educazione', en: '🎓 Education' },
+        'entertainment': { it: '🎬 Intrattenimento', en: '🎬 Entertainment' },
+        'sports': { it: '⚽ Sport', en: '⚽ Sports' },
+        'finance': { it: '💰 Finanza Personale', en: '💰 Personal Finance' }
+      };
+      
+      const topic = topicTranslations[this.guidedInput.topic];
+      parts.push(topic ? topic[this.currentLang] : this.guidedInput.topic);
     }
+    
+    if (this.guidedInput.goal) {
+      // Per i goal, usa traduzioni condizionali
+      const goalTranslations: {[key: string]: {it: string, en: string}} = {
+        'awareness': { it: '👀 Aumentare visibilità', en: '👀 Increase visibility' },
+        'engagement': { it: '💬 Generare like/commenti', en: '💬 Generate likes/comments' },
+        'conversion': { it: '🛒 Vendere prodotti/servizi', en: '🛒 Sell products/services' },
+        'leads': { it: '📩 Raccolta contatti', en: '📩 Collect contacts' },
+        'community': { it: '👥 Costruire community', en: '👥 Build community' },
+        'traffic': { it: '🌐 Portare traffico al sito', en: '🌐 Drive website traffic' }
+      };
+      
+      const goal = goalTranslations[this.guidedInput.goal];
+      parts.push(goal ? goal[this.currentLang] : this.guidedInput.goal);
+    }
+    
+    if (this.guidedInput.keyMessage) {
+      parts.push(this.currentLang === 'it' 
+        ? `Dettaglio specifico: ${this.guidedInput.keyMessage}`
+        : `Specific detail: ${this.guidedInput.keyMessage}`
+      );
+    }
+    
+    return parts.join(' - ');
   }
 
-   // 👇 Se vuoi davvero tradurre i contenuti, aggiungi questo metodo
-  private async translateContentArray(texts: string[]): Promise<string[]> {
-    // Implementa la traduzione qui se necessario
-    // Per ora restituisci i testi originali
-    return texts;
+ getTranslatedParamName(point: any): string {
+    return this.translationService.translate(point.name);
   }
 
+  getPostTypeOptions(): any[] {
+  return this.postTypes.map(type => ({
+    value: this.currentLang === 'it' ? type.valueIt : type.valueEn,
+    display: this.currentLang === 'it' ? type.displayIt : type.displayEn
+  }));
+}
 
-//  loadCreditPackages() {
-//     this.creditPackageService.getActivePackages().subscribe({
-//       next: (packages) => {
-//         this.creditPackages = packages;
-//       },
-//       error: (error) => {
-//         console.error('Errore caricamento pacchetti:', error);
-//       }
-//     });
-//   }
+  // AGGIUNGI QUESTO METODO PER OTTENERE IL VALORE CORRETTO IN BASE ALLA LINGUA
+getPostTypeValue(): string {
+  const type = this.postTypes.find(p => 
+    this.currentLang === 'it' ? p.valueIt === this.selectedPostType : p.valueEn === this.selectedPostType
+  );
+  
+  if (!type) return this.selectedPostType;
+  
+  return this.currentLang === 'it' ? type.valueIt : type.valueEn;
+}
 
-
+// AGGIUNGI QUESTO METODO PER OTTENERE LA VISUALIZZAZIONE TRADOTTA:
+getTranslatedPostType(postType: string): string {
+  const type = this.postTypes.find(p => 
+    this.currentLang === 'it' ? p.valueIt === postType : p.valueEn === postType
+  );
+  return type ? type[this.currentLang === 'it' ? 'displayIt' : 'displayEn'] : postType;
+}
 
 // Aggiungi queste proprietà alla classe del componente
 notification: any = null;
@@ -1062,4 +1093,26 @@ getOutputValue(key: keyof Testimonial): string[] {
 generationStatus: 'idle' | 'queued' | 'processing' | 'completed' | 'error' = 'idle';
 queuePosition: number = 0;
 estimatedWaitTime: number = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
