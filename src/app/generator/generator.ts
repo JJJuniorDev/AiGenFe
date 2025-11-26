@@ -169,13 +169,8 @@ currentLang: 'it' | 'en' = 'it';
     public translationService: TranslationService,
     private socialCraftService: SocialCraftService
   ) {
-    // Carica lingua preferita
-    const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
-    if (savedLang) {
-      this.currentLang = savedLang;
-      this.translationService.setLanguage(savedLang);
     }
-  }
+  
 
   ngOnDestroy() {
      this.destroy$.next();
@@ -183,6 +178,10 @@ currentLang: 'it' | 'en' = 'it';
   }
 
     ngOnInit() {
+         this.translationService.currentLang$.subscribe(lang => {
+      this.currentLang = lang;
+    });
+      this.currentLang = this.translationService.getCurrentLanguage();
        // ✅ VERIFICA DOPPIA: CLIENT + SERVER
   if (!this.authService.isLoggedIn()) {
     this.authService.logout();

@@ -5,9 +5,13 @@
   
   <!-- Header con login/logout -->
   <div class="guest-info">
+     <button class="language-switch" (click)="toggleLanguage()">
+      {{ currentLang === 'it' ? 'ITALIANO...' : 'ENGLISH...' }}
+      {{ getLanguageButtonText() }}
+    </button>
     <button class="login-btn" (click)="showAuthOverlay = true">
       <span class="btn-icon">🚀</span>
-      Accedi
+      {{ currentLang === 'it' ? 'Accedi' : 'Login' }}
     </button>
   </div>
 
@@ -25,8 +29,8 @@
 
   <div *ngIf="loggedIn === null" class="loading-auth">
   <div class="loading-spinner"></div>
-   <p>Stiamo risvegliando il sistema...</p>
-  <small>Primo accesso? Potrebbe richiedere qualche secondo ⏳</small>
+     <p>{{ currentLang === 'it' ? 'Stiamo risvegliando il sistema...' : 'Waking up the system...' }}</p>
+    <small>{{ currentLang === 'it' ? 'Primo accesso? Potrebbe richiedere qualche secondo ⏳' : 'First access? It might take a few seconds ⏳' }}</small>
 </div>
   
   <div class="hero-content">
@@ -39,48 +43,65 @@
 
     <!-- Tagline -->
     <p class="hero-tagline">
-      Dalla tua idea al contenuto perfetto. 
-      <span class="tagline-highlight">Intelligenza artificiale che comprende il tuo brand.</span>
-    </p>
+      {{ currentLang === 'it' ? 
+        'Dalla tua idea al contenuto perfetto.' : 
+        'From your idea to perfect content.' 
+      }}
+      <span class="tagline-highlight">
+        {{ currentLang === 'it' ? 
+          'Intelligenza artificiale che comprende il tuo brand.' : 
+          'Artificial intelligence that understands your brand.' 
+        }}
+      </span>
+       </p>
 
     <!-- Features Grid -->
     <div class="features-grid">
       <div class="feature-item">
         <div class="feature-icon">🎯</div>
-        <h3>Brand-Conscious</h3>
-        <p>Mantiene coerenza con la voce del tuo marchio in ogni contenuto</p>
-      </div>
+     <h3>{{ currentLang === 'it' ? 'Brand-Conscious' : 'Brand-Conscious' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Mantiene coerenza con la voce del tuo marchio in ogni contenuto' : 
+          'Maintains consistency with your brand voice in every content' 
+        }}</p>
+           </div>
       
-      <div class="feature-item">
+   <div class="feature-item">
         <div class="feature-icon">⚡</div>
-        <h3>Lightning Fast</h3>
-        <p>Genera contenuti di qualità in pochi secondi, non ore</p>
+        <h3>{{ currentLang === 'it' ? 'Lightning Fast' : 'Lightning Fast' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Genera contenuti di qualità in pochi secondi, non ore' : 
+          'Generates quality content in seconds, not hours' 
+        }}</p>
       </div>
       
       <div class="feature-item">
         <div class="feature-icon">🎨</div>
-        <h3>Multi-Platform</h3>
-        <p>Ottimizzato per Instagram, LinkedIn, Twitter e oltre</p>
+        <h3>{{ currentLang === 'it' ? 'Multi-Platform' : 'Multi-Platform' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Ottimizzato per Instagram, LinkedIn, Twitter e oltre' : 
+          'Optimized for Instagram, LinkedIn, Twitter and beyond' 
+        }}</p>
       </div>
     </div>
 
-    <!-- CTA Buttons -->
+      <!-- CTA Buttons -->
     <div class="hero-actions">
       <button class="cta-primary" (click)="startCreating()">
         <span class="btn-icon">🚀</span>
-        Inizia a Creare
+        {{ currentLang === 'it' ? 'Inizia a Creare' : 'Start Creating' }}
       </button>
       <button class="cta-secondary" (click)="showAuthOverlay = true">
         <span class="btn-icon">📽️</span>
-        Vedi Demo
+        {{ currentLang === 'it' ? 'Vedi Demo' : 'See Demo' }}
       </button>
     </div>
 
-    <!-- Stats -->
+      <!-- Stats -->
     <div class="hero-stats">
       <div class="stat-item">
         <div class="stat-number">24/7</div>
-        <div class="stat-label">Disponibilità</div>
+        <div class="stat-label">{{ currentLang === 'it' ? 'Disponibilità' : 'Availability' }}</div>
       </div>
     </div>
   </div>
@@ -91,16 +112,24 @@
   <div class="container">
     <div class="section-header">
       <h2 class="section-title">Brand Memory</h2>
-      <p class="section-subtitle">Non solo AI. La tua identità di marca, ricordata per sempre.</p>
-    </div>
+      <p class="section-subtitle">
+        {{ currentLang === 'it' ? 
+          'Non solo AI. La tua identità di marca, ricordata per sempre.' : 
+          'Not just AI. Your brand identity, remembered forever.' 
+        }}
+      </p>
+     </div>
 
     <div class="brand-features-grid">
       <!-- Feature 1: Multi-Brand -->
       <div class="feature-card">
         <div class="feature-icon">🔄</div>
         <h3>Multi-Brand Management</h3>
-        <p>Gestisci infinite identità di marca con profili separati e switcha istantaneamente tra di esse</p>
-        <div class="feature-demo">
+       <p>{{ currentLang === 'it' ? 
+          'Gestisci infinite identità di marca con profili separati e switcha istantaneamente tra di esse' : 
+          'Manage unlimited brand identities with separate profiles and switch instantly between them' 
+        }}</p>
+            <div class="feature-demo">
           <div class="brand-switcher-demo">
             <div class="brand-pill active">Nike</div>
             <div class="brand-pill">Apple</div>
@@ -111,22 +140,25 @@
       </div>
 
       <!-- Feature 2: Voice & Tone -->
-      <div class="feature-card">
+        <div class="feature-card">
         <div class="feature-icon">🎭</div>
-        <h3>Voice & Tone Consistency</h3>
-        <p>Mantieni coerenza nel tono di voce attraverso tutti i contenuti e le piattaforme</p>
-        <div class="feature-demo">
+        <h3>{{ currentLang === 'it' ? 'Voice & Tone Consistency' : 'Voice & Tone Consistency' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Mantieni coerenza nel tono di voce attraverso tutti i contenuti e le piattaforme' : 
+          'Maintain voice tone consistency across all content and platforms' 
+        }}</p>
+          <div class="feature-demo">
           <div class="tone-selector-demo">
             <div class="tone-option">
-              <span class="tone-name">Professionale</span>
+             <span class="tone-name">{{ currentLang === 'it' ? 'Professionale' : 'Professional' }}</span>
               <div class="tone-bar" style="width: 90%"></div>
             </div>
             <div class="tone-option">
-              <span class="tone-name">Creativo</span>
+                 <span class="tone-name">{{ currentLang === 'it' ? 'Creativo' : 'Creative' }}</span>
               <div class="tone-bar" style="width: 70%"></div>
             </div>
             <div class="tone-option">
-              <span class="tone-name">Amichevole</span>
+                <span class="tone-name">{{ currentLang === 'it' ? 'Amichevole' : 'Friendly' }}</span>
               <div class="tone-bar" style="width: 60%"></div>
             </div>
           </div>
@@ -135,117 +167,129 @@
 
       <!-- Feature 3: Target Audience -->
       <div class="feature-card">
-        <div class="feature-icon">🎯</div>
-        <h3>Target Audience Precision</h3>
-        <p>Definisci il tuo pubblico target e genera contenuti specificamente per loro</p>
+         <div class="feature-icon">🎯</div>
+        <h3>{{ currentLang === 'it' ? 'Target Audience Precision' : 'Target Audience Precision' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Definisci il tuo pubblico target e genera contenuti specificamente per loro' : 
+          'Define your target audience and generate content specifically for them' 
+        }}</p>
         <div class="feature-demo">
           <div class="audience-demo">
-            <div class="audience-tag">Millennials</div>
-            <div class="audience-tag">Professionisti Tech</div>
-            <div class="audience-tag">Imprenditori</div>
+            <div class="audience-tag">{{ currentLang === 'it' ? 'Millennials' : 'Millennials' }}</div>
+            <div class="audience-tag">{{ currentLang === 'it' ? 'Professionisti Tech' : 'Tech Professionals' }}</div>
+            <div class="audience-tag">{{ currentLang === 'it' ? 'Imprenditori' : 'Entrepreneurs' }}</div>
           </div>
         </div>
       </div>
 
-      <!-- Feature 4: Brand Vocabulary -->
+        <!-- Feature 4: Brand Vocabulary -->
       <div class="feature-card">
         <div class="feature-icon">📝</div>
-        <h3>Brand Vocabulary</h3>
-        <p>Parole chiave preferite e termini da evitare per mantenere l'identità linguistica</p>
+        <h3>{{ currentLang === 'it' ? 'Brand Vocabulary' : 'Brand Vocabulary' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Parole chiave preferite e termini da evitare per mantenere l identità linguistica' : 
+          'Preferred keywords and terms to avoid to maintain linguistic identity' 
+        }}</p>
         <div class="feature-demo">
           <div class="vocabulary-demo">
             <div class="words-list preferred">
-              <span class="word-tag">Innovazione</span>
-              <span class="word-tag">Sostenibilità</span>
-              <span class="word-tag">Eccellenza</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Innovazione' : 'Innovation' }}</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Sostenibilità' : 'Sustainability' }}</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Eccellenza' : 'Excellence' }}</span>
             </div>
             <div class="words-list avoided">
-              <span class="word-tag">Costoso</span>
-              <span class="word-tag">Complicato</span>
-              <span class="word-tag">Vecchio</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Costoso' : 'Expensive' }}</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Complicato' : 'Complicated' }}</span>
+              <span class="word-tag">{{ currentLang === 'it' ? 'Vecchio' : 'Old' }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Feature 5: Hashtag Strategy -->
+     <!-- Feature 5: Hashtag Strategy -->
       <div class="feature-card">
         <div class="feature-icon">🏷️</div>
-        <h3>Hashtag Strategy</h3>
-        <p>Hashtag predefiniti e CTAs specifiche per ogni piattaforma e campagna</p>
+        <h3>{{ currentLang === 'it' ? 'Hashtag Strategy' : 'Hashtag Strategy' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Hashtag predefiniti e CTAs specifiche per ogni piattaforma e campagna' : 
+          'Default hashtags and specific CTAs for each platform and campaign' 
+        }}</p>
         <div class="feature-demo">
           <div class="hashtag-demo">
-            <div class="hashtag-tag">#Innovazione</div>
-            <div class="hashtag-tag">#FuturoSostenibile</div>
-            <div class="hashtag-tag">#DesignItaliano</div>
+            <div class="hashtag-tag">#{{ currentLang === 'it' ? 'Innovazione' : 'Innovation' }}</div>
+            <div class="hashtag-tag">#{{ currentLang === 'it' ? 'FuturoSostenibile' : 'SustainableFuture' }}</div>
+            <div class="hashtag-tag">#{{ currentLang === 'it' ? 'DesignItaliano' : 'ItalianDesign' }}</div>
           </div>
         </div>
       </div>
 
-      <!-- Feature 6: Positioning -->
+    <!-- Feature 6: Positioning -->
       <div class="feature-card">
         <div class="feature-icon">📍</div>
-        <h3>Market Positioning</h3>
-        <p>Definisci il posizionamento di mercato e i valori del brand per contenuti allineati</p>
+        <h3>{{ currentLang === 'it' ? 'Market Positioning' : 'Market Positioning' }}</h3>
+        <p>{{ currentLang === 'it' ? 
+          'Definisci il posizionamento di mercato e i valori del brand per contenuti allineati' : 
+          'Define market positioning and brand values for aligned content' 
+        }}</p>
         <div class="feature-demo">
           <div class="positioning-demo">
             <div class="positioning-item">
-              <span class="positioning-label">Posizionamento:</span>
-              <span class="positioning-value">Leader innovativo</span>
+              <span class="positioning-label">{{ currentLang === 'it' ? 'Posizionamento:' : 'Positioning:' }}</span>
+              <span class="positioning-value">{{ currentLang === 'it' ? 'Leader innovativo' : 'Innovative leader' }}</span>
             </div>
             <div class="positioning-item">
-              <span class="positioning-label">Valori:</span>
-              <span class="positioning-value">Qualità, Innovazione, Design</span>
+              <span class="positioning-label">{{ currentLang === 'it' ? 'Valori:' : 'Values:' }}</span>
+              <span class="positioning-value">{{ currentLang === 'it' ? 'Qualità, Innovazione, Design' : 'Quality, Innovation, Design' }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="comparison-section">
+       <div class="comparison-section">
       <div class="comparison-header">
-        <h3>AI Generica vs. Brand Memory</h3>
-        <p>La differenza che conta</p>
+        <h3>{{ currentLang === 'it' ? 'AI Generica vs. Brand Memory' : 'Generic AI vs. Brand Memory' }}</h3>
+        <p>{{ currentLang === 'it' ? 'La differenza che conta' : 'The difference that matters' }}</p>
       </div>
       
-      <div class="comparison-grid">
+       <div class="comparison-grid">
         <div class="comparison-column">
           <div class="column-header generic">
-            <h4>🤖 AI Generica</h4>
-            <p>Prompt manuali ogni volta</p>
+            <h4>🤖 {{ currentLang === 'it' ? 'AI Generica' : 'Generic AI' }}</h4>
+            <p>{{ currentLang === 'it' ? 'Prompt manuali ogni volta' : 'Manual prompts every time' }}</p>
           </div>
           <ul class="feature-list">
-            <li class="negative">❌ Devi ricordare il tono ogni volta</li>
-            <li class="negative">❌ Consistenza brand a rischio</li>
-            <li class="negative">❌ Ripeti le stesse istruzioni</li>
-            <li class="negative">❌ Nessuna memoria del target</li>
-            <li class="negative">❌ Gestione manuale hashtag</li>
+            <li class="negative">❌ {{ currentLang === 'it' ? 'Devi ricordare il tono ogni volta' : 'You have to remember the tone every time' }}</li>
+            <li class="negative">❌ {{ currentLang === 'it' ? 'Consistenza brand a rischio' : 'Brand consistency at risk' }}</li>
+            <li class="negative">❌ {{ currentLang === 'it' ? 'Ripeti le stesse istruzioni' : 'Repeat the same instructions' }}</li>
+            <li class="negative">❌ {{ currentLang === 'it' ? 'Nessuna memoria del target' : 'No target memory' }}</li>
+            <li class="negative">❌ {{ currentLang === 'it' ? 'Gestione manuale hashtag' : 'Manual hashtag management' }}</li>
           </ul>
         </div>
         
         
-        <div class="comparison-column">
+      <div class="comparison-column">
           <div class="column-header brand">
-            <h4>🎨 Brand Memory</h4>
-            <p>Configura una volta, usa per sempre</p>
+            <h4>🎨 {{ currentLang === 'it' ? 'Brand Memory' : 'Brand Memory' }}</h4>
+            <p>{{ currentLang === 'it' ? 'Configura una volta, usa per sempre' : 'Configure once, use forever' }}</p>
           </div>
           <ul class="feature-list">
-            <li class="positive">✅ Tono di voce sempre coerente</li>
-            <li class="positive">✅ Identità brand preservata</li>
-            <li class="positive">✅ Switch tra brand in 1 click</li>
-            <li class="positive">✅ Target audience integrato</li>
-            <li class="positive">✅ Hashtag strategy automatica</li>
+            <li class="positive">✅ {{ currentLang === 'it' ? 'Tono di voce sempre coerente' : 'Always consistent voice tone' }}</li>
+            <li class="positive">✅ {{ currentLang === 'it' ? 'Identità brand preservata' : 'Brand identity preserved' }}</li>
+            <li class="positive">✅ {{ currentLang === 'it' ? 'Switch tra brand in 1 click' : 'Switch between brands in 1 click' }}</li>
+            <li class="positive">✅ {{ currentLang === 'it' ? 'Target audience integrato' : 'Integrated target audience' }}</li>
+            <li class="positive">✅ {{ currentLang === 'it' ? 'Hashtag strategy automatica' : 'Automatic hashtag strategy' }}</li>
           </ul>
         </div>
       </div>
     </div>
 
-    <div class="cta-section">
-      <h3>Pronto a rivoluzionare la tua content strategy?</h3>
-      <p>Crea il tuo primo Brand Memory e sperimenta la differenza</p>
+     <div class="cta-section">
+      <h3>{{ currentLang === 'it' ? 'Pronto a rivoluzionare la tua content strategy?' : 'Ready to revolutionize your content strategy?' }}</h3>
+      <p>{{ currentLang === 'it' ? 'Crea il tuo primo Brand Memory e sperimenta la differenza' : 'Create your first Brand Memory and experience the difference' }}</p>
       <button class="cta-button" (click)="startCreating()">
         <span class="btn-icon">🚀</span>
-        Inizia Ora - Crea il Tuo Brand
+        {{ currentLang === 'it' ? 'Inizia Ora - Crea il Tuo Brand' : 'Start Now - Create Your Brand' }}
       </button>
     </div>
   </div>
@@ -256,32 +300,36 @@
   <div class="auth-card">
     <button class="close-overlay" (click)="closeAuthOverlay()">×</button>
       <!-- 👇 AGGIUNGI QUESTA PARTE - Loading durante il risveglio backend -->
+      <!-- Loading durante il risveglio backend -->
     <div *ngIf="backendWakingUp" class="loading-auth">
       <div class="loading-spinner"></div>
-      <p>Stiamo risvegliando il sistema...</p>
-      <small>Primo accesso? Potrebbe richiedere qualche secondo ⏳</small>
+      <p>{{ currentLang === 'it' ? 'Stiamo risvegliando il sistema...' : 'Waking up the system...' }}</p>
+      <small>{{ currentLang === 'it' ? 'Primo accesso? Potrebbe richiedere qualche secondo ⏳' : 'First access? It might take a few seconds ⏳' }}</small>
     </div>
 
     <!-- 👇 MODIFICA QUESTA PARTE - Aggiungi *ngIf="!backendWakingUp" -->
     <div *ngIf="!backendWakingUp">
-    <!-- Messaggio di verifica email -->
-    <div *ngIf="verificationEmailSent" class="verification-message">
-      <div class="verification-icon">📧</div>
-      <h3>Verifica la tua Email</h3>
-      <p>Ti abbiamo inviato un link di verifica all'indirizzo <strong>{{ email }}</strong></p>
-      <p>Controlla la tua posta e clicca sul link per attivare il tuo account e ricevere 5 crediti gratuiti!</p>
-      <div class="verification-actions">
-        <button class="btn-secondary" (click)="resendVerification()">
-          📨 Re-invia Email
-        </button>
-        <button class="btn-primary" (click)="closeAuthOverlay()">
-          👍 Ho capito
-        </button>
+      <!-- Messaggio di verifica email -->
+      <div *ngIf="verificationEmailSent" class="verification-message">
+        <div class="verification-icon">📧</div>
+        <h3>{{ currentLang === 'it' ? 'Verifica la tua Email' : 'Verify your Email' }}</h3>
+        <p>{{ currentLang === 'it' ? 'Ti abbiamo inviato un link di verifica all indirizzo' : 'We sent a verification link to' }} <strong>{{ email }}</strong></p>
+        <p>{{ currentLang === 'it' ? 
+          'Controlla la tua posta e clicca sul link per attivare il tuo account e ricevere 5 crediti gratuiti!' : 
+          'Check your email and click the link to activate your account and receive 5 free credits!' 
+        }}</p>
+        <div class="verification-actions">
+          <button class="btn-secondary" (click)="resendVerification()">
+            📨 {{ currentLang === 'it' ? 'Re-invia Email' : 'Resend Email' }}
+          </button>
+          <button class="btn-primary" (click)="closeAuthOverlay()">
+            👍 {{ currentLang === 'it' ? 'Ho capito' : 'Got it' }}
+          </button>
+        </div>
       </div>
-    </div>
 
     <div *ngIf="!verificationEmailSent">
-    <h2>Accedi per Generare Contenuti</h2>
+     <h2>{{ currentLang === 'it' ? 'Accedi per Generare Contenuti' : 'Login to Generate Content' }}</h2>
 
     <form #authForm="ngForm" novalidate>
       <!-- Email -->
@@ -295,8 +343,11 @@
           email
         />
         <div *ngIf="authForm.submitted && !authForm.controls['email']?.valid" class="error">
-          ⚠️ Inserisci una email reale (es: <i>nome@gmail.com</i>, <i>john@hotmail.com</i>).
-        </div>
+         ⚠️ {{ currentLang === 'it' ? 
+                'Inserisci una email reale (es: nome@gmail.com, john@hotmail.com).' : 
+                'Enter a real email (ex: name@gmail.com, john@hotmail.com).' 
+              }}
+                 </div>
       </div>
 
       <!-- Password -->
@@ -310,14 +361,17 @@
           minlength="6"
         />
         <div *ngIf="authForm.submitted && !authForm.controls['password']?.valid" class="error">
-          ⚠️ La password deve avere almeno 6 caratteri.
+          ⚠️ {{ currentLang === 'it' ? 
+                'La password deve avere almeno 6 caratteri.' : 
+                'Password must be at least 6 characters.' 
+              }}
         </div>
       </div>
 
       <!-- Buttons -->
       <div class="buttons">
         <button type="button" (click)="login()" [disabled]="!authForm.valid">Login</button>
-        <button type="button" (click)="signup()" [disabled]="!authForm.valid"> {{ backendWakingUp ? 'Sistema in avvio...' : 'Registrati' }}</button>
+        <button type="button" (click)="signup()" [disabled]="!authForm.valid"> {{ backendWakingUp ? 'Sistema in avvio...' : 'Sign up' }}</button>
       </div>
     </form>
   </div>
@@ -330,11 +384,11 @@
   <div class="banner-content">
     <span class="banner-icon">📧</span>
     <div class="banner-text">
-      <strong>Verifica la tua email per sbloccare tutti i crediti!</strong>
-      <span>Controlla la tua posta per il link di verifica</span>
+         <strong>{{ currentLang === 'it' ? 'Verifica la tua email per sbloccare tutti i crediti!' : 'Verify your email to unlock all credits!' }}</strong>
+      <span>{{ currentLang === 'it' ? 'Controlla la tua posta per il link di verifica' : 'Check your email for the verification link' }}</span>
     </div>
     <button class="banner-btn" (click)="resendVerification()">
-      Re-invia Email
+      {{ currentLang === 'it' ? 'Re-invia Email' : 'Resend Email' }}
     </button>
   </div>
 </div>

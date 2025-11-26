@@ -15,6 +15,7 @@ import { CreditPackage } from '../model/CreditPackage.model';
 import { CreditPackageService } from '../services/CreditPackage.service';
 import { Router, RouterModule } from '@angular/router';
 import { UserStateService } from '../services/UserStateService.service';
+import { TranslationService } from '../services/TranslationService.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -34,16 +35,22 @@ export class LandingPageComponent implements OnInit {
 showVerificationMessage = false;
 backendWakingUp = false;
 backendReady = false;
+currentLang: 'it' | 'en' = 'en';
 
   constructor(
     private authService: AuthService,
     private toastr: ToastrService,
     private creditPackageService: CreditPackageService,
     private router: Router,
-    private userStateService: UserStateService
+    private userStateService: UserStateService,
+    public translationService: TranslationService
   ) {}
 
   ngOnInit() {
+      const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
+    const initialLang = savedLang || 'en';
+     this.currentLang = initialLang;
+    this.translationService.setLanguage(initialLang);
       // ✅ Controlla se siamo tornati da una verifica email
     this.checkEmailVerificationReturn();
     // ✅ SOTTOSCRIVI AI CAMBIAMENTI
@@ -245,10 +252,23 @@ backendReady = false;
     //   error: (error) => console.error('Errore caricamento utente:', error)
     // });
   }
+ toggleLanguage() {
+    const newLang = this.currentLang === 'it' ? 'en' : 'it';
+    
+    this.currentLang = newLang;
+    this.translationService.setLanguage(newLang);
+  }
 
+  getLanguageButtonText(): string {
+  if (this.currentLang === 'it') {
+    return 'Cambia in EN';
+  } else {
+    return 'Switch to IT';
+  }
+}
 }
 
-
+ 
 
 
 

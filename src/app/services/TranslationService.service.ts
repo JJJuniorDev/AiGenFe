@@ -1,13 +1,22 @@
 // translation.service.ts
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TranslationService {
-  private currentLang: 'it' | 'en' = 'it';
-  
-  private translations = {
+   private currentLangSubject = new BehaviorSubject<'it' | 'en'>('en');
+  public currentLang$ = this.currentLangSubject.asObservable();
+
+  constructor() {
+    // Inizializza con la lingua salvata o inglese di default
+    const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
+    const initialLang = savedLang || 'en';
+    this.currentLangSubject = new BehaviorSubject(initialLang);
+  }
+
+  private translations: any = {
     it: {
       // Header
       'title': '🎨 SocialCraft Generator',
@@ -157,15 +166,28 @@ export class TranslationService {
   };
 
   translate(key: string): string {
-    const langTranslations = this.translations[this.currentLang] as Record<string, string>;
-    return langTranslations[key] || key;
+    // 👇 CORREGGI: usa this.currentLangSubject.value invece di this.currentLang.next
+    const currentLang = this.currentLangSubject.value;
+    const langTranslations = this.translations[currentLang];
+    
+    // 👇 AGGIUNGI UN FALLBACK SICURO
+    if (langTranslations && key in langTranslations) {
+      return langTranslations[key];
+    }
+    
+    // Fallback: prova l'altra lingua o restituisci la chiave
+    const otherLang = currentLang === 'it' ? 'en' : 'it';
+    const otherTranslations = this.translations[otherLang];
+    
+    return otherTranslations?.[key] || key;
   }
+
   setLanguage(lang: 'it' | 'en') {
-    this.currentLang = lang;
+     this.currentLangSubject.next(lang);
     localStorage.setItem('preferredLanguage', lang);
   }
 
   getCurrentLanguage(): 'it' | 'en' {
-    return this.currentLang;
+      return this.currentLangSubject.value;
   }
 }
