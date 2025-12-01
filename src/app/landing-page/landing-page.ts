@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Testimonial } from '../model/Testimonial.model';
 import { AuthService } from '../services/AuthService.service';
@@ -22,7 +22,8 @@ import { TranslationService } from '../services/TranslationService.service';
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule, RouterModule],
   templateUrl: './landing-page.html',
-  styleUrls: ['./landing-page.css']
+  styleUrls: ['./landing-page.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LandingPageComponent implements OnInit {
   user: User | null = null;
@@ -50,7 +51,7 @@ currentLang: 'it' | 'en' = 'en';
       const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
     const initialLang = savedLang || 'en';
      this.currentLang = initialLang;
-    this.translationService.setLanguage(initialLang);
+   // this.translationService.setLanguage(initialLang);
       // ✅ Controlla se siamo tornati da una verifica email
     this.checkEmailVerificationReturn();
     // ✅ SOTTOSCRIVI AI CAMBIAMENTI

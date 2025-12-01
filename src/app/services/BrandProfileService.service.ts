@@ -31,6 +31,18 @@ export class BrandProfileService {
   
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  analyzeWebsite(websiteUrl: string, language: string): Observable<BrandProfile> {
+  const requestBody = {
+    websiteUrl: websiteUrl,
+    language: language
+  };
+   return this.http.post<BrandProfile>(
+    `${this.apiUrl}/analyze-website`,
+    requestBody
+  );
+}
+
 }
 
 export enum ToneType {

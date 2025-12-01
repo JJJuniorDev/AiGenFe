@@ -1,0 +1,368 @@
+<!-- components/content-assistant/content-assistant.component.html -->
+<div class="content-assistant">
+  <!-- Header -->
+  <div class="assistant-header">
+    <h3>🤖 Assistant Analisi Contenuto</h3>
+    <p>Ottieni feedback immediato sul tuo contenuto</p>
+  </div>
+
+  <!-- Area Input -->
+  <div class="input-section" [class.analyzing]="isAnalyzing">
+    <div class="form-group">
+      <label for="contentInput">Contenuto da analizzare</label>
+      <textarea
+        id="contentInput"
+        [(ngModel)]="content"
+        placeholder="Incolla qui il tuo contenuto (post, email, articolo...)"
+        rows="8"
+        [disabled]="isAnalyzing"
+        (input)="resetAnalysis()">
+      </textarea>
+    </div>
+
+    <div class="analysis-controls">
+      <div class="form-group">
+        <label for="analysisType">Tipo di analisi</label>
+        <select 
+          id="analysisType"
+          [(ngModel)]="selectedAnalysisType"
+          [disabled]="isAnalyzing">
+          <option *ngFor="let type of analysisTypes; trackBy: trackByAnalysisType" 
+                  [value]="type">
+            {{ getAnalysisTypeLabel(type) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Piattaforma</label>
+        <div class="platform-display">
+          <span class="platform-badge">{{ selectedPlatform }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brand Info -->
+    <div *ngIf="selectedBrand" class="brand-info">
+      <strong>Brand:</strong> {{ selectedBrand.brandName }}
+      <span class="tone-badge">{{ selectedBrand.tone }}</span>
+    </div>
+
+    <div *ngIf="!selectedBrand" class="warning">
+      ⚠️ Seleziona un brand per un'analisi personalizzata
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button 
+        class="btn analyze-btn"
+        (click)="analyzeContent()"
+        [disabled]="!content || isAnalyzing || !selectedBrand">
+        <span *ngIf="!isAnalyzing">🔍 Analizza Contenuto</span>
+        <span *ngIf="isAnalyzing" class="analyzing-state">
+          <div class="spinner"></div>
+          Analisi in corso...
+        </span>
+      </button>
+
+      <button 
+        class="btn secondary-btn"
+        (click)="newAnalysis()"
+        [disabled]="isAnalyzing">
+        Nuova Analisi
+      </button>
+
+      <button 
+        class="btn preview-btn"
+        (click)="toggleFinalPreview()"
+        [disabled]="!analysisResult || isAnalyzing">
+        📄 Anteprima Finale
+        <span *ngIf="appliedSuggestions.length > 0" class="suggestion-count">
+          {{ appliedSuggestions.length }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Risultati Analisi -->
+  <div *ngIf="analysisResult && !isAnalyzing" class="results-section">
+    
+    <!-- Quality Score -->
+    <div class="quality-score-card">
+      <div class="score-main">
+        <div 
+          class="score-circle" 
+          [style.background]="getScoreColor(analysisResult.qualityScore)">
+          {{ analysisResult.qualityScore }}/10
+        </div>
+        <div class="score-info">
+          <h4>Qualità Contenuto</h4>
+          <span class="score-text">{{ getScoreText(analysisResult.qualityScore) }}</span>
+          <small>Confidenza: {{ (analysisResult.confidence * 100).toFixed(0) }}%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Punti di Forza -->
+    <div class="result-card strengths">
+      <h4>✅ Punti di Forza</h4>
+      <ul>
+        <li *ngFor="let strength of analysisResult.strengths; trackBy: trackByIndex">
+          {{ strength }}
+        </li>
+        <li *ngIf="analysisResult.strengths.length === 0" class="no-items">
+          Nessun punto di forza identificato
+        </li>
+      </ul>
+    </div>
+
+    <!-- Aree di Miglioramento -->
+    <div class="result-card improvements">
+      <h4>🎯 Aree di Miglioramento</h4>
+      <ul>
+        <li *ngFor="let improvement of analysisResult.improvements; trackBy: trackByIndex">
+          {{ improvement }}
+        </li>
+        <li *ngIf="analysisResult.improvements.length === 0" class="no-items">
+          Nessun miglioramento necessario
+        </li>
+      </ul>
+    </div>
+
+    <!-- Suggerimenti Specifici -->
+    <div *ngIf="analysisResult.suggestions.length > 0" class="result-card suggestions">
+      <h4>💡 Suggerimenti di Ottimizzazione</h4>
+      <p class="section-description">Analisi basata su: <strong>{{ getAnalysisTypeLabel(selectedAnalysisType) }}</strong></p>
+      
+      <div class="suggestions-list">
+        <div *ngFor="let suggestion of analysisResult.suggestions; trackBy: trackBySuggestion" 
+             class="suggestion-item">
+          
+          <div class="suggestion-header">
+            <div class="suggestion-type-info">
+              <span class="suggestion-type">{{ getSuggestionTypeLabel(suggestion.type) }}</span>
+              <span class="suggestion-impact" [class]="getImpactClass(suggestion.type)">
+                {{ getImpactText(suggestion.type) }}
+              </span>
+            </div>
+            <button 
+              class="btn apply-btn"
+              (click)="applySuggestion(suggestion)">
+              Applica Miglioramento
+            </button>
+          </div>
+
+          <!-- VERSIONE MIGLIORATA: HIGHLIGHT DELLE DIFFERENZE -->
+          <div *ngIf="suggestion.current && suggestion.current.trim()" 
+               class="suggestion-comparison-enhanced">
+            
+            <div class="comparison-row">
+              <div class="version-label">
+                <span class="version-badge current-badge">
+                  <span class="badge-dot"></span>
+                  Versione attuale
+                </span>
+                <span class="char-count">{{ suggestion.current.length }} caratteri</span>
+              </div>
+              
+              <div class="version-label">
+                <span class="version-badge suggested-badge">
+                  <span class="badge-dot"></span>
+                  Versione migliorata
+                </span>
+                <span class="char-count">{{ suggestion.suggested.length }} caratteri</span>
+              </div>
+            </div>
+
+            <div class="text-comparison-container">
+              <!-- Testo attuale -->
+              <div class="text-version current-version">
+                <div class="text-content highlight-removals">
+                  {{ suggestion.current }}
+                </div>
+                <div class="text-legend">
+                  <span class="legend-item removal">
+                    <span class="legend-color removal-color"></span>
+                    Testo da migliorare
+                  </span>
+                </div>
+              </div>
+
+              <!-- Testo migliorato -->
+              <div class="text-version suggested-version">
+                <div class="text-content highlight-additions">
+                  {{ suggestion.suggested }}
+                </div>
+                <div class="text-legend">
+                  <span class="legend-item addition">
+                    <span class="legend-color addition-color"></span>
+                    Versione ottimizzata
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Riepilogo modifiche -->
+            <div class="changes-summary">
+              <h5>📊 Riepilogo modifiche:</h5>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Parole modificate:</span>
+                  <span class="summary-value">{{ countWordChanges(suggestion.current, suggestion.suggested) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Caratteri:</span>
+                  <span class="summary-value">{{ suggestion.suggested.length - suggestion.current.length >= 0 ? '+' : '' }}{{ suggestion.suggested.length - suggestion.current.length }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Tono:</span>
+                  <span class="summary-value">{{ detectToneChange(suggestion) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SE È UN NUOVO ELEMENTO DA AGGIUNGERE -->
+          <div *ngIf="!suggestion.current || !suggestion.current.trim()" class="suggestion-addition">
+            <label>Aggiunta consigliata:</label>
+            <div class="text-box addition">
+              <div class="text-content">{{ suggestion.suggested }}</div>
+              <div class="addition-info">
+                <span class="addition-icon">➕</span>
+                <span class="addition-text">Nuovo elemento da inserire</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Motivo e Benefici -->
+          <div class="suggestion-reason">
+            <div class="reason-header">
+              <strong>Perché questo miglioramento?</strong>
+              <span class="reason-category">{{ getReasonCategory(suggestion.reason) }}</span>
+            </div>
+            <p>{{ suggestion.reason }}</p>
+            <div class="reason-benefits">
+              <span class="benefit-tag" *ngFor="let benefit of getSuggestionBenefits(suggestion.type)">
+                {{ benefit }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consigli Piattaforma -->
+    <div *ngIf="analysisResult.platformTips.length > 0" class="result-card platform-tips">
+      <h4>📱 Consigli per {{ selectedPlatform }}</h4>
+      <ul>
+        <li *ngFor="let tip of analysisResult.platformTips; trackBy: trackByIndex">
+          {{ tip }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 🔥 ANTEPRIMA POST OTTIMIZZATO FINALE -->
+  <div *ngIf="showFinalPreview && optimizedContent" class="final-preview-section">
+    <div class="preview-header">
+      <h4>📄 Post Ottimizzato Finale</h4>
+      <div class="preview-actions">
+        <button class="btn copy-btn" (click)="copyToClipboard()">
+          📋 Copia Testo
+        </button>
+        <button class="btn close-btn" (click)="toggleFinalPreview()">
+          ✕ Chiudi
+        </button>
+      </div>
+    </div>
+
+    <div class="preview-stats">
+      <div class="stat-item">
+        <span class="stat-label">Suggerimenti applicati:</span>
+        <span class="stat-value">{{ appliedSuggestions.length }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Qualità iniziale:</span>
+        <span class="stat-value">{{ analysisResult?.qualityScore }}/10</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Qualità stimata:</span>
+        <span class="stat-value">{{ estimatedOptimizedScore }}/10</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Lunghezza:</span>
+        <span class="stat-value">{{ optimizedContent.length }} caratteri</span>
+      </div>
+    </div>
+
+    <!-- Visualizzazione tipo piattaforma -->
+    <div class="platform-preview">
+      <div class="platform-header">
+        <div class="platform-user-info">
+          <strong>{{ selectedBrand?.brandName }}</strong>
+          <small>{{ getPlatformDisplayInfo() }}</small>
+        </div>
+      </div>
+
+      <div class="preview-content">
+        <div class="content-text">
+          {{ optimizedContent }}
+        </div>
+        
+        <!-- Preview hashtag -->
+        <div class="content-hashtags" *ngIf="extractHashtags(optimizedContent).length > 0">
+          <span *ngFor="let tag of extractHashtags(optimizedContent)" class="hashtag">
+            {{ tag }}
+          </span>
+        </div>
+
+        <!-- Preview engagement -->
+        <div class="content-engagement">
+          <div class="engagement-stats">
+            <span>👍 {{ getRandomEngagement() }}</span>
+            <span>💬 {{ getRandomEngagement() }}</span>
+            <span>🔄 {{ getRandomEngagement() }}</span>
+            <span>📈 +{{ getRandomPercentage() }}% engagement stimato</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modifiche applicate -->
+    <div class="applied-changes">
+      <h5>📝 Modifiche applicate:</h5>
+      <div class="changes-list">
+        <div *ngFor="let change of appliedSuggestions; trackBy: trackByIndex" 
+             class="change-item">
+          <div class="change-type-icon">
+            <span [innerHTML]="getChangeIcon(change.type)"></span>
+          </div>
+          <div class="change-details">
+            <div class="change-description">{{ getChangeDescription(change) }}</div>
+            <div class="change-impact" [class]="getImpactClass(change.type)">
+              {{ getImpactText(change.type) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Azioni finali -->
+    <div class="final-actions">
+      <button class="btn primary-btn" (click)="applyAllOptimizations()">
+        ✅ Applica tutte le modifiche
+      </button>
+      <button class="btn secondary-btn" (click)="revertAllChanges()">
+        ↩️ Ripristina originale
+      </button>
+      <button class="btn export-btn" (click)="exportToPlatform()">
+        🚀 Esporta su {{ selectedPlatform }}
+      </button>
+    </div>
+  </div>
+</div>

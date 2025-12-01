@@ -1,7 +1,7 @@
-<!-- generator.html - VERSIONE COMPLETA CON TRADUZIONI -->
-
+yy
+ 
 <div class="generator-page">
-  <!-- Notification Banner Integrato -->
+ 
   <div *ngIf="notification" 
        class="notification-banner"
        [class]="notification.type"
@@ -17,8 +17,7 @@
   </div>
 
   <div class="generator-container">
-    
-    <!-- Header Generator -->
+   
     <div class="generator-header">
       <div class="header-left">
         <h1>{{ translationService.translate('title') }}</h1>
@@ -27,7 +26,7 @@
       
       <div class="header-right">
         <div class="user-info">
-          <!-- 👇 SWITCH LINGUA -->
+      
           <button class="language-switch" (click)="toggleLanguage()">
             {{ currentLang === 'it' ? '🇮🇹' : '🇺🇸' }}
             {{ currentLang === 'it' ? 'IT' : 'EN' }}
@@ -56,13 +55,19 @@
       </div>
     </div>
 
-    <!-- Area Generazione -->
+   
     <div class="dashboard-container">
       <div class="dashboard">
         <div class="generate-card">
           <h3>{{ translationService.translate('generateContent') }}</h3>
           
-          <!-- 👇 SELEZIONE MODALITÀ -->
+         <button class="assistant-btn" (click)="openContentAssistant(this.contentToOptimize)">
+  <span class="assistant-icon">🤖</span>
+  <span class="assistant-text">Content Assistant</span>
+  <span class="assistant-badge">NEW</span>
+</button>
+
+      
           <div class="mode-selector">
             <button class="mode-btn" 
                     [class.active]="inputMode === 'manual'"
@@ -76,7 +81,7 @@
             </button>
           </div>
           
-          <!-- 👇 MODALITÀ MANUALE -->
+     
           <div *ngIf="inputMode === 'manual'" class="manual-section">
             <textarea [(ngModel)]="inputText" 
                       [placeholder]="translationService.translate('manualPlaceholder')" 
@@ -86,12 +91,12 @@
             </div>
           </div>
           
-          <!-- 👇 MODALITÀ GUIDATA -->
+       
           <div *ngIf="inputMode === 'guided'" class="guided-section">
-            <!-- Settore/Argomento -->
+          
             <div class="guided-field">
               <label>{{ currentLang === 'it' ? '🏷️ Argomento Principale *' : '🏷️ Main Topic *' }}</label>
-              <select [(ngModel)]="guidedInput.topic" [class.error]="showTopicError">
+              <select [(ngModel)]="guidedInput.topic" [class.error]="showTopicError" >
                 <option value="">{{ currentLang === 'it' ? 'Seleziona un argomento (obbligatorio)' : 'Select a topic (required)' }}</option>
                 <option value="food">{{ currentLang === 'it' ? '🍕 Cibo & Ricette' : '🍕 Food & Recipes' }}</option>
                 <option value="fitness">{{ currentLang === 'it' ? '💪 Fitness & Salute' : '💪 Fitness & Health' }}</option>
@@ -110,10 +115,10 @@
               </div>
             </div>
 
-            <!-- Obiettivo -->
+        
             <div class="guided-field">
               <label>{{ currentLang === 'it' ? '🎯 Obiettivo del Post *' : '🎯 Post Goal *' }}</label>
-              <select [(ngModel)]="guidedInput.goal" [class.error]="showGoalError">
+              <select [(ngModel)]="guidedInput.goal" [class.error]="showGoalError" >
                 <option value="">{{ currentLang === 'it' ? 'Seleziona un obiettivo (obbligatorio)' : 'Select a goal (required)' }}</option>
                 <option value="awareness">{{ currentLang === 'it' ? '👀 Aumentare visibilità' : '👀 Increase visibility' }}</option>
                 <option value="engagement">{{ currentLang === 'it' ? '💬 Generare like/commenti' : '💬 Generate likes/comments' }}</option>
@@ -127,7 +132,7 @@
               </div>
             </div>
 
-            <!-- Messaggio Specifico -->
+      
             <div class="guided-field">
               <label>{{ currentLang === 'it' ? '💡 Dettagli specifici (opzionale)' : '💡 Specific details (optional)' }}</label>
               <textarea [(ngModel)]="guidedInput.keyMessage" 
@@ -135,7 +140,7 @@
                         rows="2"></textarea>
             </div>
             
-            <!-- Anteprima Input Generato -->
+       
             <div *ngIf="generatedPrompt" class="preview-section">
               <h4>{{ currentLang === 'it' ? '📋 Questo è ciò che verrà generato:' : '📋 This is what will be generated:' }}</h4>
               <div class="preview-box">
@@ -144,7 +149,7 @@
             </div>
           </div>
 
-          <!-- Brand Section -->
+      
           <div class="brand-section">
             <button class="brand-manager-btn" 
                     [class.error]="showBrandError"
@@ -159,7 +164,7 @@
               <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
             </div>
 
-            <!-- Indicatore limite -->
+          
             <div *ngIf="!canCreateMoreBrands" class="limit-warning">
               ⚠️ {{ currentLang === 'it' ? 'Limite brand raggiunto! Upgrade per crearne di più.' : 'Brand limit reached! Upgrade to create more.' }}
             </div>
@@ -168,7 +173,7 @@
             </div>
           </div>
 
-          <!-- Platform Selector -->
+         
           <div class="platform-selector">
             <label>{{ translationService.translate('platform') }}</label>
             <div class="custom-dropdown" [class.open]="dropdownOpen">
@@ -191,17 +196,18 @@
             </div>
           </div>
 
-          <!-- Post Type -->
+          <!-- <label>{{ translationService.translate('postType') }}</label> -->
+          
           <div class="controls">
-            <label>{{ translationService.translate('postType') }}</label>
+          
             <select id="postType" [(ngModel)]="selectedPostType">
-               <option *ngFor="let type of getPostTypeOptions()" [value]="type.value">
+               <option *ngFor="let type of postTypeOptions" [value]="type.value">
      {{ type.display }}
     </option>
    </select>
           </div>
 
-          <!-- Control Bars -->
+       
           <div class="histogram-container">
             <h4>{{ translationService.translate('controlBars') }}</h4>
             <div class="bars-wrapper">
@@ -221,7 +227,7 @@
             </div>
           </div>
 
-          <!-- Legenda parametri -->
+       
           <div class="parameters-preview">
             <div *ngFor="let point of colorPoints" class="param-item">
               <div class="param-color" [style.background]="point.color"></div>
@@ -230,7 +236,7 @@
             </div>
           </div>
 
-          <!-- Pulsante Genera -->
+       
           <div class="generate-section">
             <button (click)="generate()" 
                     [disabled]="isGenerating || generationStatus === 'queued'">
@@ -238,7 +244,7 @@
             </button>
           </div>
 
-          <!-- Stato di Coda -->
+       
           <div *ngIf="generationStatus === 'queued'" class="queue-status">
             <div class="queue-info">
               <div class="spinner"></div>
@@ -252,7 +258,6 @@
             </div>
           </div>
 
-          <!-- Stato di Generazione -->
           <div *ngIf="isGenerating && generationStatus === 'processing'" class="generating-status">
             <div class="generating-info">
               <div class="spinner"></div>
@@ -266,13 +271,21 @@
             </div>
           </div>
 
-          <!-- Output Cards -->
+      
           <div *ngIf="output" class="output-cards">
             <div class="card" 
                  *ngFor="let key of outputKeys" 
                  (click)="openModal(key)">
-              <h4>{{ translationService.translate( key) }}</h4>
-              <p>{{ getOutputValue(key) }}</p>
+           <div class="card-header">
+      <h4>{{ translationService.translate(key) }}</h4>
+      <div class="card-actions">
+        <button class="btn-optimize" 
+                (click)="optimizeContent(getOutputValue(key)[0], key); $event.stopPropagation()">
+          🚀 Ottimizza
+        </button>
+    </div>
+    </div>
+              <p>{{ getOutputValue(key).join(', ') }}</p>
               <div class="view-more">{{ translationService.translate('viewResults') }}</div>
             </div>
           </div>
@@ -280,8 +293,7 @@
       </div>
     </div>
 
-    <!-- Modali Brand -->
-    <!-- Modale Selezione Brand -->
+   
     <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="closeBrandModal()">×</button>
@@ -296,7 +308,7 @@
           </div>
         </div>
         
-        <!-- Lista Brand -->
+     
         <div class="brand-list">
           <div *ngFor="let brand of brandProfiles" 
                class="brand-item"
@@ -335,21 +347,24 @@
           </div>
         </div>
         
-        <!-- Azioni -->
+      
         <div class="modal-actions">
           <button class="btn-outline" (click)="openBrandFormModal()" [disabled]="!canCreateMoreBrands">
-            {{ currentLang === 'it' ? '+ Crea Nuovo Brand' : '+ Create New Brand' }}
+            {{ currentLang === 'it' ? 'Crea Manualmente' : 'Create Manually' }}
           </button>
-          <button class="btn-primary" 
-                  (click)="confirmBrandSelection()"
-                  [disabled]="!selectedBrand">
-            {{ currentLang === 'it' ? '✅ Conferma Selezione' : '✅ Confirm Selection' }}
-          </button>
+           <button class="btn-primary" (click)="openWebsiteAnalysisModal()">
+    🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}
+  </button>
+        <button class="btn-confirm" 
+          (click)="confirmBrandSelection()"
+          [disabled]="!selectedBrand">
+    ✅ {{ currentLang === 'it' ? 'Conferma Selezione' : 'Confirm Selection' }}
+  </button>
         </div>
       </div>
     </div>
 
-    <!-- Modale Creazione/Modifica Brand -->
+ 
     <div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
       <div class="modal-content large" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="closeBrandModal()">×</button>
@@ -373,7 +388,7 @@
         </div>
     
         <form class="brand-form">
-          <!-- Nome Brand -->
+       
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Nome Brand *' : 'Brand Name *' }}</label>
             <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" 
@@ -383,7 +398,7 @@
               'Your brand, company or project name' }}</small>
           </div>
 
-          <!-- Positioning -->
+        
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Posizionamento di mercato' : 'Market positioning' }}</label>
             <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
@@ -393,7 +408,6 @@
               'How you want the brand to be perceived in the market' }}</small>
           </div>
 
-          <!-- Tono di Voce -->
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Tono di Voce' : 'Voice Tone' }}</label>
             <select [(ngModel)]="newBrand.tone" name="tone">
@@ -406,7 +420,6 @@
               'The language we will use for your content' }}</small>
           </div>
 
-          <!-- Descrizione Brand -->
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Descrizione brand' : 'Brand description' }}</label>
             <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3" 
@@ -416,7 +429,7 @@
               'Who you are and what you do. This description helps AI understand your business' }}</small>
           </div>
 
-          <!-- Target Audience -->
+         
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Pubblico di Riferimento' : 'Target Audience' }}</label>
             <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience"
@@ -426,7 +439,7 @@
               'Who is your primary target audience?' }}</small>
           </div>
 
-          <!-- Valori Brand -->
+         
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Valori del brand' : 'Brand values' }}</label>
             <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues"
@@ -436,7 +449,7 @@
               'The core values of your brand' }}</small>
           </div>
 
-          <!-- Tagline -->
+         
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Slogan/Tagline' : 'Tagline' }}</label>
             <input type="text" [(ngModel)]="newBrand.tagline" name="tagline"
@@ -446,7 +459,7 @@
               'Your slogan or distinctive phrase' }}</small>
           </div>
 
-          <!-- Preferred CTAs -->
+        
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Call-to-Action Preferite' : 'Preferred Call-to-Actions' }}</label>
             <div class="input-with-btn">
@@ -464,7 +477,7 @@
               'Action phrases you typically use to encourage engagement' }}</small>
           </div>
 
-          <!-- Keywords Preferite -->
+        
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Parole Chiave Preferite' : 'Preferred Keywords' }}</label>
             <div class="input-with-btn">
@@ -482,7 +495,7 @@
               'Terms you want to be used frequently in your content' }}</small>
           </div>
 
-          <!-- Parole da Evitare -->
+        
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Parole da evitare' : 'Words to Avoid' }}</label>
             <div class="input-with-btn">
@@ -500,7 +513,7 @@
               'Terms you do NOT want to be used in your content' }}</small>
           </div>
 
-          <!-- Hashtag Predefiniti -->
+        
           <div class="form-group">
             <label>{{ currentLang === 'it' ? 'Hashtag Predefiniti' : 'Default Hashtags' }}</label>
             <div class="input-with-btn">
@@ -518,7 +531,7 @@
               'Hashtags that will be added to your posts' }}</small>
           </div>
 
-          <!-- Azioni Form -->
+        
           <div class="form-actions">
             <button type="button" class="btn-outline" (click)="closeBrandModal()">
               {{ currentLang === 'it' ? 'Annulla' : 'Cancel' }}
@@ -531,7 +544,7 @@
       </div>
     </div>
 
-    <!-- Modal Risultati -->
+  
     <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <button class="close-btn large-close-btn" (click)="closeModal()" [title]="currentLang === 'it' ? 'Chiudi' : 'Close'">×</button>
@@ -552,6 +565,11 @@
                       [title]="currentLang === 'it' ? 'Salva nell\'archivio' : 'Save to archive'">
                 {{ translationService.translate('save') }}
               </button>
+               <!-- TASTO OTTIMIZZA -->
+            <button class="optimize-btn" 
+                    (click)="openContentAssistant(v)">
+              🚀 {{ translationService.translate('optimize') }}
+            </button>
               <p>{{ v }}</p>
             </div>
           </div>
@@ -572,3 +590,64 @@
     </div>
   </div>
 </div>
+
+
+<div class="modal website-analysis-modal" *ngIf="websiteAnalysisModalOpen" (click)="websiteAnalysisModalOpen = false">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="websiteAnalysisModalOpen = false">×</button>
+    
+    <h2>🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}</h2>
+    
+    <div class="analysis-description">
+      <p>{{ currentLang === 'it' ? 
+        'Incolla l\'URL del tuo sito web e creeremo automaticamente un profilo brand:' : 
+        'Paste your website URL and we will automatically create a brand profile:' }}</p>
+    </div>
+
+    <div class="website-input-section">
+      <label for="websiteUrl">🌐 {{ currentLang === 'it' ? 'URL del sito web' : 'Website URL' }}</label>
+      <input 
+        type="url" 
+        id="websiteUrl"
+        [(ngModel)]="websiteUrl" 
+        placeholder="https://ilmiosito.it"
+        [disabled]="analyzingWebsite">
+    </div>
+
+    <div class="modal-actions">
+      <button 
+        class="btn-outline" 
+        (click)="websiteAnalysisModalOpen = false"
+        [disabled]="analyzingWebsite">
+        {{ currentLang === 'it' ? 'Annulla' : 'Cancel' }}
+      </button>
+      
+      <button 
+        class="btn-primary" 
+        (click)="analyzeWebsite()"
+        [disabled]="!websiteUrl || analyzingWebsite">
+        
+        <span *ngIf="!analyzingWebsite">
+          🚀 {{ currentLang === 'it' ? 'Analizza e Crea Brand' : 'Analyze and Create Brand' }}
+        </span>
+        
+        <span *ngIf="analyzingWebsite" class="analyzing-state">
+          <div class="spinner-small"></div>
+          {{ currentLang === 'it' ? 'Analisi in corso...' : 'Analyzing...' }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal large" *ngIf="assistantModalOpen" (click)="closeContentAssistant()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeContentAssistant()">×</button>
+    
+    <app-content-assistant-component
+      [selectedBrand]="selectedBrand"
+      [selectedPlatform]="platform"
+      (suggestionApplied)="onSuggestionApplied($event)">
+    </app-content-assistant-component>
+  </div>
+</div> 

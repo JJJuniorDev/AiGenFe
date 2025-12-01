@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../services/AuthService.service';
@@ -14,15 +14,17 @@ import { CreditPackageService } from '../services/CreditPackage.service';
 import { Avatar } from '../model/Avatar.model';
 import { Router } from '@angular/router';
 import { UserStateService } from '../services/UserStateService.service';
-import { Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { CreditStore } from "../credit-store/credit-store";
 import { TranslationService } from '../services/TranslationService.service';
 import { SocialCraftService } from '../services/SocialCraftService.service';
 import { PostSalvato } from '../model/PostSalvato.model';
+import { ContentAssistantComponent } from "../content-assistant-component/content-assistant-component";
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-generator',
-  imports: [ CommonModule, FormsModule, MatIconModule, CreditStore],
+  imports: [CommonModule, FormsModule, MatIconModule, CreditStore, ContentAssistantComponent],
   templateUrl: './generator.html',
   styleUrl: './generator.css'
 })
@@ -48,7 +50,7 @@ export class Generator implements OnInit, OnDestroy{
   { valueIt: 'educativo', valueEn: 'educational', displayIt: 'educativo', displayEn: 'educational' },
   { valueIt: 'storia cliente', valueEn: 'customer_story', displayIt: 'storia cliente', displayEn: 'customer story' }
 ] as const;
-
+postTypeOptions: any[] = [];
 
 selectedPostType: string = 'promozionale';
 platform = 'linkedin';
@@ -157,6 +159,13 @@ platform = 'linkedin';
   
 currentLang: 'it' | 'en' = 'it';
 
+websiteAnalysisModalOpen = false;
+websiteUrl = '';
+analyzingWebsite = false;
+private isLoadingBrands = false;
+  private brandsLoaded = false;
+private previousUserId: string | null = null;
+
   constructor(
     private authService: AuthService,
     private testimonialService: TestimonialService,
@@ -167,8 +176,10 @@ currentLang: 'it' | 'en' = 'it';
     private router: Router,
     private userStateService: UserStateService,
     public translationService: TranslationService,
-    private socialCraftService: SocialCraftService
+    private socialCraftService: SocialCraftService,
+    private cdr: ChangeDetectorRef
   ) {
+    
     }
   
 
@@ -177,9 +188,14 @@ currentLang: 'it' | 'en' = 'it';
     this.destroy$.complete();
   }
 
+
     ngOnInit() {
-         this.translationService.currentLang$.subscribe(lang => {
+     
+       this.translationService.currentLang$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(lang => {
       this.currentLang = lang;
+       this.updatePostTypeOptions();
     });
       this.currentLang = this.translationService.getCurrentLanguage();
        // ✅ VERIFICA DOPPIA: CLIENT + SERVER
@@ -187,23 +203,10 @@ currentLang: 'it' | 'en' = 'it';
     this.authService.logout();
     return;
   }
-    // Sottoscrizione ai cambiamenti dell'user
-    this.userStateService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        this.user = user;
-        console.log('👤 Generator - User aggiornato:', user?.credits);
-        
-        if (user) {
-          this.loadUserSpecificData();
-        } else {
-          this.handleNoUser();
-        }
-      });
+   
+   this.loadInitialUser();
+   }
 
-    // ✅ CARICA USER INIZIALE
-    this.loadInitialUser();
-  }
 
     // 👇 AGGIUNGI QUESTO METODO
   updateBrandCreationStatus() {
@@ -245,6 +248,9 @@ currentLang: 'it' | 'en' = 'it';
     this.inputText = '';
     this.selectedBrand = null;
     this.brandProfiles = [];
+    this.brandsLoaded = false; // ✅ IMPORTANTE
+  this.isLoadingBrands = false; // ✅ IMPORTANTE
+  this.previousUserId = null; // ✅ IMPORTANTE
   }
 
 private loadUserSpecificData() {
@@ -252,9 +258,12 @@ private loadUserSpecificData() {
 
     console.log('📂 Caricamento dati per utente:', this.user.email);
     
-    // Carica brand profiles per QUESTO utente
-    this.loadBrandProfiles();
     
+      if (this.user.id !== this.previousUserId) {
+    this.brandsLoaded = false;
+    this.previousUserId = this.user.id;
+    this.loadBrandProfiles();
+  }
     // Carica preferenze specifiche dell'utente
     const userPreferences = this.userStateService.getUserData('preferences');
     if (userPreferences) {
@@ -269,7 +278,10 @@ private loadUserSpecificData() {
   
    // METODO GENERATE AGGIORNATO
   generate() {
-
+if (this.isGenerating || this.generationStatus === 'queued') {
+    console.log('⏸️ Generazione già in corso...');
+    return;
+  }
       // Reset errori
   this.showBrandError = false;
   this.showManualWarning = false;
@@ -336,13 +348,9 @@ private loadUserSpecificData() {
  this.generationStatus = 'processing';
    // Se siamo in modalità guidata, usa il prompt generato automaticamente
   if (this.inputMode === 'guided') {
-    this.inputText = this.generatedPrompt;
+    this.inputText = this._generatedPrompt;
   }
-    // Verifica che ci sia un input valido
-  if (!this.inputText || this.inputText.trim().length === 0) {
-    alert('Inserisci un contenuto o seleziona le opzioni nella modalità guidata');
-    return;
-  }
+    
     this.testimonialService.generate({
       inputText: this.inputText,
       platform: this.platform,
@@ -462,7 +470,9 @@ cancelGeneration() {
   // Apri modale selezione brand
   openBrandModal() {
     this.brandModalOpen = true;
+       if (!this.brandsLoaded && !this.isLoadingBrands && this.brandProfiles.length === 0) {
     this.loadBrandProfiles();
+  }
   }
 
   // Chiudi modale
@@ -475,15 +485,24 @@ cancelGeneration() {
 
   // Carica brand profiles
   loadBrandProfiles() {
+      if (this.isLoadingBrands || this.brandsLoaded || !this.user) {
+      return;
+    }
+     this.isLoadingBrands = true;
     this.brandProfileService.getUserBrandProfiles().subscribe({
       next: (profiles) => {
         this.brandProfiles = profiles;
          this.currentBrands = profiles.length;
            this.updateBrandCreationStatus(); 
+           this.brandsLoaded = true;
+        this.isLoadingBrands = false;
+        // this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Errore caricamento brand profiles:', error);
         this.toastr.error('Errore nel caricamento dei brand');
+        this.isLoadingBrands = false;
+         this.brandsLoaded = false;
       }
     });
   }
@@ -905,12 +924,14 @@ switchToManualMode() {
   this.inputMode = 'manual';
   // Reset dell'input guidato se si torna al manuale
   this.guidedInput = { topic: '', goal: '', keyMessage: '' };
+   this.updateGeneratedPrompt();
 }
 
 switchToGuidedMode() {
   this.inputMode = 'guided';
   // Se c'è testo nel manuale, lo puliamo
   this.inputText = '';
+   this.updateGeneratedPrompt();
 }
 
 
@@ -921,12 +942,20 @@ switchToGuidedMode() {
     
     this.currentLang = newLang;
     this.translationService.setLanguage(newLang);
+    this.updatePostTypeOptions();
   }
-  
-  // 👇 MODIFICA IL GETTER generatedPrompt
+
+  private _generatedPrompt: string = '';
+
   get generatedPrompt(): string {
+  return this._generatedPrompt;
+}
+
+  // 👇 MODIFICA IL GETTER generatedPrompt
+  private updateGeneratedPrompt() {
     if (this.inputMode === 'manual') {
-      return this.inputText;
+      this._generatedPrompt = this.inputText;
+       return;
     }
     
     const parts = [];
@@ -973,7 +1002,7 @@ switchToGuidedMode() {
       );
     }
     
-    return parts.join(' - ');
+     this._generatedPrompt = parts.join(' - ');
   }
 
  getTranslatedParamName(point: any): string {
@@ -1093,6 +1122,48 @@ generationStatus: 'idle' | 'queued' | 'processing' | 'completed' | 'error' = 'id
 queuePosition: number = 0;
 estimatedWaitTime: number = 0;
 
+// 👇 METODO PER APRIRE MODALE ANALISI
+openWebsiteAnalysisModal() {
+  this.websiteAnalysisModalOpen = true;
+  this.websiteUrl = '';
+}
+
+// 👇 METODO PER ANALIZZARE SITO
+analyzeWebsite() {
+  if (!this.websiteUrl.trim()) {
+    this.showNotification('Inserisci un URL del sito web', 'warning', 3000);
+    return;
+  }
+
+  this.analyzingWebsite = true;
+
+  this.brandProfileService.analyzeWebsite(this.websiteUrl, this.currentLang).subscribe({
+    next: (brandProfile) => {
+      this.analyzingWebsite = false;
+      this.websiteAnalysisModalOpen = false;
+      
+      // Seleziona automaticamente il brand creato
+      this.selectedBrand = brandProfile;
+      this.brandProfiles.push(brandProfile);
+      this.currentBrands = this.brandProfiles.length;
+      this.updateBrandCreationStatus();
+      
+      this.showNotification(
+        `✅ Brand "${brandProfile.brandName}" creato automaticamente dal sito web!`, 
+        'success', 
+        5000
+      );
+    },
+    error: (error) => {
+      this.analyzingWebsite = false;
+      this.showNotification(
+        '❌ Impossibile analizzare il sito web. Controlla l\'URL e riprova.', 
+        'error', 
+        5000
+      );
+    }
+  });
+}
 
 
 
@@ -1100,16 +1171,84 @@ estimatedWaitTime: number = 0;
 
 
 
+assistantModalOpen = false;
 
 
 
+closeContentAssistant() {
+  this.assistantModalOpen = false;
+ 
+}
+
+onSuggestionApplied(updatedContent: string) {
+  this.inputText = updatedContent;
+}
+
+contentToOptimize: string = '';
+optimizationType: string = '';
+isOptimizing: boolean = false;
+
+// ✅ METODO PER OTTIMIZZARE CONTENUTO GENERATO
+optimizeContent(content: string, contentType: string = '') {
+  // Salva il contenuto da ottimizzare
+  this.contentToOptimize = content;
+  this.optimizationType = contentType;
+  
+  // Pre-carica l'assistant con il contenuto
+  setTimeout(() => {
+    this.openContentAssistant(this.contentToOptimize);
+  }, 100);
+}
+
+// ✅ METODO MODIFICATO PER APRIRE L'ASSISTANT
+openContentAssistant(version: string) {
+  this.assistantModalOpen = true;
+ if (version.trim() !== '') {
+    this.contentToOptimize = version;
+  }
+  // Se c'è contenuto da ottimizzare, lo pre-carica nell'assistant
+  if (this.contentToOptimize) {
+    // Usiamo un timeout per assicurarci che il componente assistant sia renderizzato
+    setTimeout(() => {
+      this.prefillAssistantContent();
+    }, 200);
+  }
+}
+
+// ✅ METODO PER PRE-CARICARE CONTENUTO NELL'ASSISTANT
+private prefillAssistantContent() {
+  const assistantComponent = document.querySelector('app-content-assistant-component');
+  if (assistantComponent && this.contentToOptimize) {
+    // Accedi al componente assistant e imposta il contenuto
+    // Nota: Questo è un workaround - in un'implementazione ideale useresti un servizio condiviso
+    const textarea = assistantComponent.querySelector('textarea');
+    if (textarea) {
+      (textarea as HTMLTextAreaElement).value = this.contentToOptimize;
+      // Trigger il change detection
+      textarea.dispatchEvent(new Event('input'));
+    }
+  }
+}
+
+// ✅ METODO PER RESETTARE L'OTTIMIZZAZIONE
+resetOptimization() {
+  this.contentToOptimize = '';
+  this.optimizationType = '';
+  this.isOptimizing = false;
+}
 
 
+onGuidedInputChange() {
+  this.updateGeneratedPrompt();
+}
 
-
-
-
-
+// Metodo per aggiornare le opzioni quando cambia la lingua
+updatePostTypeOptions() {
+  this.postTypeOptions = this.postTypes.map(type => ({
+    value: this.currentLang === 'it' ? type.valueIt : type.valueEn,
+    display: this.currentLang === 'it' ? type.displayIt : type.displayEn
+  }));
+}
 }
 
 

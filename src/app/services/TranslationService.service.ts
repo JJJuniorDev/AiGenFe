@@ -6,16 +6,19 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class TranslationService {
-   private currentLangSubject = new BehaviorSubject<'it' | 'en'>('en');
+   private currentLangSubject = new BehaviorSubject<'it' | 'en'>(
+    this.getInitialLanguage()
+  );
   public currentLang$ = this.currentLangSubject.asObservable();
 
   constructor() {
-    // Inizializza con la lingua salvata o inglese di default
-    const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
-    const initialLang = savedLang || 'en';
-    this.currentLangSubject = new BehaviorSubject(initialLang);
   }
 
+   private getInitialLanguage(): 'it' | 'en' {
+    const savedLang = localStorage.getItem('preferredLanguage') as 'it' | 'en';
+    return savedLang || 'en';
+  }
+  
   private translations: any = {
     it: {
       // Header
@@ -166,16 +169,15 @@ export class TranslationService {
   };
 
   translate(key: string): string {
-    // 👇 CORREGGI: usa this.currentLangSubject.value invece di this.currentLang.next
+  
     const currentLang = this.currentLangSubject.value;
     const langTranslations = this.translations[currentLang];
-    
-    // 👇 AGGIUNGI UN FALLBACK SICURO
+  
     if (langTranslations && key in langTranslations) {
       return langTranslations[key];
-    }
+   }
     
-    // Fallback: prova l'altra lingua o restituisci la chiave
+   
     const otherLang = currentLang === 'it' ? 'en' : 'it';
     const otherTranslations = this.translations[otherLang];
     
@@ -183,8 +185,10 @@ export class TranslationService {
   }
 
   setLanguage(lang: 'it' | 'en') {
-     this.currentLangSubject.next(lang);
-    localStorage.setItem('preferredLanguage', lang);
+    if (this.currentLangSubject.value !== lang) {
+      this.currentLangSubject.next(lang);
+      localStorage.setItem('preferredLanguage', lang);
+    }
   }
 
   getCurrentLanguage(): 'it' | 'en' {

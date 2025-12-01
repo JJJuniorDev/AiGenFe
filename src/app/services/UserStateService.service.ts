@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, distinctUntilChanged, shareReplay } from "rxjs";
 import { User } from "../model/User.model";
 import { Injectable } from "@angular/core";
 
@@ -6,8 +6,14 @@ import { Injectable } from "@angular/core";
 @Injectable({ providedIn: 'root' })
 export class UserStateService {
   private currentUser = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUser.asObservable();
-
+ public currentUser$ = this.currentUser.asObservable().pipe(
+    // ✅ AGGIUNGI DISTINCT UNTIL CHANGED
+    distinctUntilChanged((prev, curr) => 
+      JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    shareReplay(1)
+  );
+  
   private readonly USER_PREFIX = 'user_data_';
   private readonly TOKEN_KEY = 'auth_token';
 
@@ -15,8 +21,19 @@ export class UserStateService {
     // Salva user con prefisso basato sull'ID utente
      const userDataKey = this.getUserDataKey(user.id);
      localStorage.setItem(userDataKey, JSON.stringify(user));
-    this.currentUser.next(user);
+    const currentUser = this.currentUser.value;
+    if (!this.isUserEqual(currentUser, user)) {
+      this.currentUser.next(user);
+    }
     console.log('👤 User salvato con chiave:', userDataKey);
+  }
+
+  private isUserEqual(user1: User | null, user2: User | null): boolean {
+    if (user1 === user2) return true;
+    if (!user1 || !user2) return false;
+    return user1.id === user2.id && 
+           user1.email === user2.email && 
+           user1.credits === user2.credits;
   }
 
   getUser(): User | null {
@@ -40,7 +57,7 @@ export class UserStateService {
       
       if (userData) {
         const user = JSON.parse(userData) as User;
-        this.currentUser.next(user);
+      //  this.currentUser.next(user);
         return user;
       }
     } catch (error) {
