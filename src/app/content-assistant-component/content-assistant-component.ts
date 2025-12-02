@@ -437,4 +437,5 @@ export class ContentAssistantComponent implements OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
 }

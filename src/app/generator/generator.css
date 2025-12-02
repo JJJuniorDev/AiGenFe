@@ -2547,6 +2547,165 @@ select.error {
   font-weight: bold;
 }
 
+/* Stile generale per lo stato di generazione */
+.generating-status {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 32px 24px;
+  margin: 24px 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Effetto sfondo animato opzionale */
+.generating-status::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.3;
+  animation: backgroundMove 20s linear infinite;
+}
+
+.generating-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.generating-info h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Spinner migliorato */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  position: relative;
+  animation: rotate 2s linear infinite;
+}
+
+.spinner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), white 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), white 0);
+}
+
+/* Spinner alternativo più semplice */
+.spinner-simple {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Spinner con punti animati */
+.spinner-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.spinner-dots div {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  animation: bounce 1.4s infinite ease-in-out both;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.spinner-dots div:nth-child(1) { animation-delay: -0.32s; }
+.spinner-dots div:nth-child(2) { animation-delay: -0.16s; }
+.spinner-dots div:nth-child(3) { animation-delay: 0s; }
+
+/* Testo di progresso aggiuntivo */
+.generating-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 300;
+  animation: pulse 2s infinite;
+}
+
+/* Animazioni */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes backgroundMove {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Versione più sottile per piccole dimensioni */
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(52, 152, 219, 0.2);
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
 .website-input-section input {
   width: 100%;
   padding: 12px;
