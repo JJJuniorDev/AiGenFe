@@ -231,13 +231,7 @@ export class ContentAssistantComponent implements OnDestroy {
     return platforms[this.selectedPlatform] || 'Post social';
   }
   
-  getRandomEngagement(): number {
-    return Math.floor(Math.random() * 100) + 1;
-  }
-  
-  getRandomPercentage(): number {
-    return Math.floor(Math.random() * 30) + 5;
-  }
+
   
   getChangeIcon(type: string): string {
     const icons: { [key: string]: string } = {
