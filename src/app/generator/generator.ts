@@ -21,6 +21,7 @@ import { SocialCraftService } from '../services/SocialCraftService.service';
 import { PostSalvato } from '../model/PostSalvato.model';
 import { ContentAssistantComponent } from "../content-assistant-component/content-assistant-component";
 import { environment } from '../../environments/environment';
+import { GeneratedImage, ImageGenerationRequest, ImageService } from '../services/ImageService.service';
 
 @Component({
   selector: 'app-generator',
@@ -166,6 +167,14 @@ private isLoadingBrands = false;
   private brandsLoaded = false;
 private previousUserId: string | null = null;
 
+generatingImages = false;
+  imagesModalOpen = false;
+  selectedPostsForImages: string[] = [];
+  generatedImages: GeneratedImage[] = [];
+  imageSelectionMode: 'single' | 'all' = 'all';
+ availablePosts: {content: string, source: string}[] = [];
+ selectedPostForImage: string = '';
+
   constructor(
     private authService: AuthService,
     private testimonialService: TestimonialService,
@@ -177,7 +186,8 @@ private previousUserId: string | null = null;
     private userStateService: UserStateService,
     public translationService: TranslationService,
     private socialCraftService: SocialCraftService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private imageService: ImageService
   ) {
     
     }
@@ -1249,8 +1259,158 @@ updatePostTypeOptions() {
     display: this.currentLang === 'it' ? type.displayIt : type.displayEn
   }));
 }
+
+
+ prepareImageGeneration() {
+    if (!this.output) {
+      this.showNotification('Prima genera i contenuti testuali!', 'warning');
+      return;
+    }
+
+    // Raccogli tutti i post disponibili
+    this.availablePosts = [];
+    
+    // Aggiungi tutte le versioni di post social
+    if (this.output.socialPostVersions) {
+      this.output.socialPostVersions.forEach((post, index) => {
+        this.availablePosts.push({
+          content: post,
+          source: `Social Post v${index + 1}`
+        });
+      });
+    }
+    
+    // Aggiungi headline se vuoi (opzionale)
+    if (this.output.headlineVersions) {
+      this.output.headlineVersions.forEach((headline, index) => {
+        this.availablePosts.push({
+          content: headline,
+          source: `Headline v${index + 1}`
+        });
+      });
+    }
+
+    // Imposta la selezione di default: tutti i post social
+    this.selectedPostsForImages = this.output.socialPostVersions || [];
+    this.imageSelectionMode = 'all';
+    
+    // Apri il modal di selezione
+    this.imagesModalOpen = true;
+  }
+
+  // 🔥 METODO PER SELEZIONARE/DESELAZIONARE POST
+  togglePostSelection(postContent: string) {
+    const index = this.selectedPostsForImages.indexOf(postContent);
+    if (index > -1) {
+      this.selectedPostsForImages.splice(index, 1);
+    } else {
+      this.selectedPostsForImages.push(postContent);
+    }
+  }
+
+  // 🔥 METODO PER SELEZIONARE TUTTI I POST
+  selectAllPosts() {
+    if (this.output?.socialPostVersions) {
+      this.selectedPostsForImages = [...this.output.socialPostVersions];
+      this.imageSelectionMode = 'all';
+    }
+  }
+
+  // 🔥 METODO PER SELEZIONARE UN SINGOLO POST
+  selectSinglePost(postContent: string) {
+    this.selectedPostsForImages = [postContent];
+    this.imageSelectionMode = 'single';
+    this.selectedPostForImage = postContent;
+  }
+
+  // 🔥 METODO PER GENERARE LE IMMAGINI
+  generateImages() {
+    if (this.selectedPostsForImages.length === 0) {
+      this.showNotification('Seleziona almeno un post per generare le immagini!', 'warning');
+      return;
+    }
+
+    if (!this.selectedBrand) {
+      this.showNotification('Seleziona un brand prima di generare immagini!', 'warning');
+      return;
+    }
+
+     // Verifica crediti
+  const requiredCredits = this.selectedPostsForImages.length * 0.5;
+  if (this.user && this.user.credits < requiredCredits) {
+    this.showNotification(`Crediti insufficienti! Servono ${requiredCredits} crediti`, 'error');
+    this.openCreditStore();
+    return;
+  }
+
+    this.generatingImages = true;
+
+    const request: ImageGenerationRequest = {
+      posts: this.selectedPostsForImages,
+      platform: this.platform,
+      brandProfileId: this.selectedBrand.id,
+      brandName: this.selectedBrand.brandName,
+      style: 'realistic', // Puoi aggiungere un selettore per lo stile
+      includeText: true,
+    };
+
+    this.imageService.generateImages(request).subscribe({
+      next: (response: any) => {
+        this.generatingImages = false;
+        this.generatedImages = response.images;
+        this.imagesModalOpen = false;
+        
+          if (this.user) {
+        this.user.credits -= response.totalCost || 0;
+      }
+
+         this.showNotification(
+        `🎨 Generate ${response.count} immagini! (-${response.totalCost} crediti)`,
+        'success'
+      );
+    },
+    error: (error) => {
+      this.generatingImages = false;
+      console.error('Errore generazione immagini:', error);
+      
+      if (error.status === 402) {
+        this.showNotification('Crediti insufficienti per generare immagini!', 'error');
+        this.openCreditStore();
+      } else {
+        this.showNotification(error.error?.error || 'Errore nella generazione delle immagini', 'error');
+      }
+    }
+  });
 }
 
+  // 🔥 METODO PER MOSTRARE LE IMMAGINI GENERATE
+  showGeneratedImages() {
+    // Puoi mostrare in un modal dedicato o inline sotto i post
+    // Esempio: apri un modal con le immagini
+    this.imagesModalOpen = true; // Riusa lo stesso modal o creane uno nuovo
+  }
 
+  // 🔥 METODO PER DOWNLOAD IMMAGINE
+  downloadImage(imageUrl: string, fileName: string = 'social-image') {
+    this.imageService.downloadImage(imageUrl, fileName);
+  }
 
+  // 🔥 METODO PER COPIARE URL IMMAGINE
+async copyImageUrl(imageUrl: string) {
+   try {
+    await this.imageService.copyImageUrl(imageUrl);
+    this.showNotification('📋 URL immagine copiato!', 'success', 2000);
+  } catch (error) {
+    this.showNotification('Errore nella copia', 'error');
+  }
+  }
 
+  // 🔥 METODO PER CHIUDERE MODAL IMMAGINI
+  closeImagesModal() {
+    this.imagesModalOpen = false;
+    this.selectedPostsForImages = [];
+    this.generatedImages = [];
+  }
+
+  // ... rest of the component ...
+}

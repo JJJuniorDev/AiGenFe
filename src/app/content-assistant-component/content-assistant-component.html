@@ -33,23 +33,27 @@
           </option>
         </select>
       </div>
-
-      <div class="form-group">
-        <label>Piattaforma</label>
-        <div class="platform-display">
-          <span class="platform-badge">{{ selectedPlatform }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- Brand Info -->
-    <div *ngIf="selectedBrand" class="brand-info">
-      <strong>Brand:</strong> {{ selectedBrand.brandName }}
-      <span class="tone-badge">{{ selectedBrand.tone }}</span>
-    </div>
-
-    <div *ngIf="!selectedBrand" class="warning">
-      ⚠️ Seleziona un brand per un'analisi personalizzata
+    <div class="brand-info" [class.warning]="!selectedBrand">
+      <div class="brand-info-content">
+        <div class="brand-header">
+          <strong *ngIf="selectedBrand">Brand:</strong>
+          <span *ngIf="selectedBrand; else noBrand">
+            {{ selectedBrand.brandName }}
+            <span class="tone-badge">{{ selectedBrand.tone }}</span>
+          </span>
+          <ng-template #noBrand>
+            <span class="warning-text">
+              ⚠️ Seleziona un brand per un'analisi personalizzata
+            </span>
+          </ng-template>
+        </div>
+        <div class="platform-info" *ngIf="selectedBrand">
+          <small>Piattaforma: {{ selectedPlatform }}</small>
+        </div>
+      </div>
     </div>
 
     <!-- Error Message -->
@@ -62,8 +66,9 @@
       <button 
         class="btn analyze-btn"
         (click)="analyzeContent()"
-        [disabled]="!content || isAnalyzing || !selectedBrand">
-        <span *ngIf="!isAnalyzing">🔍 Analizza Contenuto</span>
+        [disabled]="!content || isAnalyzing || !selectedBrand"
+        [title]="!selectedBrand ? 'Seleziona prima un brand' : (!content ? 'Inserisci del contenuto' : 'Analizza contenuto')">
+        <span *ngIf="!isAnalyzing">🔍 Analizza</span>
         <span *ngIf="isAnalyzing" class="analyzing-state">
           <div class="spinner"></div>
           Analisi in corso...
@@ -73,15 +78,16 @@
       <button 
         class="btn secondary-btn"
         (click)="newAnalysis()"
-        [disabled]="isAnalyzing">
-        Nuova Analisi
+        [disabled]="isAnalyzing"
+        title="Inizia una nuova analisi">
+        Nuova
       </button>
 
       <button 
         class="btn preview-btn"
         (click)="toggleFinalPreview()"
         [disabled]="!analysisResult || isAnalyzing">
-        📄 Anteprima Finale
+        📄 Anteprima Finale Ottimizzata
         <span *ngIf="appliedSuggestions.length > 0" class="suggestion-count">
           {{ appliedSuggestions.length }}
         </span>
@@ -267,94 +273,131 @@
     </div>
   </div>
 
-  <!-- 🔥 ANTEPRIMA POST OTTIMIZZATO FINALE -->
-  <div *ngIf="showFinalPreview && optimizedContent" class="final-preview-section">
-    <div class="preview-header">
-      <h4>📄 Post Ottimizzato Finale</h4>
-      <div class="preview-actions">
-        <button class="btn copy-btn" (click)="copyToClipboard()">
-          📋 Copia Testo
-        </button>
-        <button class="btn close-btn" (click)="toggleFinalPreview()">
-          ✕ Chiudi
-        </button>
-      </div>
-    </div>
-
-    <div class="preview-stats">
-      <div class="stat-item">
-        <span class="stat-label">Suggerimenti applicati:</span>
-        <span class="stat-value">{{ appliedSuggestions.length }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Qualità iniziale:</span>
-        <span class="stat-value">{{ analysisResult?.qualityScore }}/10</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Qualità stimata:</span>
-        <span class="stat-value">{{ estimatedOptimizedScore }}/10</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Lunghezza:</span>
-        <span class="stat-value">{{ optimizedContent.length }} caratteri</span>
-      </div>
-    </div>
-
-    <!-- Visualizzazione tipo piattaforma -->
-    <div class="platform-preview">
-      <div class="platform-header">
-        <div class="platform-user-info">
-          <strong>{{ selectedBrand?.brandName }}</strong>
-          <small>{{ getPlatformDisplayInfo() }}</small>
+  <!-- 🔥 MODALE VISIBILE ANTEPRIMA POST OTTIMIZZATO FINALE -->
+  <div *ngIf="showFinalPreview && optimizedContent" 
+       class="final-preview-overlay" 
+       (click)="toggleFinalPreview()">
+    
+    <div class="final-preview-modal" (click)="$event.stopPropagation()">
+      
+      <!-- HEADER MODALE -->
+      <div class="preview-modal-header">
+        <div class="header-left">
+          <h3>📄 Post Ottimizzato Finale</h3>
+          <p class="subtitle">{{ selectedBrand?.brandName }} • {{ getPlatformDisplayInfo() }}</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn icon-btn" (click)="copyToClipboard(optimizedContent)" title="Copia testo">
+            📋
+          </button>
+          <button class="btn icon-btn close-modal-btn" (click)="toggleFinalPreview()" title="Chiudi">
+            ✕
+          </button>
         </div>
       </div>
 
-      <div class="preview-content">
-        <div class="content-text">
-          {{ optimizedContent }}
+      <!-- STATS BAR IN ALTO -->
+      <div class="preview-stats-bar">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value">{{ appliedSuggestions.length }}</div>
+            <div class="stat-label">Suggerimenti applicati</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">{{ analysisResult?.qualityScore }} → {{ estimatedOptimizedScore }}</div>
+            <div class="stat-label">Punteggio qualità</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">{{ optimizedContent.length }}</div>
+            <div class="stat-label">Caratteri</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">{{ extractHashtags(optimizedContent).length }}</div>
+            <div class="stat-label">Hashtags</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT - TESTO OTTIMIZZATO -->
+      <div class="optimized-content-section">
+        <div class="section-header">
+          <h4>📝 Testo Ottimizzato</h4>
+          <button class="btn copy-full-btn" (click)="copyToClipboard(optimizedContent)">
+            📋 Copia tutto
+          </button>
         </div>
         
-        <!-- Preview hashtag -->
-        <div class="content-hashtags" *ngIf="extractHashtags(optimizedContent).length > 0">
-          <span *ngFor="let tag of extractHashtags(optimizedContent)" class="hashtag">
+        <div class="optimized-text-container">
+          <div class="optimized-text" #finalContent>
+            {{ optimizedContent }}
+          </div>
+          <div class="text-actions">
+            <button class="btn text-action-btn" (click)="copyToClipboard(optimizedContent)">
+              📋 Copia
+            </button>
+            <!-- <button class="btn text-action-btn" (click)="shareContent()">
+              ↗️ Condividi
+            </button>
+            <button class="btn text-action-btn" (click)="downloadAsText()">
+              ⬇️ Scarica
+            </button> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- HASHTAGS SECTION -->
+      <div *ngIf="extractHashtags(optimizedContent).length > 0" class="hashtags-section">
+        <div class="section-header">
+          <h4>🏷️ Hashtags</h4>
+          <button class="btn copy-hashtags-btn" 
+                  (click)="copyToClipboard(extractHashtags(optimizedContent).join(' '))">
+            📋 Copia hashtags
+          </button>
+        </div>
+        <div class="hashtags-grid">
+          <span *ngFor="let tag of extractHashtags(optimizedContent)" 
+                class="hashtag-tag" (click)="copyToClipboard(tag)">
             {{ tag }}
           </span>
         </div>
-
-    
       </div>
-    </div>
 
-    <!-- Modifiche applicate -->
-    <div class="applied-changes">
-      <h5>📝 Modifiche applicate:</h5>
-      <div class="changes-list">
-        <div *ngFor="let change of appliedSuggestions; trackBy: trackByIndex" 
-             class="change-item">
-          <div class="change-type-icon">
-            <span [innerHTML]="getChangeIcon(change.type)"></span>
-          </div>
-          <div class="change-details">
-            <div class="change-description">{{ getChangeDescription(change) }}</div>
-            <div class="change-impact" [class]="getImpactClass(change.type)">
-              {{ getImpactText(change.type) }}
+      <!-- MODIFICHE APPLICATE -->
+      <div class="applied-changes-section">
+        <h4>📝 Modifiche applicate ({{ appliedSuggestions.length }})</h4>
+        <div class="changes-timeline">
+          <div *ngFor="let change of appliedSuggestions; trackBy: trackByIndex" 
+               class="timeline-item">
+            <div class="timeline-icon">
+              <span [innerHTML]="getChangeIcon(change.type)"></span>
+            </div>
+            <div class="timeline-content">
+              <div class="change-title">{{ getChangeDescription(change) }}</div>
+              <div class="change-impact" [class]="getImpactClass(change.type)">
+                {{ getImpactText(change.type) }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Azioni finali -->
-    <div class="final-actions">
-      <button class="btn primary-btn" (click)="applyAllOptimizations()">
-        ✅ Applica tutte le modifiche
-      </button>
-      <button class="btn secondary-btn" (click)="revertAllChanges()">
-        ↩️ Ripristina originale
-      </button>
-      <button class="btn export-btn" (click)="exportToPlatform()">
-        🚀 Esporta su {{ selectedPlatform }}
-      </button>
+      <!-- ACTIONS FOOTER -->
+      <div class="preview-modal-footer">
+        <div class="footer-actions">
+          <button class="btn primary-action-btn" (click)="applyAllOptimizations()">
+            ✅ Applica modifiche
+          </button>
+          <button class="btn secondary-action-btn" (click)="revertAllChanges()">
+            ↩️ Ripristina originale
+          </button>
+          <!-- <button class="btn export-action-btn" (click)="exportToPlatform()">
+            🚀 Pubblica su {{ selectedPlatform }}
+          </button> -->
+        </div>
+        <div class="footer-info">
+          <small>Il testo è pronto per essere copiato e utilizzato sui tuoi social media</small>
+        </div>
+      </div>
     </div>
   </div>
 </div>

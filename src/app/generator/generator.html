@@ -61,11 +61,11 @@ yy
         <div class="generate-card">
           <h3>{{ translationService.translate('generateContent') }}</h3>
           
-         <button class="assistant-btn" (click)="openContentAssistant(this.contentToOptimize)">
+         <!-- <button class="assistant-btn" (click)="openContentAssistant(this.contentToOptimize)">
   <span class="assistant-icon">🤖</span>
   <span class="assistant-text">Content Assistant</span>
   <span class="assistant-badge">NEW</span>
-</button>
+</button> -->
 
       
           <div class="mode-selector">
@@ -244,6 +244,161 @@ yy
             </button>
           </div>
 
+         <div *ngIf="output" class="image-generation-section">
+  <h3>🎨 Genera Immagini</h3>
+  
+  <button class="btn-generate-images" 
+          (click)="prepareImageGeneration()"
+          [disabled]="!output?.socialPostVersions?.length">
+    🖼️ Genera Immagini dai Post
+  </button>
+  <div class="image-tip">
+    <small>Puoi generare immagini per tutti i post o selezionarne uno specifico</small>
+  </div>
+</div>
+
+<div class="modal images-modal" *ngIf="imagesModalOpen" (click)="closeImagesModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeImagesModal()">×</button>
+    
+    <h2>🎨 Genera Immagini</h2>
+    
+    <!-- Se ci sono già immagini generate, mostrale -->
+    <div *ngIf="generatedImages.length > 0" class="generated-images-container">
+      <h3>Immagini Generate</h3>
+      <div class="images-grid">
+        <div *ngFor="let image of generatedImages" class="image-card">
+          <img [src]="image.imageUrl" [alt]="'Immagine per ' + platform">
+          <div class="image-info">
+            <p><strong>Piattaforma:</strong> {{ getPlatformName(image.platform) }}</p>
+            <p><strong>Dimensioni:</strong> {{ image.dimensions.width }}×{{ image.dimensions.height }}</p>
+          </div>
+          <div class="image-actions">
+            <button class="btn-copy" (click)="copyImageUrl(image.imageUrl)">
+              📋 Copia URL
+            </button>
+            <button class="btn-download" (click)="downloadImage(image.imageUrl, selectedBrand?.brandName)">
+              💾 Download
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn-outline" (click)="closeImagesModal()">
+        Chiudi
+      </button>
+    </div>
+    
+    <!-- Se non ci sono immagini ancora, mostra la selezione dei post -->
+    <div *ngIf="generatedImages.length === 0" class="image-selection-container">
+      <h3>Seleziona i Post per Generare Immagini</h3>
+      
+      <!-- Modalità di selezione -->
+      <div class="selection-mode">
+        <button class="mode-btn" 
+                [class.active]="imageSelectionMode === 'all'"
+                (click)="selectAllPosts()">
+          📑 Tutti e 3 i Post
+        </button>
+        <button class="mode-btn" 
+                [class.active]="imageSelectionMode === 'single'"
+                (click)="selectedPostsForImages = []; imageSelectionMode = 'single'">
+          🎯 Solo un Post
+        </button>
+      </div>
+      
+      <!-- Lista dei post disponibili -->
+      <div class="posts-list">
+        <div *ngFor="let post of availablePosts" 
+             class="post-item"
+             [class.selected]="selectedPostsForImages.includes(post.content)">
+          
+          <div class="post-checkbox" *ngIf="imageSelectionMode !== 'single'">
+            <input type="checkbox" 
+                   [checked]="selectedPostsForImages.includes(post.content)"
+                   (change)="togglePostSelection(post.content)">
+          </div>
+          
+          <div class="post-content-preview" 
+               [class.single-selection]="imageSelectionMode === 'single'"
+               (click)="imageSelectionMode === 'single' ? selectSinglePost(post.content) : null">
+            
+            <div class="post-source">
+              <strong>{{ post.source }}</strong>
+            </div>
+            
+            <div class="post-text">
+              {{ post.content }}
+            </div>
+            
+            <div *ngIf="imageSelectionMode === 'single'" class="single-selection-indicator">
+              {{ selectedPostForImage === post.content ? '✅' : '⬜' }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contatore selezione -->
+      <div class="selection-counter">
+        <strong>{{ selectedPostsForImages.length }}</strong> post selezionati
+        <span *ngIf="selectedPostsForImages.length > 0">
+          ({{ selectedPostsForImages.length }} immagine{{ selectedPostsForImages.length > 1 ? 'i' : '' }} saranno generate)
+        </span>
+      </div>
+      
+      <!-- Azioni -->
+      <div class="modal-acts">
+        <button class="btn-outline" (click)="closeImagesModal()">
+          Annulla
+        </button>
+        
+        <button class="btn-primary-images" 
+                (click)="generateImages()"
+                [disabled]="selectedPostsForImages.length === 0 || generatingImages">
+          
+          <span *ngIf="!generatingImages">
+            🚀 Genera {{ selectedPostsForImages.length }} Immagine{{ selectedPostsForImages.length > 1 ? 'i' : '' }}
+          </span>
+          
+          <span *ngIf="generatingImages" class="generating-state">
+            <div class="spinner-small"></div>
+            Generazione in corso...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Sezione per mostrare immagini generate (inline sotto i post) -->
+<div *ngIf="generatedImages.length > 0 && !imagesModalOpen" class="inline-images-section">
+  <h3>🎨 Immagini Generate</h3>
+  
+  <div class="images-preview-grid">
+    <div *ngFor="let image of generatedImages" class="image-preview-card">
+      <div class="image-container">
+        <img [src]="image.imageUrl" 
+             [alt]="'Immagine social per ' + selectedBrand?.brandName"
+             class="preview-image">
+      </div>
+      
+      <div class="image-actions-inline">
+        <button class="btn-small" (click)="copyImageUrl(image.imageUrl)">
+          📋
+        </button>
+        <button class="btn-small" (click)="downloadImage(image.imageUrl)">
+          💾
+        </button>
+        <button class="btn-small" (click)="imagesModalOpen = true">
+          🔍
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
        
           <div *ngIf="generationStatus === 'queued'" class="queue-status">
             <div class="queue-info">
@@ -261,7 +416,7 @@ yy
           <div *ngIf="isGenerating && generationStatus === 'processing'" class="generating-status">
             <div class="generating-info">
               <div class="spinner-simple"></div>
-              <h3>🎨 {{ currentLang === 'it' ? 'Creazione contenuto in corso...' : 'Content creation in progress...' }}</h3>
+              <!-- <h3>🎨 {{ currentLang === 'it' ? 'Creazione contenuto in corso...' : 'Content creation in progress...' }}</h3> -->
               <p>{{ currentLang === 'it' ? 'Stiamo generando il tuo contenuto premium' : 'We are generating your premium content' }}</p>
               <p class="generating-steps">
                 <span>{{ currentLang === 'it' ? '✓ Analisi contesto' : '✓ Context analysis' }}</span><br>
@@ -279,10 +434,10 @@ yy
            <div class="card-header">
       <h4>{{ translationService.translate(key) }}</h4>
       <div class="card-actions">
-        <button class="btn-optimize" 
+        <!-- <button class="btn-optimize" 
                 (click)="optimizeContent(getOutputValue(key)[0], key); $event.stopPropagation()">
-          🚀 Ottimizza
-        </button>
+          🚀 Ottimizza con Assistant
+        </button> -->
     </div>
     </div>
               <p>{{ getOutputValue(key).join(', ') }}</p>
@@ -552,31 +707,44 @@ yy
           <h2>{{ formatTitle(selectedKey) }}</h2>
           <button class="close-btn" (click)="closeModal()">×</button>
         </div>
+         <!-- <div class="optimization-explanation"> 
+      <h4>💡 {{ currentLang === 'it' ? 'Come funziona l\'ottimizzazione:' : 'How optimization works:' }}</h4>
+      <ol>
+        <li><strong>{{ currentLang === 'it' ? 'Genera' : 'Generate' }}</strong> {{ currentLang === 'it' ? 'contenuto qui nel generator' : 'content in the generator' }}</li>
+        <li><strong>{{ currentLang === 'it' ? 'Vedi i risultati' : 'See results' }}</strong> {{ currentLang === 'it' ? 'in questo modal' : 'in this modal' }}</li>
+        <li><strong>{{ currentLang === 'it' ? 'Ottimizza' : 'Optimize' }}</strong> {{ currentLang === 'it' ? 'i migliori risultati con l\'Assistant' : 'the best results with the Assistant' }}</li>
+       <li><strong>{{ currentLang === 'it' ? 'Copia' : 'Copy' }}</strong> {{ currentLang === 'it' ? 'la versione finale ottimizzata' : 'the final optimized version' }}</li> 
+      </ol>
+    </div> -->
         <div class="versions-container">
           <div class="versions">
             <div class="version" [attr.data-version]="i+1" *ngFor="let v of selectedVersions; let i = index">
-              <button class="copy-btn" 
-                      (click)="copyToClipboard(v, $event, i)"
-                      [class.copied]="copiedIndex === i">
-                {{ copiedIndex === i ? translationService.translate('copied') : translationService.translate('copy') }}
-              </button>
-              <button class="save-btn" 
-                      (click)="savePost(v, selectedKey)"
-                      [title]="currentLang === 'it' ? 'Salva nell\'archivio' : 'Save to archive'">
-                {{ translationService.translate('save') }}
-              </button>
-               <!-- TASTO OTTIMIZZA -->
-            <button class="optimize-btn" 
-                    (click)="openContentAssistant(v)">
-              🚀 {{ translationService.translate('optimize') }}
-            </button>
-              <p>{{ v }}</p>
+             <div class="version-header">
+        <span class="version-number">Versione {{ i + 1 }}</span>
+        <div class="version-actions">
+          <button class="copy-btn" 
+                  (click)="copyToClipboard(v, $event, i)"
+                  [class.copied]="copiedIndex === i">
+            {{ copiedIndex === i ? translationService.translate('copied') : translationService.translate('copy') }}
+          </button>
+          <button class="save-btn" 
+                  (click)="savePost(v, selectedKey)"
+                  [title]="currentLang === 'it' ? 'Salva nell\'archivio' : 'Save to archive'">
+            {{ translationService.translate('save') }}
+          </button>
+          <button class="optimize-btn" 
+                  (click)="openContentAssistant(v)">
+            🚀 {{ translationService.translate('Ottimizza con assistente AI') }}
+          </button>
+        </div>
+      </div>
+           <div class="version-content">
+        <p>{{ v }}</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    
 
   <div *ngIf="creditStoreModalOpen" class="modal-overlay" (click)="closeCreditStore()">
     <div class="modal-content" (click)="$event.stopPropagation()">

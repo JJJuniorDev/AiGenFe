@@ -188,25 +188,25 @@ export class ContentAssistantComponent implements OnDestroy {
     this.cdr.markForCheck();
   }
   
-  copyToClipboard(): void {
-    if (!this.optimizedContent) return;
+  // copyToClipboard(): void {
+  //   if (!this.optimizedContent) return;
     
-    navigator.clipboard.writeText(this.optimizedContent)
-      .then(() => {
-        console.log('Testo copiato negli appunti!');
-        // Potresti aggiungere un toast notification qui
-      })
-      .catch(err => {
-        console.error('Errore nella copia:', err);
-        // Fallback per browser più vecchi
-        const textArea = document.createElement('textarea');
-        textArea.value = this.optimizedContent;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      });
-  }
+  //   navigator.clipboard.writeText(this.optimizedContent)
+  //     .then(() => {
+  //       console.log('Testo copiato negli appunti!');
+  //       // Potresti aggiungere un toast notification qui
+  //     })
+  //     .catch(err => {
+  //       console.error('Errore nella copia:', err);
+  //       // Fallback per browser più vecchi
+  //       const textArea = document.createElement('textarea');
+  //       textArea.value = this.optimizedContent;
+  //       document.body.appendChild(textArea);
+  //       textArea.select();
+  //       document.execCommand('copy');
+  //       document.body.removeChild(textArea);
+  //     });
+  // }
   
   exportToPlatform(): void {
     // Implementa l'integrazione con le piattaforme social
@@ -432,4 +432,12 @@ export class ContentAssistantComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
+  copyToClipboard(text: string) {
+ 
+  navigator.clipboard.writeText(text).then(() => {
+  
+  }).catch(err => {
+    console.error('Errore nella copia: ', err);
+  });
+}
 }
