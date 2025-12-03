@@ -3313,3 +3313,304 @@ app-content-assistant-component {
   bottom: 0;
   background: white;
 }
+
+
+
+
+
+
+
+
+
+
+/* ==================== MANUAL & GUIDED MODE STYLES ==================== */
+
+/* Manual Mode Section */
+.manual-section {
+  margin-bottom: 25px;
+}
+
+.manual-section textarea {
+  width: 100%;
+  padding: 20px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 2px solid #333;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+  transition: all 0.3s ease;
+  outline: none;
+  min-height: 200px;
+  line-height: 1.6;
+}
+
+.manual-section textarea:focus {
+  border-color: #00ffff;
+  background: rgba(20, 25, 25, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.manual-section textarea::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+/* Guided Mode Section */
+.guided-section {
+  margin-bottom: 25px;
+}
+
+.guided-field {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.guided-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #00ffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.guided-field select {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 2px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23fff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+}
+
+.guided-field select:focus {
+  border-color: #00ffff;
+  background: rgba(20, 25, 25, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.guided-field select.error {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.guided-field select option {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 10px;
+}
+
+.guided-field select option:checked {
+  background: #00ffff;
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+/* Textarea nella guided mode */
+.guided-field textarea {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 2px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+  transition: all 0.3s ease;
+  outline: none;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.guided-field textarea:focus {
+  border-color: #00ffff;
+  background: rgba(20, 25, 25, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.guided-field textarea::placeholder {
+  color: #888;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* Preview Section in Guided Mode */
+.preview-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: rgba(0, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.preview-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ffff;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.preview-box {
+  background: rgba(15, 15, 15, 0.9);
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #e0e0e0;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Error Messages */
+.field-error, .field-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.field-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.field-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+/* Responsive Design per Manual/Guided Mode */
+@media (max-width: 768px) {
+  .manual-section textarea {
+    padding: 15px;
+    min-height: 150px;
+    font-size: 0.9rem;
+  }
+  
+  .guided-field {
+    margin-bottom: 15px;
+  }
+  
+  .guided-field label {
+    font-size: 0.9rem;
+  }
+  
+  .guided-field select,
+  .guided-field textarea {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .preview-section {
+    padding: 15px;
+    margin-top: 20px;
+  }
+  
+  .preview-box {
+    padding: 12px 15px;
+    font-size: 0.85rem;
+    max-height: 150px;
+  }
+  
+  .field-error,
+  .field-warning {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .manual-section textarea {
+    padding: 12px;
+    min-height: 120px;
+  }
+  
+  .guided-field select,
+  .guided-field textarea {
+    padding: 8px 10px;
+  }
+  
+  .preview-section {
+    padding: 12px;
+  }
+  
+  .preview-box {
+    padding: 10px 12px;
+  }
+}
+
+/* Animation per errori */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar per preview box */
+.preview-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.preview-box::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.preview-box::-webkit-scrollbar-thumb {
+  background: #00ffff;
+  border-radius: 3px;
+}
+
+.preview-box::-webkit-scrollbar-thumb:hover {
+  background: #008b8b;
+}
+
+/* Required field indicator */
+.guided-field label::after {
+  content: '*';
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.guided-field label:has(+ textarea)::after {
+  content: ''; /* Non mostrare asterisco per campi opzionali */
+}
+
+/* Highlight per campi validi */
+.guided-field select:valid:not([value=""]) {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}

@@ -15,7 +15,8 @@ export interface ImageGenerationRequest {
 }
 
 export interface GeneratedImage {
-  imageUrl: string;
+  imageUrl?: string;          // URL Cloudinary (solo se salvata)
+  imageBase64?: string;// Base64 per anteprima immediata
   thumbnailUrl?: string;
   platform: string;
   dimensions: {
@@ -26,6 +27,14 @@ export interface GeneratedImage {
   generatedAt: Date;
   postContent?: string; // Post usato come base
    promptUsed?: string; // Prompt AI usato
+    savedToCloudinary?: boolean; // Flag per indicare se è stato fatto upload
+  temporaryId?: string;
+}
+
+export interface SaveImageRequest {
+  imageBase64: string;
+  platform: string;
+  brandName?: string;
 }
 
 @Injectable({
@@ -37,11 +46,15 @@ export class ImageService {
   constructor(private http: HttpClient
   ) {}
 
-  generateImages(request: ImageGenerationRequest): Observable<{images: GeneratedImage[]}> {
-    return this.http.post<{images: GeneratedImage[]}>(`${this.baseUrl}/generate/batch`, request);
+ 
+  generateImages(request: ImageGenerationRequest): Observable<{images: GeneratedImage[], count: number, totalCost: number}> {
+    return this.http.post<{images: GeneratedImage[], count: number, totalCost: number}>(
+      `${this.baseUrl}/generate/batch`, 
+      request
+    );
   }
 
-    generateSingleImage(postContent: string, platform: string, brandName: string): Observable<GeneratedImage> {
+  generateSingleImage(postContent: string, platform: string, brandName: string): Observable<GeneratedImage> {
     const request = {
       content: postContent,
       platform: platform,
@@ -50,6 +63,10 @@ export class ImageService {
     };
     
     return this.http.post<GeneratedImage>(`${this.baseUrl}/generate`, request);
+  }
+
+   saveImage(request: SaveImageRequest): Observable<GeneratedImage> {
+    return this.http.post<GeneratedImage>(`${this.baseUrl}/save`, request);
   }
 
   downloadImage(imageUrl: string, fileName: string = 'social-image'): void {

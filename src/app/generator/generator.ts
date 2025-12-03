@@ -21,7 +21,7 @@ import { SocialCraftService } from '../services/SocialCraftService.service';
 import { PostSalvato } from '../model/PostSalvato.model';
 import { ContentAssistantComponent } from "../content-assistant-component/content-assistant-component";
 import { environment } from '../../environments/environment';
-import { GeneratedImage, ImageGenerationRequest, ImageService } from '../services/ImageService.service';
+import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest } from '../services/ImageService.service';
 
 @Component({
   selector: 'app-generator',
@@ -167,13 +167,17 @@ private isLoadingBrands = false;
   private brandsLoaded = false;
 private previousUserId: string | null = null;
 
-generatingImages = false;
-  imagesModalOpen = false;
+availablePosts: { content: string; source: string }[] = [];
   selectedPostsForImages: string[] = [];
+  selectedPostForImage: string | null = null;
+  imageSelectionMode: 'all' | 'single' = 'all';
+  
+  // Variabili per gestione immagini
   generatedImages: GeneratedImage[] = [];
-  imageSelectionMode: 'single' | 'all' = 'all';
- availablePosts: {content: string, source: string}[] = [];
- selectedPostForImage: string = '';
+  imagesModalOpen = false;
+  generatingImages = false;
+  savingImages = false;
+  imagesToSave: Set<string> = new Set(); 
 
   constructor(
     private authService: AuthService,
@@ -1260,8 +1264,7 @@ updatePostTypeOptions() {
   }));
 }
 
-
- prepareImageGeneration() {
+  prepareImageGeneration() {
     if (!this.output) {
       this.showNotification('Prima genera i contenuti testuali!', 'warning');
       return;
@@ -1293,12 +1296,12 @@ updatePostTypeOptions() {
     // Imposta la selezione di default: tutti i post social
     this.selectedPostsForImages = this.output.socialPostVersions || [];
     this.imageSelectionMode = 'all';
+    this.selectedPostForImage = null;
     
     // Apri il modal di selezione
     this.imagesModalOpen = true;
   }
 
-  // 🔥 METODO PER SELEZIONARE/DESELAZIONARE POST
   togglePostSelection(postContent: string) {
     const index = this.selectedPostsForImages.indexOf(postContent);
     if (index > -1) {
@@ -1308,22 +1311,21 @@ updatePostTypeOptions() {
     }
   }
 
-  // 🔥 METODO PER SELEZIONARE TUTTI I POST
   selectAllPosts() {
     if (this.output?.socialPostVersions) {
       this.selectedPostsForImages = [...this.output.socialPostVersions];
       this.imageSelectionMode = 'all';
+      this.selectedPostForImage = null;
     }
   }
 
-  // 🔥 METODO PER SELEZIONARE UN SINGOLO POST
   selectSinglePost(postContent: string) {
     this.selectedPostsForImages = [postContent];
     this.imageSelectionMode = 'single';
     this.selectedPostForImage = postContent;
   }
 
-  // 🔥 METODO PER GENERARE LE IMMAGINI
+  // 🔥 METODO AGGIORNATO: Genera immagini con Base64
   generateImages() {
     if (this.selectedPostsForImages.length === 0) {
       this.showNotification('Seleziona almeno un post per generare le immagini!', 'warning');
@@ -1335,13 +1337,13 @@ updatePostTypeOptions() {
       return;
     }
 
-     // Verifica crediti
-  const requiredCredits = this.selectedPostsForImages.length * 0.5;
-  if (this.user && this.user.credits < requiredCredits) {
-    this.showNotification(`Crediti insufficienti! Servono ${requiredCredits} crediti`, 'error');
-    this.openCreditStore();
-    return;
-  }
+    // Verifica crediti
+    const requiredCredits = this.selectedPostsForImages.length * 0.5;
+    if (this.user && this.user.credits < requiredCredits) {
+      this.showNotification(`Crediti insufficienti! Servono ${requiredCredits} crediti`, 'error');
+      this.openCreditStore();
+      return;
+    }
 
     this.generatingImages = true;
 
@@ -1350,67 +1352,190 @@ updatePostTypeOptions() {
       platform: this.platform,
       brandProfileId: this.selectedBrand.id,
       brandName: this.selectedBrand.brandName,
-      style: 'realistic', // Puoi aggiungere un selettore per lo stile
+      style: 'realistic',
       includeText: true,
     };
 
     this.imageService.generateImages(request).subscribe({
-      next: (response: any) => {
+      next: (response) => {
         this.generatingImages = false;
-        this.generatedImages = response.images;
+        
+        // Aggiungi flag temporaneo e ID univoco
+        this.generatedImages = response.images.map((img, index) => ({
+          ...img,
+          temporaryId: img.temporaryId || `temp_${Date.now()}_${index}`,
+          savedToCloudinary: img.savedToCloudinary || false
+        }));
+        
         this.imagesModalOpen = false;
         
-          if (this.user) {
-        this.user.credits -= response.totalCost || 0;
-      }
+        if (this.user) {
+          this.user.credits -= response.totalCost || 0;
+        }
 
-         this.showNotification(
-        `🎨 Generate ${response.count} immagini! (-${response.totalCost} crediti)`,
-        'success'
-      );
-    },
-    error: (error) => {
-      this.generatingImages = false;
-      console.error('Errore generazione immagini:', error);
-      
-      if (error.status === 402) {
-        this.showNotification('Crediti insufficienti per generare immagini!', 'error');
-        this.openCreditStore();
-      } else {
-        this.showNotification(error.error?.error || 'Errore nella generazione delle immagini', 'error');
+        this.showNotification(
+          `🎨 Generate ${response.count} anteprime! (-${response.totalCost} crediti)`,
+          'success'
+        );
+      },
+      error: (error) => {
+        this.generatingImages = false;
+        console.error('Errore generazione immagini:', error);
+        
+        if (error.status === 402) {
+          this.showNotification('Crediti insufficienti per generare immagini!', 'error');
+          this.openCreditStore();
+        } else {
+          this.showNotification(error.error?.error || 'Errore nella generazione delle immagini', 'error');
+        }
       }
+    });
+  }
+
+  // 🔥 NUOVO: Ottieni sorgente immagine (Base64 o URL)
+  getImageSource(image: GeneratedImage): string {
+    if (image.imageBase64) {
+      return 'data:image/png;base64,' + image.imageBase64;
     }
-  });
-}
+    return image.imageUrl || '';
+  }
 
-  // 🔥 METODO PER MOSTRARE LE IMMAGINI GENERATE
+  // 🔥 NUOVO: Controlla se l'immagine è temporanea (Base64)
+  isTemporaryImage(image: GeneratedImage): boolean {
+    return !image.savedToCloudinary && !!image.imageBase64;
+  }
+
+  // 🔥 METODO PER MOSTRARE LE IMMAGINI GENERATE (modal)
   showGeneratedImages() {
-    // Puoi mostrare in un modal dedicato o inline sotto i post
-    // Esempio: apri un modal con le immagini
-    this.imagesModalOpen = true; // Riusa lo stesso modal o creane uno nuovo
+    this.imagesModalOpen = true;
   }
 
-  // 🔥 METODO PER DOWNLOAD IMMAGINE
-  downloadImage(imageUrl: string, fileName: string = 'social-image') {
-    this.imageService.downloadImage(imageUrl, fileName);
+  // 🔥 NUOVO: Salva immagine su Cloudinary
+  saveImage(image: GeneratedImage) {
+    if (!image.imageBase64) return;
+    
+    this.savingImages = true;
+    this.imagesToSave.add(image.temporaryId || '');
+    
+    const request: SaveImageRequest = {
+      imageBase64: image.imageBase64,
+      platform: image.platform,
+      brandName: this.selectedBrand?.brandName
+    };
+    
+    this.imageService.saveImage(request).subscribe({
+      next: (savedImage) => {
+        // Aggiorna l'immagine con l'URL Cloudinary
+        const index = this.generatedImages.findIndex(img => 
+          img.temporaryId === image.temporaryId
+        );
+        
+        if (index !== -1) {
+          this.generatedImages[index] = {
+            ...savedImage,
+            temporaryId: image.temporaryId,
+            savedToCloudinary: true
+          };
+        }
+        
+        this.imagesToSave.delete(image.temporaryId || '');
+        this.savingImages = this.imagesToSave.size > 0;
+        
+        this.showNotification('✅ Immagine salvata su Cloudinary!', 'success');
+      },
+      error: (error) => {
+        this.imagesToSave.delete(image.temporaryId || '');
+        this.savingImages = this.imagesToSave.size > 0;
+        
+        this.showNotification('❌ Errore nel salvataggio: ' + error.error?.error, 'error');
+      }
+    });
   }
-
-  // 🔥 METODO PER COPIARE URL IMMAGINE
-async copyImageUrl(imageUrl: string) {
-   try {
-    await this.imageService.copyImageUrl(imageUrl);
-    this.showNotification('📋 URL immagine copiato!', 'success', 2000);
-  } catch (error) {
-    this.showNotification('Errore nella copia', 'error');
+  
+  // 🔥 NUOVO: Salva tutte le immagini non salvate
+  saveAllImages() {
+    const unsavedImages = this.generatedImages.filter(img => 
+      this.isTemporaryImage(img)
+    );
+    
+    if (unsavedImages.length === 0) return;
+    
+    unsavedImages.forEach(image => {
+      this.saveImage(image);
+    });
   }
+  
+  // 🔥 NUOVO: Copia contenuto immagine (URL o Base64)
+  copyImageContent(image: GeneratedImage) {
+    const content = image.imageUrl || image.imageBase64 || '';
+    navigator.clipboard.writeText(content).then(() => {
+      this.showNotification('📋 ' + (image.imageUrl ? 'URL copiato!' : 'Base64 copiato!'), 'success', 2000);
+    });
+  }
+  
+  // 🔥 AGGIORNATO: Download gestisce sia URL che Base64
+  downloadImage(image: GeneratedImage) {
+    if (image.imageUrl) {
+      // Download da URL Cloudinary
+      const link = document.createElement('a');
+      link.href = image.imageUrl;
+      link.download = `${this.selectedBrand?.brandName || 'social'}-${image.platform}-${Date.now()}.png`;
+      link.click();
+    } else if (image.imageBase64) {
+      // Download da Base64
+      const link = document.createElement('a');
+      link.href = 'data:image/png;base64,' + image.imageBase64;
+      link.download = `${this.selectedBrand?.brandName || 'social'}-${image.platform}-${Date.now()}.png`;
+      link.click();
+    }
   }
 
   // 🔥 METODO PER CHIUDERE MODAL IMMAGINI
   closeImagesModal() {
     this.imagesModalOpen = false;
     this.selectedPostsForImages = [];
-    this.generatedImages = [];
+    this.selectedPostForImage = null;
+    this.imageSelectionMode = 'all';
+    // NON cancellare le immagini generate
+    // this.generatedImages = [];
   }
 
-  // ... rest of the component ...
+  // 🔥 NUOVO: Helper per troncare testo
+  truncateText(text: string, maxLength: number): string {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+
+  // 🔥 NUOVO: Gestisci errore immagine
+  handleImageError(event: any, image: GeneratedImage) {
+    console.error('Errore caricamento immagine:', image.temporaryId);
+    event.target.src = 'assets/placeholder-image.png'; // Aggiungi un placeholder
+  }
+  
+  // 🔥 METODO PER COPIARE URL IMMAGINE (compatibilità)
+  async copyImageUrl(imageUrl: string) {
+    try {
+      await this.imageService.copyImageUrl(imageUrl);
+      this.showNotification('📋 URL immagine copiato!', 'success', 2000);
+    } catch (error) {
+      this.showNotification('Errore nella copia', 'error');
+    }
+  }
+
+get temporaryImagesCount(): number {
+    return this.generatedImages.filter(img => this.isTemporaryImage(img)).length;
+  }
+  
+  // 🔥 GETTER: Immagini temporanee
+  get temporaryImages(): GeneratedImage[] {
+    return this.generatedImages.filter(img => this.isTemporaryImage(img));
+  }
+ get savedImages(): GeneratedImage[] {
+    return this.generatedImages.filter(img => !this.isTemporaryImage(img));
+  }
+  
+  // 🔥 METODO: Controlla se ci sono immagini non salvate
+  get hasUnsavedImages(): boolean {
+    return this.temporaryImagesCount > 0;
+  }
 }
