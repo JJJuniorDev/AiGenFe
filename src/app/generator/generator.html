@@ -274,224 +274,8 @@
         </div> <!-- fine generate-card -->
       </div> <!-- fine dashboard -->
     </div> <!-- fine dashboard-container -->
-<!-- SEZIONE IMMAGINI GENERATE (DOPO IL DASHBOARD) -->
-<div *ngIf="output" class="image-generation-section">
-  <h3>🎨 Genera Immagini</h3>
-  
-  <button class="btn-generate-images" 
-          (click)="prepareImageGeneration()"
-          [disabled]="!output?.socialPostVersions?.length">
-    🖼️ Genera Immagini dai Post
-  </button>
-  <div class="image-tip">
-    <small>Puoi generare immagini per tutti i post o selezionarne uno specifico</small>
-  </div>
-</div>
 
-<!-- SEZIONE IMMAGINI INLINE (VISUALIZZAZIONE) -->
-<div *ngIf="generatedImages.length > 0 && !imagesModalOpen" class="inline-images-section">
-  <h3>🎨 Immagini Generate 
-   <span *ngIf="temporaryImagesCount > 0" class="temp-badge">
-      ({{ temporaryImagesCount }} anteprime)
-    </span>
-  </h3>
-  
-  <div class="images-preview-grid">
-    <div *ngFor="let image of generatedImages" 
-         class="image-preview-card"
-         [class.temporary]="isTemporaryImage(image)"
-         [class.saving]="imagesToSave.has(image.temporaryId || '')">
-      
-      <!-- Badge per anteprime temporanee -->
-      <div *ngIf="isTemporaryImage(image)" class="temporary-badge">
-        ⏳ Anteprima
-        <span *ngIf="imagesToSave.has(image.temporaryId || '')" class="saving-dot">🔄</span>
-      </div>
-      
-      <div class="image-container">
-        <img [src]="getImageSource(image)" 
-             [alt]="'Immagine social per ' + selectedBrand?.brandName"
-             class="preview-image"
-             (error)="handleImageError($event, image)">
-      </div>
-      
-      <!-- Info immagine -->
-      <div class="image-info-small">
-        <span>{{ getPlatformName(image.platform) }}</span>
-        <span>{{ image.dimensions?.width }}×{{ image.dimensions?.height }}</span>
-      </div>
-      
-      <div class="image-actions-inline">
-        <!-- Copia -->
-        <button class="btn-small" 
-                [title]="image.imageUrl ? 'Copia URL' : 'Copia Base64'"
-                (click)="copyImageContent(image)">
-          📋
-        </button>
-        
-        <!-- Salva (solo se temporanea) -->
-        <button *ngIf="isTemporaryImage(image)" 
-                class="btn-small btn-save"
-                [title]="imagesToSave.has(image.temporaryId || '') ? 'Salvataggio in corso...' : 'Salva su Cloudinary'"
-                [disabled]="imagesToSave.has(image.temporaryId || '') || savingImages"
-                (click)="saveImage(image)">
-          {{ imagesToSave.has(image.temporaryId || '') ? '🔄' : '💾' }}
-        </button>
-        
-        <!-- Download -->
-        <button class="btn-small"
-                title="Download"
-                (click)="downloadImage(image)">
-          ⬇️
-        </button>
-        
-        <!-- Ingrandisci -->
-        <button class="btn-small" 
-                title="Ingrandisci"
-                (click)="showGeneratedImages()">
-          🔍
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Pulsante per salvare tutte le anteprime -->
-   <div *ngIf="temporaryImagesCount > 0" 
-       class="save-all-container">
-    <button class="btn-save-all" 
-            (click)="saveAllImages()"
-            [disabled]="savingImages">
-     💾 Salva tutte le {{ temporaryImagesCount }} immagini su Cloudinary  </button>
-    <small>Le immagini saranno disponibili permanentemente e potrai condividerle via URL</small>
-  </div>
-</div>
 
-<!-- ========== MODAL SELEZIONE IMMAGINI (RIMANE COSÌ COM'È) ========== -->
-<div class="modal images-modal" *ngIf="imagesModalOpen" (click)="closeImagesModal()">
-  <div class="modal-content large" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="closeImagesModal()">×</button>
-    
-    <h2>🎨 Genera Immagini</h2>
-    
-    <!-- Se ci sono già immagini generate -->
-    <div *ngIf="generatedImages.length > 0" class="generated-images-container">
-      <h3>Immagini Generate</h3>
-      <div class="images-grid">
-        <div *ngFor="let image of generatedImages" class="image-card">
-          <img [src]="getImageSource(image)" 
-               [alt]="'Immagine per ' + platform"
-               class="preview-image-large">
-          <div class="image-info">
-            <p><strong>Piattaforma:</strong> {{ getPlatformName(image.platform) }}</p>
-            <p><strong>Dimensioni:</strong> {{ image.dimensions.width }}×{{ image.dimensions.height }}</p>
-            <p *ngIf="image.promptUsed" class="prompt-preview">
-              <strong>Prompt:</strong> {{ truncateText(image.promptUsed, 100) }}
-            </p>
-          </div>
-          <div class="image-actions">
-            <button class="btn-copy" 
-                    (click)="copyImageContent(image)">
-              📋 {{ image.imageUrl ? 'Copia URL' : 'Copia Base64' }}
-            </button>
-            <button class="btn-download" 
-                    (click)="downloadImage(image)">
-              💾 Download
-            </button>
-            <button *ngIf="isTemporaryImage(image)" 
-                    class="btn-save"
-                    (click)="saveImage(image)"
-                    [disabled]="imagesToSave.has(image.temporaryId || '')">
-              {{ imagesToSave.has(image.temporaryId || '') ? '🔄 Salvando...' : '💾 Salva' }}
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <button class="btn-outline" (click)="closeImagesModal()">
-        Chiudi
-      </button>
-    </div>
-    
-    <!-- Selezione dei post (se non ci sono immagini ancora) -->
-    <div *ngIf="generatedImages.length === 0" class="image-selection-container">
-      <h3>Seleziona i Post per Generare Immagini</h3>
-      
-      <!-- Modalità di selezione -->
-      <div class="selection-mode">
-        <button class="mode-btn" 
-                [class.active]="imageSelectionMode === 'all'"
-                (click)="selectAllPosts()">
-          📑 Tutti e 3 i Post
-        </button>
-        <button class="mode-btn" 
-                [class.active]="imageSelectionMode === 'single'"
-                (click)="selectedPostsForImages = []; imageSelectionMode = 'single'">
-          🎯 Solo un Post
-        </button>
-      </div>
-      
-      <!-- Lista dei post -->
-      <div class="posts-list">
-        <div *ngFor="let post of availablePosts" 
-             class="post-item"
-             [class.selected]="selectedPostsForImages.includes(post.content)">
-          
-          <div class="post-checkbox" *ngIf="imageSelectionMode !== 'single'">
-            <input type="checkbox" 
-                   [checked]="selectedPostsForImages.includes(post.content)"
-                   (change)="togglePostSelection(post.content)">
-          </div>
-          
-          <div class="post-content-preview" 
-               [class.single-selection]="imageSelectionMode === 'single'"
-               (click)="imageSelectionMode === 'single' ? selectSinglePost(post.content) : null">
-            
-            <div class="post-source">
-              <strong>{{ post.source }}</strong>
-            </div>
-            
-            <div class="post-text">
-              {{ post.content }}
-            </div>
-            
-            <div *ngIf="imageSelectionMode === 'single'" class="single-selection-indicator">
-              {{ selectedPostForImage === post.content ? '✅' : '⬜' }}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Contatore selezione -->
-      <div class="selection-counter">
-        <strong>{{ selectedPostsForImages.length }}</strong> post selezionati
-        <span *ngIf="selectedPostsForImages.length > 0">
-          ({{ selectedPostsForImages.length }} immagine{{ selectedPostsForImages.length > 1 ? 'i' : '' }} saranno generate)
-        </span>
-      </div>
-      
-      <!-- Azioni -->
-      <div class="modal-acts">
-        <button class="btn-outline" (click)="closeImagesModal()">
-          Annulla
-        </button>
-        
-        <button class="btn-primary-images" 
-                (click)="generateImages()"
-                [disabled]="selectedPostsForImages.length === 0 || generatingImages">
-          
-          <span *ngIf="!generatingImages">
-            🚀 Genera {{ selectedPostsForImages.length }} Immagine{{ selectedPostsForImages.length > 1 ? 'i' : '' }}
-          </span>
-          
-          <span *ngIf="generatingImages" class="generating-state">
-            <div class="spinner-small"></div>
-            Generazione in corso...
-          </span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
   <!-- MODAL BRAND -->
   <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
@@ -783,9 +567,102 @@
            <div class="version-content">
         <p>{{ v }}</p>
             </div>
+
+             <div class="image-generation-per-post">
+    
+    <!-- Pulsante per generare immagine -->
+    <button class="generate-image-btn" 
+            (click)="generateImageForPost(v, i)"
+            [disabled]="generatingImagesForPost === i">
+      🖼️ {{ translationService.translate('generaImmagine') }}
+    </button>
+    
+    <!-- Contatore crediti richiesti -->
+    <span class="image-credit-cost" *ngIf="!imagesForPost[i]?.length">
+      (0.5 crediti)
+    </span>
+    
+    <!-- Stato di generazione -->
+    <div *ngIf="generatingImagesForPost === i" class="generating-image-status">
+      <div class="spinner-small"></div>
+      <span>Generazione in corso...</span>
+    </div>
+    
+    <!-- Carosello immagini generate per questo post -->
+    <div *ngIf="imagesForPost[i] && imagesForPost[i].length > 0" class="post-images-carousel">
+      <h4>🖼️ Immagini generate per questa versione:</h4>
+      
+      <div class="carousel-container">
+        <button class="carousel-nav prev" (click)="prevImage(i)">‹</button>
+        
+        <div class="carousel-images">
+          <div *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
+               class="carousel-image-wrapper"
+               [class.active]="currentImageIndex[i] === imgIndex">
+            
+            <!-- Immagine -->
+            <img [src]="getImageSource(image)" 
+                 [alt]="'Immagine per versione ' + (i+1)"
+                 class="carousel-image">
+            
+            <!-- Info immagine -->
+            <div class="image-info-mini">
+              <span>{{ getPlatformName(image.platform) }}</span>
+              <span>{{ image.dimensions?.width }}×{{ image.dimensions?.height }}</span>
+            </div>
+            
+            <!-- Azioni immagine -->
+            <div class="image-actions-mini">
+              <button class="btn-tiny" 
+                      [title]="'Copia ' + (image.imageUrl ? 'URL' : 'Base64')"
+                      (click)="copyImageContent(image)">
+                📋
+              </button>
+              
+              <button *ngIf="isTemporaryImage(image)" 
+                      class="btn-tiny btn-save"
+                      [title]="'Salva su Cloudinary'"
+                      [disabled]="imagesToSave.has(image.temporaryId || '')"
+                      (click)="saveImage(image)">
+                {{ imagesToSave.has(image.temporaryId || '') ? '🔄' : '💾' }}
+              </button>
+              
+              <button class="btn-tiny"
+                      title="Download"
+                      (click)="downloadImage(image)">
+                ⬇️
+              </button>
+              
+              <button class="btn-tiny btn-delete-image"
+                      title="Elimina"
+                      (click)="deleteImageFromPost(i, imgIndex)">
+                🗑️
+              </button>
+            </div>
           </div>
         </div>
+        
+        <button class="carousel-nav next" (click)="nextImage(i)">›</button>
       </div>
+      
+      <!-- Indicatori del carosello -->
+      <div class="carousel-indicators">
+        <span *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
+              class="indicator"
+              [class.active]="currentImageIndex[i] === imgIndex"
+              (click)="goToImage(i, imgIndex)">
+          ●
+        </span>
+      </div>
+      
+      <!-- Pulsante per generare un'altra immagine -->
+      <button class="generate-another-btn" 
+              (click)="generateAnotherImageForPost(v, i)">
+        + Genera un'altra immagine
+      </button>
+    </div>
+  </div>
+</div>
     
 
   <div *ngIf="creditStoreModalOpen" class="modal-overlay" (click)="closeCreditStore()">

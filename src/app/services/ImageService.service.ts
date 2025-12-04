@@ -41,6 +41,10 @@ export interface SaveImageRequest {
   providedIn: 'root'
 })
 export class ImageService {
+  
+  deleteImage(imageUrl: string): Observable<void> {
+    throw new Error('Method not implemented.');
+  }
   private baseUrl = `${environment.apiUrl}/images`;
 
   constructor(private http: HttpClient

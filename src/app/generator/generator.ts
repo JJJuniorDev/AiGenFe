@@ -167,18 +167,18 @@ private isLoadingBrands = false;
   private brandsLoaded = false;
 private previousUserId: string | null = null;
 
-availablePosts: { content: string; source: string }[] = [];
-  selectedPostsForImages: string[] = [];
-  selectedPostForImage: string | null = null;
-  imageSelectionMode: 'all' | 'single' = 'all';
   
   // Variabili per gestione immagini
   generatedImages: GeneratedImage[] = [];
-  imagesModalOpen = false;
   generatingImages = false;
   savingImages = false;
   imagesToSave: Set<string> = new Set(); 
 
+
+
+  imagesForPost: { [postIndex: number]: GeneratedImage[] } = {};
+  currentImageIndex: { [postIndex: number]: number } = {};
+  generatingImagesForPost: number | null = null;
   constructor(
     private authService: AuthService,
     private testimonialService: TestimonialService,
@@ -1263,134 +1263,133 @@ updatePostTypeOptions() {
     display: this.currentLang === 'it' ? type.displayIt : type.displayEn
   }));
 }
-
-  prepareImageGeneration() {
-    if (!this.output) {
-      this.showNotification('Prima genera i contenuti testuali!', 'warning');
-      return;
-    }
-
-    // Raccogli tutti i post disponibili
-    this.availablePosts = [];
-    
-    // Aggiungi tutte le versioni di post social
-    if (this.output.socialPostVersions) {
-      this.output.socialPostVersions.forEach((post, index) => {
-        this.availablePosts.push({
-          content: post,
-          source: `Social Post v${index + 1}`
-        });
-      });
-    }
-    
-    // Aggiungi headline se vuoi (opzionale)
-    if (this.output.headlineVersions) {
-      this.output.headlineVersions.forEach((headline, index) => {
-        this.availablePosts.push({
-          content: headline,
-          source: `Headline v${index + 1}`
-        });
-      });
-    }
-
-    // Imposta la selezione di default: tutti i post social
-    this.selectedPostsForImages = this.output.socialPostVersions || [];
-    this.imageSelectionMode = 'all';
-    this.selectedPostForImage = null;
-    
-    // Apri il modal di selezione
-    this.imagesModalOpen = true;
+generateImageForPost(postContent: string, postIndex: number) {
+  if (!this.selectedBrand) {
+    this.showNotification('Seleziona un brand prima di generare immagini!', 'warning');
+    return;
   }
 
-  togglePostSelection(postContent: string) {
-    const index = this.selectedPostsForImages.indexOf(postContent);
-    if (index > -1) {
-      this.selectedPostsForImages.splice(index, 1);
-    } else {
-      this.selectedPostsForImages.push(postContent);
-    }
+  // Verifica crediti
+  if (this.user && this.user.credits < 0.5) {
+    this.showNotification('Crediti insufficienti! Servono 0.5 crediti', 'error');
+    this.openCreditStore();
+    return;
   }
 
-  selectAllPosts() {
-    if (this.output?.socialPostVersions) {
-      this.selectedPostsForImages = [...this.output.socialPostVersions];
-      this.imageSelectionMode = 'all';
-      this.selectedPostForImage = null;
-    }
-  }
+  this.generatingImagesForPost = postIndex;
 
-  selectSinglePost(postContent: string) {
-    this.selectedPostsForImages = [postContent];
-    this.imageSelectionMode = 'single';
-    this.selectedPostForImage = postContent;
-  }
+  const request: ImageGenerationRequest = {
+    posts: [postContent], // Solo questo post
+    platform: this.platform,
+    brandProfileId: this.selectedBrand.id!,
+    brandName: this.selectedBrand.brandName,
+    style: 'realistic',
+    includeText: true,
+  };
+
+  this.imageService.generateImages(request).subscribe({
+    next: (response) => {
+      this.generatingImagesForPost = null;
+      
+      if (!this.imagesForPost[postIndex]) {
+        this.imagesForPost[postIndex] = [];
+      }
+      
+      // Aggiungi nuove immagini con flag temporaneo
+      const newImages = response.images.map((img, index) => ({
+        ...img,
+        temporaryId: img.temporaryId || `temp_${Date.now()}_${postIndex}_${index}`,
+        savedToCloudinary: img.savedToCloudinary || false,
+        postIndex: postIndex // Memorizza a quale post appartiene
+      }));
+      
+      this.imagesForPost[postIndex].push(...newImages);
+      
+      // Imposta l'indice corrente sull'ultima immagine aggiunta
+      this.currentImageIndex[postIndex] = this.imagesForPost[postIndex].length - 1;
+      
+      if (this.user) {
+        this.user.credits -= response.totalCost || 0.5;
+      }
+
+      this.showNotification(
+        `🎨 Immagine generata! (-${response.totalCost || 0.5} crediti)`,
+        'success'
+      );
+    },
+    error: (error) => {
+      this.generatingImagesForPost = null;
+      console.error('Errore generazione immagine:', error);
+      
+      if (error.status === 402) {
+        this.showNotification('Crediti insufficienti per generare immagini!', 'error');
+        this.openCreditStore();
+      } else {
+        this.showNotification(error.error?.error || 'Errore nella generazione dell\'immagine', 'error');
+      }
+    }
+  });
+}
+
 
   // 🔥 METODO AGGIORNATO: Genera immagini con Base64
-  generateImages() {
-    if (this.selectedPostsForImages.length === 0) {
-      this.showNotification('Seleziona almeno un post per generare le immagini!', 'warning');
-      return;
-    }
+ generateAnotherImageForPost(postContent: string, postIndex: number) {
+  this.generateImageForPost(postContent, postIndex);
+}
 
-    if (!this.selectedBrand) {
-      this.showNotification('Seleziona un brand prima di generare immagini!', 'warning');
-      return;
-    }
+    prevImage(postIndex: number) {
+  if (!this.imagesForPost[postIndex] || this.imagesForPost[postIndex].length <= 1) return;
+  
+  this.currentImageIndex[postIndex] = 
+    this.currentImageIndex[postIndex] === 0 
+      ? this.imagesForPost[postIndex].length - 1 
+      : this.currentImageIndex[postIndex] - 1;
+}
 
-    // Verifica crediti
-    const requiredCredits = this.selectedPostsForImages.length * 0.5;
-    if (this.user && this.user.credits < requiredCredits) {
-      this.showNotification(`Crediti insufficienti! Servono ${requiredCredits} crediti`, 'error');
-      this.openCreditStore();
-      return;
-    }
+nextImage(postIndex: number) {
+  if (!this.imagesForPost[postIndex] || this.imagesForPost[postIndex].length <= 1) return;
+  
+  this.currentImageIndex[postIndex] = 
+    this.currentImageIndex[postIndex] === this.imagesForPost[postIndex].length - 1 
+      ? 0 
+      : this.currentImageIndex[postIndex] + 1;
+}
 
-    this.generatingImages = true;
-
-    const request: ImageGenerationRequest = {
-      posts: this.selectedPostsForImages,
-      platform: this.platform,
-      brandProfileId: this.selectedBrand.id,
-      brandName: this.selectedBrand.brandName,
-      style: 'realistic',
-      includeText: true,
-    };
-
-    this.imageService.generateImages(request).subscribe({
-      next: (response) => {
-        this.generatingImages = false;
-        
-        // Aggiungi flag temporaneo e ID univoco
-        this.generatedImages = response.images.map((img, index) => ({
-          ...img,
-          temporaryId: img.temporaryId || `temp_${Date.now()}_${index}`,
-          savedToCloudinary: img.savedToCloudinary || false
-        }));
-        
-        this.imagesModalOpen = false;
-        
-        if (this.user) {
-          this.user.credits -= response.totalCost || 0;
-        }
-
-        this.showNotification(
-          `🎨 Generate ${response.count} anteprime! (-${response.totalCost} crediti)`,
-          'success'
-        );
-      },
-      error: (error) => {
-        this.generatingImages = false;
-        console.error('Errore generazione immagini:', error);
-        
-        if (error.status === 402) {
-          this.showNotification('Crediti insufficienti per generare immagini!', 'error');
-          this.openCreditStore();
-        } else {
-          this.showNotification(error.error?.error || 'Errore nella generazione delle immagini', 'error');
-        }
-      }
-    });
+goToImage(postIndex: number, imageIndex: number) {
+  if (this.imagesForPost[postIndex] && imageIndex < this.imagesForPost[postIndex].length) {
+    this.currentImageIndex[postIndex] = imageIndex;
   }
+}
+
+// 🔄 Aggiungi metodo per eliminare immagine:
+deleteImageFromPost(postIndex: number, imageIndex: number) {
+  if (this.imagesForPost[postIndex] && this.imagesForPost[postIndex][imageIndex]) {
+    const image = this.imagesForPost[postIndex][imageIndex];
+    
+    // Se l'immagine è salvata su Cloudinary, puoi anche eliminarla dal server
+    if (image.imageUrl && !image.imageBase64) {
+      // Opzionale: chiama API per eliminare da Cloudinary
+      this.imageService.deleteImage(image.imageUrl).subscribe({
+        next: () => {
+          console.log('Immagine eliminata da Cloudinary');
+        },
+        error: (err) => {
+          console.warn('Impossibile eliminare da Cloudinary:', err);
+        }
+      });
+    }
+    
+    // Rimuovi dall'array
+    this.imagesForPost[postIndex].splice(imageIndex, 1);
+    
+    // Aggiorna l'indice corrente
+    if (this.currentImageIndex[postIndex] >= this.imagesForPost[postIndex].length) {
+      this.currentImageIndex[postIndex] = Math.max(0, this.imagesForPost[postIndex].length - 1);
+    }
+    
+    this.showNotification('Immagine rimossa');
+  }
+}
 
   // 🔥 NUOVO: Ottieni sorgente immagine (Base64 o URL)
   getImageSource(image: GeneratedImage): string {
@@ -1405,10 +1404,7 @@ updatePostTypeOptions() {
     return !image.savedToCloudinary && !!image.imageBase64;
   }
 
-  // 🔥 METODO PER MOSTRARE LE IMMAGINI GENERATE (modal)
-  showGeneratedImages() {
-    this.imagesModalOpen = true;
-  }
+ 
 
   // 🔥 NUOVO: Salva immagine su Cloudinary
   saveImage(image: GeneratedImage) {
@@ -1490,21 +1486,8 @@ updatePostTypeOptions() {
     }
   }
 
-  // 🔥 METODO PER CHIUDERE MODAL IMMAGINI
-  closeImagesModal() {
-    this.imagesModalOpen = false;
-    this.selectedPostsForImages = [];
-    this.selectedPostForImage = null;
-    this.imageSelectionMode = 'all';
-    // NON cancellare le immagini generate
-    // this.generatedImages = [];
-  }
 
-  // 🔥 NUOVO: Helper per troncare testo
-  truncateText(text: string, maxLength: number): string {
-    if (!text || text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }
+ 
 
   // 🔥 NUOVO: Gestisci errore immagine
   handleImageError(event: any, image: GeneratedImage) {
