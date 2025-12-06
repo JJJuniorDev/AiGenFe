@@ -1002,6 +1002,171 @@ body {
   font-size: 0.9rem;
   flex: 1;
 }
+.btn-analysis {
+  background: linear-gradient(145deg, 
+    rgba(0, 200, 255, 0.9) 0%, 
+    rgba(100, 220, 255, 0.95) 30%,
+    rgba(0, 180, 255, 0.9) 70%,
+    rgba(0, 200, 255, 0.95) 100%);
+  color: #0a0a1a;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 10px 20px rgba(0, 200, 255, 0.3),
+    0 0 15px rgba(0, 200, 255, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  
+  /* Effetto bordo luminoso */
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  background-size: 200% 200%;
+  animation: shimmer 4s ease infinite;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.btn-analysis:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 15px 30px rgba(0, 200, 255, 0.4),
+    0 0 25px rgba(0, 220, 255, 0.3),
+    0 0 40px rgba(0, 180, 255, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  background-position: 100% 50%;
+  letter-spacing: 1px;
+  border-color: rgba(0, 255, 255, 0.7);
+}
+
+.btn-analysis:active {
+  transform: translateY(-1px);
+  transition: all 0.1s ease;
+  box-shadow: 
+    0 5px 15px rgba(0, 200, 255, 0.4),
+    0 0 10px rgba(0, 220, 255, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-analysis::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transition: left 0.7s ease;
+}
+
+.btn-analysis:hover::before {
+  left: 100%;
+}
+
+.btn-analysis::after {
+  content: '🌐';
+  margin-right: 10px;
+  display: inline-block;
+  animation: pulseIcon 2s infinite;
+  filter: drop-shadow(0 0 3px rgba(0, 220, 255, 0.5));
+  vertical-align: middle;
+}
+
+/* Icon animation - più fluida e moderna */
+@keyframes pulseIcon {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 3px rgba(0, 220, 255, 0.5));
+  }
+  25% {
+    transform: scale(1.05) rotate(-2deg);
+    filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.7));
+  }
+  50% {
+    transform: scale(1.1) rotate(0deg);
+    filter: drop-shadow(0 0 7px rgba(0, 255, 255, 0.9));
+  }
+  75% {
+    transform: scale(1.05) rotate(2deg);
+    filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.7));
+  }
+}
+
+/* Shimmer effect per il gradiente */
+@keyframes shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Effetto di testo */
+.btn-analysis span {
+  position: relative;
+  z-index: 1;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Versione mobile responsive */
+@media (max-width: 768px) {
+  .btn-analysis {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 40px;
+  }
+  
+  .btn-analysis::after {
+    margin-right: 8px;
+    font-size: 1.1em;
+  }
+}
+
+/* Stato disabilitato */
+.btn-analysis:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 
+    0 5px 15px rgba(0, 200, 255, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  animation: none;
+}
+
+/* Effetto di particelle (opzionale) */
+.btn-analysis:hover .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float 1s ease-out forwards;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) scale(0);
+    opacity: 0;
+  }
+}
 
 .btn-confirm {
   background: linear-gradient(135deg, #00ffff 0%, #008b8b 100%);
@@ -2605,34 +2770,91 @@ select.error {
 
 
 
+.modal.website-analysis-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+  box-sizing: border-box;
+   z-index: 1001 !important;
+}
 
 .website-analysis-modal .modal-content {
+  background: linear-gradient(145deg, 
+    rgba(40, 40, 40, 0.95) 0%, 
+    rgba(50, 50, 50, 0.9) 100%);
+  border: 2px solid #00ffff;
+  border-radius: 16px;
+  padding: 30px;
+  position: relative;
   max-width: 500px;
+  width: 100%;
+  box-shadow: 0 25px 50px rgba(0, 255, 255, 0.2);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  animation: modalEntrance 0.3s ease-out;
 }
 
-.analyzing-state {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.spinner-small {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.analysis-description {
+  margin: 15px 0 25px 0;
+  color: #b0b0b0;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .website-input-section {
-  margin: 20px 0;
+  margin-bottom: 25px;
 }
 
 .website-input-section label {
   display: block;
   margin-bottom: 8px;
-  font-weight: bold;
+  font-weight: 600;
+  color: #00ffff;
+  font-size: 0.95rem;
+}
+
+.website-input-section input {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 2px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.website-input-section input:focus {
+  border-color: #00ffff;
+  background: rgba(20, 25, 25, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.website-input-section input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.analyzing-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Stile generale per lo stato di generazione */

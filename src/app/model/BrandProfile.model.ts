@@ -13,4 +13,11 @@ export interface BrandProfile {
   colorPalette?: string;
   preferredCTAs: string[];
   positioning?: string;
+  missionStatement?: string;
+  visionStatement?:string;
+  brandArchetype?: string;
+  preferredWords?: string[];
+  competitiveDifferentials?: string;
+  industryCategory?: string;
+  voiceDescription?: string;
 }

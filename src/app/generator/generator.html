@@ -57,7 +57,9 @@
       <div class="dashboard">
         <div class="generate-card">
           <h3>{{ translationService.translate('generateContent') }}</h3>
-          
+           <button class="btn-analysis" (click)="openWebsiteAnalysisModal()">
+          🌐 {{ currentLang === 'it' ? 'Analizza Sito Web per creare il brand in automatico' : 'Analyze Website' }}
+        </button>
           <!-- MODE SELECTOR -->
           <div class="mode-selector">
             <button class="mode-btn" 
@@ -135,6 +137,9 @@
               </div>
             </div>
           </div>
+
+           
+        <hr>
 
           <!-- BRAND SECTION -->
           <div class="brand-section">
@@ -276,465 +281,482 @@
     </div> <!-- fine dashboard-container -->
 
 
-  <!-- MODAL BRAND -->
-  <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <button class="close-btn" (click)="closeBrandModal()">×</button>
-      <h2>{{ currentLang === 'it' ? '🎪 Brand & Clienti' : '🎪 Brands & Clients' }}</h2>
-      
-      <div class="brand-limit-header">
-        <span class="limit-text">
-          {{ currentLang === 'it' ? 'Brand creati:' : 'Brands created:' }} {{ currentBrands }}/{{ maxBrands }}
-        </span>
-        <div class="limit-bar">
-          <div class="limit-fill" [style.width.%]="(currentBrands / maxBrands) * 100"></div>
-        </div>
-      </div>
-      
-      <div class="brand-list">
-        <div *ngFor="let brand of brandProfiles" 
-             class="brand-item"
-             [class.selected]="selectedBrand?.id === brand.id"
-             (click)="toggleBrandSelection(brand)">
-          
-          <div class="brand-checkbox">
-            <div class="checkmark" *ngIf="selectedBrand?.id === brand.id">✓</div>
+    <!-- MODAL BRAND -->
+    <div class="modal brand-modal" *ngIf="brandModalOpen" (click)="closeBrandModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeBrandModal()">×</button>
+        <h2>{{ currentLang === 'it' ? '🎪 Brand & Clienti' : '🎪 Brands & Clients' }}</h2>
+        
+        <div class="brand-limit-header">
+          <span class="limit-text">
+            {{ currentLang === 'it' ? 'Brand creati:' : 'Brands created:' }} {{ currentBrands }}/{{ maxBrands }}
+          </span>
+          <div class="limit-bar">
+            <div class="limit-fill" [style.width.%]="(currentBrands / maxBrands) * 100"></div>
           </div>
-          
-          <div class="brand-info">
-            <h3>{{ brand.brandName }}</h3>
-            <p class="brand-tone">{{ brand.tone }}</p>
-            <p class="brand-description">{{ brand.brandDescription }}</p>
-            <div class="brand-tags">
-              <span *ngFor="let tag of brand.defaultHashtags.slice(0, 3)" 
-                    class="tag">{{ tag }}</span>
+        </div>
+        
+        <div class="brand-list">
+          <div *ngFor="let brand of brandProfiles" 
+               class="brand-item"
+               [class.selected]="selectedBrand?.id === brand.id"
+               (click)="toggleBrandSelection(brand)">
+            
+            <div class="brand-checkbox">
+              <div class="checkmark" *ngIf="selectedBrand?.id === brand.id">✓</div>
+            </div>
+            
+            <div class="brand-info">
+              <h3>{{ brand.brandName }}</h3>
+              <p class="brand-tone">{{ brand.tone }}</p>
+              <p class="brand-description">{{ brand.brandDescription }}</p>
+              <div class="brand-tags">
+                <span *ngFor="let tag of brand.defaultHashtags.slice(0, 3)" 
+                      class="tag">{{ tag }}</span>
+              </div>
+            </div>
+            
+            <div class="brand-actions">
+              <button class="btn-edit" (click)="openBrandFormModal(brand); $event.stopPropagation()">
+                {{ currentLang === 'it' ? 'Modifica' : 'Edit' }}
+              </button>
+              <button class="btn-delete" (click)="deleteBrand(brand); $event.stopPropagation()">
+                {{ currentLang === 'it' ? 'Elimina' : 'Delete' }}
+              </button>
             </div>
           </div>
           
-          <div class="brand-actions">
-            <button class="btn-edit" (click)="openBrandFormModal(brand); $event.stopPropagation()">
-              {{ currentLang === 'it' ? 'Modifica' : 'Edit' }}
-            </button>
-            <button class="btn-delete" (click)="deleteBrand(brand); $event.stopPropagation()">
-              {{ currentLang === 'it' ? 'Elimina' : 'Delete' }}
+          <div *ngIf="brandProfiles.length === 0" class="no-brands">
+            <p>{{ currentLang === 'it' ? 'Nessun brand creato ancora' : 'No brands created yet' }}</p>
+            <button class="btn-primary" (click)="openBrandFormModal()">
+              {{ currentLang === 'it' ? '+ Crea il tuo primo brand' : '+ Create your first brand' }}
             </button>
           </div>
         </div>
         
-        <div *ngIf="brandProfiles.length === 0" class="no-brands">
-          <p>{{ currentLang === 'it' ? 'Nessun brand creato ancora' : 'No brands created yet' }}</p>
-          <button class="btn-primary" (click)="openBrandFormModal()">
-            {{ currentLang === 'it' ? '+ Crea il tuo primo brand' : '+ Create your first brand' }}
+        <div class="modal-actions">
+          <button class="btn-outline" (click)="openBrandFormModal()" [disabled]="!canCreateMoreBrands">
+            {{ currentLang === 'it' ? 'Crea Manualmente' : 'Create Manually' }}
+          </button>
+        
+          <button class="btn-confirm" 
+                  (click)="confirmBrandSelection()"
+                  [disabled]="!selectedBrand">
+            ✅ {{ currentLang === 'it' ? 'Conferma Selezione' : 'Confirm Selection' }}
           </button>
         </div>
       </div>
-      
-      <div class="modal-actions">
-        <button class="btn-outline" (click)="openBrandFormModal()" [disabled]="!canCreateMoreBrands">
-          {{ currentLang === 'it' ? 'Crea Manualmente' : 'Create Manually' }}
-        </button>
-        <button class="btn-primary" (click)="openWebsiteAnalysisModal()">
-          🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}
-        </button>
-        <button class="btn-confirm" 
-                (click)="confirmBrandSelection()"
-                [disabled]="!selectedBrand">
-          ✅ {{ currentLang === 'it' ? 'Conferma Selezione' : 'Confirm Selection' }}
-        </button>
-      </div>
     </div>
-  </div>
 
-  <!-- MODAL FORM BRAND -->
-  <div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
-    <div class="modal-content large" (click)="$event.stopPropagation()">
-      <button class="close-btn" (click)="closeBrandModal()">×</button>
-      <h2>{{ editingBrand ? 
-        (currentLang === 'it' ? 'Modifica Brand' : 'Edit Brand') : 
-        (currentLang === 'it' ? 'Crea Nuovo Brand' : 'Create New Brand') }}</h2>
-      
-      <div class="brand-creation-tips">
-        <h4>{{ currentLang === 'it' ? '💡 Suggerimenti per un Brand Memory efficace:' : '💡 Tips for an effective Brand Memory:' }}</h4>
-        <ul>
-          <li>{{ currentLang === 'it' ? 
-            'Più dettagli fornisci, più i contenuti saranno personalizzati' : 
-            'The more details you provide, the more personalized the content will be' }}</li>
-          <li>{{ currentLang === 'it' ? 
-            'Usa esempi reali dal tuo business attuale' : 
-            'Use real examples from your current business' }}</li>
-          <li>{{ currentLang === 'it' ? 
-            'Pensa al linguaggio che usi con i tuoi clienti ideali' : 
-            'Think about the language you use with your ideal customers' }}</li>
-        </ul>
-      </div>
-  
-      <form class="brand-form">
-     
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Nome Brand *' : 'Brand Name *' }}</label>
-          <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" 
-                 [placeholder]="currentLang === 'it' ? 'Es: TechInnovate, FashionGuru, GreenLife...' : 'Ex: TechInnovate, FashionGuru, GreenLife...'" required>
-          <small>{{ currentLang === 'it' ? 
-            'Il nome del tuo brand, azienda o progetto' : 
-            'Your brand, company or project name' }}</small>
+    <!-- MODAL FORM BRAND -->
+    <div class="modal brand-form-modal" *ngIf="brandFormModalOpen" (click)="closeBrandModal()">
+      <div class="modal-content large" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeBrandModal()">×</button>
+        <h2>{{ editingBrand ? 
+          (currentLang === 'it' ? 'Modifica Brand' : 'Edit Brand') : 
+          (currentLang === 'it' ? 'Crea Nuovo Brand' : 'Create New Brand') }}</h2>
+        
+        <div class="brand-creation-tips">
+          <h4>{{ currentLang === 'it' ? '💡 Suggerimenti per un Brand Memory efficace:' : '💡 Tips for an effective Brand Memory:' }}</h4>
+          <ul>
+            <li>{{ currentLang === 'it' ? 
+              'Più dettagli fornisci, più i contenuti saranno personalizzati' : 
+              'The more details you provide, the more personalized the content will be' }}</li>
+            <li>{{ currentLang === 'it' ? 
+              'Usa esempi reali dal tuo business attuale' : 
+              'Use real examples from your current business' }}</li>
+            <li>{{ currentLang === 'it' ? 
+              'Pensa al linguaggio che usi con i tuoi clienti ideali' : 
+              'Think about the language you use with your ideal customers' }}</li>
+          </ul>
         </div>
-
-      
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Posizionamento di mercato' : 'Market positioning' }}</label>
-          <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
-                 [placeholder]="currentLang === 'it' ? 'Es: Leader innovativo nel settore tech, Marca accessibile per giovani professionisti, Eccellenza artigianale italiana...' : 'Ex: Innovative leader in tech industry, Affordable brand for young professionals, Italian artisan excellence...'">
-          <small>{{ currentLang === 'it' ? 
-            'Come vuoi che il brand sia percepito nel mercato' : 
-            'How you want the brand to be perceived in the market' }}</small>
-        </div>
-
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Tono di Voce' : 'Voice Tone' }}</label>
-          <select [(ngModel)]="newBrand.tone" name="tone">
-            <option *ngFor="let tone of getToneOptions()" [value]="tone.value">
-               {{ tone.label }}
-            </option>
-          </select>
-          <small>{{ currentLang === 'it' ? 
-            'Il linguaggio che useremo per i tuoi contenuti' : 
-            'The language we will use for your content' }}</small>
-        </div>
-
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Descrizione brand' : 'Brand description' }}</label>
-          <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3" 
-                    [placeholder]="currentLang === 'it' ? 'Descrivi la tua attività, mission e valori... Es: Siamo un brand di moda sostenibile che crea abiti eco-friendly per persone moderne che cercano stile e consapevolezza ambientale' : 'Describe your business, mission and values... Ex: We are a sustainable fashion brand creating eco-friendly clothes for modern people seeking style and environmental awareness'"></textarea>
-          <small>{{ currentLang === 'it' ? 
-            'Chi sei e cosa fai? Questa descrizione aiuta l AI a capire il tuo business' : 
-            'Who you are and what you do. This description helps AI understand your business' }}</small>
-        </div>
-
+    
+        <form class="brand-form">
        
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Pubblico di Riferimento' : 'Target Audience' }}</label>
-          <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience"
-                 [placeholder]="currentLang === 'it' ? 'Es: Donne 25-40 anni professioniste, Giovani startup founder, Famiglie con bambini piccoli...' : 'Ex: Professional women 25-40 years old, Young startup founders, Families with young children...'">
-          <small>{{ currentLang === 'it' ? 
-            'A chi ti rivolgi principalmente?' : 
-            'Who is your primary target audience?' }}</small>
-        </div>
-
-       
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Valori del brand' : 'Brand values' }}</label>
-          <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues"
-                 [placeholder]="currentLang === 'it' ? 'Es: Innovazione, Sostenibilità, Qualità, Trasparenza, Community...' : 'Ex: Innovation, Sustainability, Quality, Transparency, Community...'">
-          <small>{{ currentLang === 'it' ? 
-            'I valori fondamentali del tuo brand' : 
-            'The core values of your brand' }}</small>
-        </div>
-
-       
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Slogan/Tagline' : 'Tagline' }}</label>
-          <input type="text" [(ngModel)]="newBrand.tagline" name="tagline"
-                 [placeholder]="currentLang === 'it' ? 'Es: Innovazione che ispira, La moda che rispetta il pianeta, Semplicità è genio...' : 'Ex: Inspiring innovation, Fashion that respects the planet, Simplicity is genius...'">
-          <small>{{ currentLang === 'it' ? 
-            'Il tuo slogan o frase distintiva' : 
-            'Your slogan or distinctive phrase' }}</small>
-        </div>
-
-      
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Call-to-Action Preferite' : 'Preferred Call-to-Actions' }}</label>
-          <div class="input-with-btn">
-            <input type="text" [(ngModel)]="tempCTA" name="tempCTA" 
-                   [placeholder]="currentLang === 'it' ? 'Es: Prenota una demo, Scopri di più, Acquista ora...' : 'Ex: Book a demo, Learn more, Buy now...'" (keyup.enter)="addCTA()">
-            <button type="button" (click)="addCTA()">+</button>
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Nome Brand *' : 'Brand Name *' }}</label>
+            <input type="text" [(ngModel)]="newBrand.brandName" name="brandName" 
+                   [placeholder]="currentLang === 'it' ? 'Es: TechInnovate, FashionGuru, GreenLife...' : 'Ex: TechInnovate, FashionGuru, GreenLife...'" required>
+            <small>{{ currentLang === 'it' ? 
+              'Il nome del tuo brand, azienda o progetto' : 
+              'Your brand, company or project name' }}</small>
           </div>
-          <div class="tags-list">
-            <span *ngFor="let cta of newBrand.preferredCTAs; let i = index" class="tag cta">
-              {{ cta }} <span class="remove-tag" (click)="removeCTA(i)">×</span>
-            </span>
-          </div>
-          <small>{{ currentLang === 'it' ? 
-            'Frasi di invito ad agire che usi tipicamente' : 
-            'Action phrases you typically use to encourage engagement' }}</small>
-        </div>
 
-      
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Parole Chiave Preferite' : 'Preferred Keywords' }}</label>
-          <div class="input-with-btn">
-            <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
-                   [placeholder]="currentLang === 'it' ? 'Es: innovazione, design, sostenibilità, qualità, community...' : 'Ex: innovation, design, sustainability, quality, community...'" (keyup.enter)="addKeyword()">
-            <button type="button" (click)="addKeyword()">+</button>
+        
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Posizionamento di mercato' : 'Market positioning' }}</label>
+            <input type="text" [(ngModel)]="newBrand.positioning" name="positioning" 
+                   [placeholder]="currentLang === 'it' ? 'Es: Leader innovativo nel settore tech, Marca accessibile per giovani professionisti, Eccellenza artigianale italiana...' : 'Ex: Innovative leader in tech industry, Affordable brand for young professionals, Italian artisan excellence...'">
+            <small>{{ currentLang === 'it' ? 
+              'Come vuoi che il brand sia percepito nel mercato' : 
+              'How you want the brand to be perceived in the market' }}</small>
           </div>
-          <div class="tags-list">
-            <span *ngFor="let keyword of newBrand.preferredKeywords; let i = index" class="tag">
-              {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
-            </span>
-          </div>
-          <small>{{ currentLang === 'it' ? 
-            'Termini che vuoi vengano usati frequentemente nei tuoi contenuti' : 
-            'Terms you want to be used frequently in your content' }}</small>
-        </div>
 
-      
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Parole da evitare' : 'Words to Avoid' }}</label>
-          <div class="input-with-btn">
-            <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
-                   [placeholder]="currentLang === 'it' ? 'Es: costoso, complicato, vecchio, noioso, difficile...' : 'Ex: expensive, complicated, old, boring, difficult...'" (keyup.enter)="addAvoidedWord()">
-            <button type="button" (click)="addAvoidedWord()">+</button>
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Tono di Voce' : 'Voice Tone' }}</label>
+            <select [(ngModel)]="newBrand.tone" name="tone">
+              <option *ngFor="let tone of getToneOptions()" [value]="tone.value">
+                 {{ tone.label }}
+              </option>
+            </select>
+            <small>{{ currentLang === 'it' ? 
+              'Il linguaggio che useremo per i tuoi contenuti' : 
+              'The language we will use for your content' }}</small>
           </div>
-          <div class="tags-list">
-            <span *ngFor="let word of newBrand.avoidedWords; let i = index" class="tag avoided">
-              {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
-            </span>
-          </div>
-          <small>{{ currentLang === 'it' ? 
-            'Termini che NON vuoi vengano usati nei tuoi contenuti' : 
-            'Terms you do NOT want to be used in your content' }}</small>
-        </div>
 
-      
-        <div class="form-group">
-          <label>{{ currentLang === 'it' ? 'Hashtag Predefiniti' : 'Default Hashtags' }}</label>
-          <div class="input-with-btn">
-            <input type="text" [(ngModel)]="tempHashtag" name="tempHashtag" 
-                     [placeholder]="currentLang === 'it' ? 'Aggiungi hashtag' : 'Add hashtag'" (keyup.enter)="addHashtag()">
-              <button type="button" (click)="addHashtag()">+</button>
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Descrizione brand' : 'Brand description' }}</label>
+            <textarea [(ngModel)]="newBrand.brandDescription" name="brandDescription" rows="3" 
+                      [placeholder]="currentLang === 'it' ? 'Descrivi la tua attività, mission e valori... Es: Siamo un brand di moda sostenibile che crea abiti eco-friendly per persone moderne che cercano stile e consapevolezza ambientale' : 'Describe your business, mission and values... Ex: We are a sustainable fashion brand creating eco-friendly clothes for modern people seeking style and environmental awareness'"></textarea>
+            <small>{{ currentLang === 'it' ? 
+              'Chi sei e cosa fai? Questa descrizione aiuta l AI a capire il tuo business' : 
+              'Who you are and what you do. This description helps AI understand your business' }}</small>
+          </div>
+
+         
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Pubblico di Riferimento' : 'Target Audience' }}</label>
+            <input type="text" [(ngModel)]="newBrand.targetAudience" name="targetAudience"
+                   [placeholder]="currentLang === 'it' ? 'Es: Donne 25-40 anni professioniste, Giovani startup founder, Famiglie con bambini piccoli...' : 'Ex: Professional women 25-40 years old, Young startup founders, Families with young children...'">
+            <small>{{ currentLang === 'it' ? 
+              'A chi ti rivolgi principalmente?' : 
+              'Who is your primary target audience?' }}</small>
+          </div>
+
+         
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Valori del brand' : 'Brand values' }}</label>
+            <input type="text" [(ngModel)]="newBrand.brandValues" name="brandValues"
+                   [placeholder]="currentLang === 'it' ? 'Es: Innovazione, Sostenibilità, Qualità, Trasparenza, Community...' : 'Ex: Innovation, Sustainability, Quality, Transparency, Community...'">
+            <small>{{ currentLang === 'it' ? 
+              'I valori fondamentali del tuo brand' : 
+              'The core values of your brand' }}</small>
+          </div>
+
+         
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Slogan/Tagline' : 'Tagline' }}</label>
+            <input type="text" [(ngModel)]="newBrand.tagline" name="tagline"
+                   [placeholder]="currentLang === 'it' ? 'Es: Innovazione che ispira, La moda che rispetta il pianeta, Semplicità è genio...' : 'Ex: Inspiring innovation, Fashion that respects the planet, Simplicity is genius...'">
+            <small>{{ currentLang === 'it' ? 
+              'Il tuo slogan o frase distintiva' : 
+              'Your slogan or distinctive phrase' }}</small>
+          </div>
+
+        
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Call-to-Action Preferite' : 'Preferred Call-to-Actions' }}</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempCTA" name="tempCTA" 
+                     [placeholder]="currentLang === 'it' ? 'Es: Prenota una demo, Scopri di più, Acquista ora...' : 'Ex: Book a demo, Learn more, Buy now...'" (keyup.enter)="addCTA()">
+              <button type="button" (click)="addCTA()">+</button>
             </div>
             <div class="tags-list">
-              <span *ngFor="let hashtag of newBrand.defaultHashtags; let i = index" class="tag hashtag">
-                {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
+              <span *ngFor="let cta of newBrand.preferredCTAs; let i = index" class="tag cta">
+                {{ cta }} <span class="remove-tag" (click)="removeCTA(i)">×</span>
               </span>
             </div>
             <small>{{ currentLang === 'it' ? 
-              'Hashtag che verranno aggiunti ai tuoi post' : 
-              'Hashtags that will be added to your posts' }}</small>
+              'Frasi di invito ad agire che usi tipicamente' : 
+              'Action phrases you typically use to encourage engagement' }}</small>
           </div>
 
         
-          <div class="form-actions">
-            <button type="button" class="btn-outline" (click)="closeBrandModal()">
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Parole Chiave Preferite' : 'Preferred Keywords' }}</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempKeyword" name="tempKeyword" 
+                     [placeholder]="currentLang === 'it' ? 'Es: innovazione, design, sostenibilità, qualità, community...' : 'Ex: innovation, design, sustainability, quality, community...'" (keyup.enter)="addKeyword()">
+              <button type="button" (click)="addKeyword()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let keyword of newBrand.preferredKeywords; let i = index" class="tag">
+                {{ keyword }} <span class="remove-tag" (click)="removeKeyword(i)">×</span>
+              </span>
+            </div>
+            <small>{{ currentLang === 'it' ? 
+              'Termini che vuoi vengano usati frequentemente nei tuoi contenuti' : 
+              'Terms you want to be used frequently in your content' }}</small>
+          </div>
+
+        
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Parole da evitare' : 'Words to Avoid' }}</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempAvoidedWord" name="tempAvoidedWord" 
+                     [placeholder]="currentLang === 'it' ? 'Es: costoso, complicato, vecchio, noioso, difficile...' : 'Ex: expensive, complicated, old, boring, difficult...'" (keyup.enter)="addAvoidedWord()">
+              <button type="button" (click)="addAvoidedWord()">+</button>
+            </div>
+            <div class="tags-list">
+              <span *ngFor="let word of newBrand.avoidedWords; let i = index" class="tag avoided">
+                {{ word }} <span class="remove-tag" (click)="removeAvoidedWord(i)">×</span>
+              </span>
+            </div>
+            <small>{{ currentLang === 'it' ? 
+              'Termini che NON vuoi vengano usati nei tuoi contenuti' : 
+              'Terms you do NOT want to be used in your content' }}</small>
+          </div>
+
+        
+          <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Hashtag Predefiniti' : 'Default Hashtags' }}</label>
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="tempHashtag" name="tempHashtag" 
+                       [placeholder]="currentLang === 'it' ? 'Aggiungi hashtag' : 'Add hashtag'" (keyup.enter)="addHashtag()">
+                <button type="button" (click)="addHashtag()">+</button>
+              </div>
+              <div class="tags-list">
+                <span *ngFor="let hashtag of newBrand.defaultHashtags; let i = index" class="tag hashtag">
+                  {{ hashtag }} <span class="remove-tag" (click)="removeHashtag(i)">×</span>
+                </span>
+              </div>
+              <small>{{ currentLang === 'it' ? 
+                'Hashtag che verranno aggiunti ai tuoi post' : 
+                'Hashtags that will be added to your posts' }}</small>
+            </div>
+
+              <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'Mission' : 'Mission' }}</label>
+            <input type="text" [(ngModel)]="newBrand.missionStatement" name="missionStatement"
+                   [placeholder]="currentLang === 'it' ? 'Es: La nostra missione è rivoluzionare il modo in cui le persone interagiscono con la tecnologia...' : 'Ex: Our mission is to revolutionize the way people interact with technology...'">
+            <small>{{ currentLang === 'it' ? 
+              'La missione del tuo brand' : 
+              'Your brand mission' }}</small>
+          </div>
+
+          
+              <div class="form-group">
+            <label>{{ currentLang === 'it' ? 'vision' : 'Visione' }}</label>
+            <input type="text" [(ngModel)]="newBrand.missionStatement" name="visionStatement"
+                   [placeholder]="currentLang === 'it' ? 'La nostra visione consiste nel rivoluzionare le interazioni con la tecnologia' : 'Ex: Our vision is to revolutionize the way people interact with technology...'">
+            <small>{{ currentLang === 'it' ? 
+              'La visione del tuo brand' : 
+              'Your brand vision' }}</small>
+          </div>
+
+          
+            <div class="form-actions">
+              <button type="button" class="btn-outline" (click)="closeBrandModal()">
+                {{ currentLang === 'it' ? 'Annulla' : 'Cancel' }}
+              </button>
+              <button type="button" class="btn-primary" (click)="saveBrand()">
+                {{ editingBrand ? (currentLang === 'it' ? 'Aggiorna Brand' : 'Update Brand') : (currentLang === 'it' ? 'Crea Brand' : 'Create Brand') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    
+      <!-- MODALE POST GENERATI - SENZA CREDIT STORE DENTRO -->
+      <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <button class="close-btn large-close-btn" (click)="closeModal()" [title]="currentLang === 'it' ? 'Chiudi' : 'Close'">×</button>
+          <div class="modal-header">
+            <h2>{{ formatTitle(selectedKey) }}</h2>
+            <button class="close-btn" (click)="closeModal()">×</button>
+          </div>
+          
+          <div class="versions-container">
+            <div class="versions">
+              <div class="version" [attr.data-version]="i+1" *ngFor="let v of selectedVersions; let i = index">
+                <div class="version-header">
+                  <span class="version-number">Versione {{ i + 1 }}</span>
+                  <div class="version-actions">
+                    <button class="copy-btn" 
+                            (click)="copyToClipboard(v, $event, i)"
+                            [class.copied]="copiedIndex === i">
+                      {{ copiedIndex === i ? translationService.translate('copied') : translationService.translate('copy') }}
+                    </button>
+                    <button class="save-btn" 
+                            (click)="savePost(v, selectedKey)"
+                            [title]="currentLang === 'it' ? 'Salva nell\'archivio' : 'Save to archive'">
+                      {{ translationService.translate('save') }}
+                    </button>
+                    <button class="optimize-btn" 
+                            (click)="openContentAssistant(v)">
+                      🚀 {{ translationService.translate('Ottimizza con assistente AI') }}
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="version-content">
+                  <p>{{ v }}</p>
+                </div>
+
+                <div class="image-generation-per-post">
+                  <!-- Pulsante per generare immagine -->
+                  <button class="generate-image-btn" 
+                          (click)="generateImageForPost(v, i)"
+                          [disabled]="generatingImagesForPost === i">
+                    🖼️ {{ translationService.translate('generaImmagine') }}
+                  </button>
+                  
+                  <!-- Contatore crediti richiesti -->
+                  <span class="image-credit-cost" *ngIf="!imagesForPost[i]?.length">
+                    (0.5 crediti)
+                  </span>
+                  
+                  <!-- Stato di generazione -->
+                  <div *ngIf="generatingImagesForPost === i" class="generating-image-status">
+                    <div class="spinner-small"></div>
+                    <span>Generazione in corso...</span>
+                  </div>
+                  
+                  <!-- Carosello immagini generate per questo post -->
+                  <div *ngIf="imagesForPost[i] && imagesForPost[i].length > 0" class="post-images-carousel">
+                    <h4>🖼️ Immagini generate per questa versione:</h4>
+                    
+                    <div class="carousel-container">
+                      <button class="carousel-nav prev" (click)="prevImage(i)">‹</button>
+                      
+                      <div class="carousel-images">
+                        <div *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
+                             class="carousel-image-wrapper"
+                             [class.active]="currentImageIndex[i] === imgIndex">
+                          
+                          <!-- Immagine -->
+                          <img [src]="getImageSource(image)" 
+                               [alt]="'Immagine per versione ' + (i+1)"
+                               class="carousel-image">
+                          
+                          <!-- Info immagine -->
+                          <div class="image-info-mini">
+                            <span>{{ getPlatformName(image.platform) }}</span>
+                            <span>{{ image.dimensions?.width }}×{{ image.dimensions?.height }}</span>
+                          </div>
+                          
+                          <!-- Azioni immagine -->
+                          <div class="image-actions-mini">
+                            <button class="btn-tiny" 
+                                    [title]="'Copia ' + (image.imageUrl ? 'URL' : 'Base64')"
+                                    (click)="copyImageContent(image)">
+                              📋
+                            </button>
+                            
+                            <button *ngIf="isTemporaryImage(image)" 
+                                    class="btn-tiny btn-save"
+                                    [title]="'Salva su Cloudinary'"
+                                    [disabled]="imagesToSave.has(image.temporaryId || '')"
+                                    (click)="saveImage(image)">
+                              {{ imagesToSave.has(image.temporaryId || '') ? '🔄' : '💾' }}
+                            </button>
+                            
+                            <button class="btn-tiny"
+                                    title="Download"
+                                    (click)="downloadImage(image)">
+                              ⬇️
+                            </button>
+                            
+                            <button class="btn-tiny btn-delete-image"
+                                    title="Elimina"
+                                    (click)="deleteImageFromPost(i, imgIndex)">
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button class="carousel-nav next" (click)="nextImage(i)">›</button>
+                    </div>
+                    
+                    <!-- Indicatori del carosello -->
+                    <div class="carousel-indicators">
+                      <span *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
+                            class="indicator"
+                            [class.active]="currentImageIndex[i] === imgIndex"
+                            (click)="goToImage(i, imgIndex)">
+                        ●
+                      </span>
+                    </div>
+                    
+                    <!-- Pulsante per generare un'altra immagine -->
+                    <button class="generate-another-btn" 
+                            (click)="generateAnotherImageForPost(v, i)">
+                      + Genera un'altra immagine
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODALE CREDIT STORE - A LIVELLO RADICE (spostato qui) -->
+      <div *ngIf="creditStoreModalOpen" class="modal-overlay" (click)="closeCreditStore()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>{{ currentLang === 'it' ? 'Acquista Credit' : 'Buy Credits' }}</h2>
+            <button class="close-btn" (click)="closeCreditStore()">×</button>
+          </div>
+          <div class="modal-body">
+            <app-credit-store></app-credit-store>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODALE ASSISTANT -->
+      <div class="modal large" *ngIf="assistantModalOpen" (click)="closeContentAssistant()">
+        <div class="modal-content large" (click)="$event.stopPropagation()">
+          <button class="close-btn" (click)="closeContentAssistant()">×</button>
+          
+          <app-content-assistant-component
+            [selectedBrand]="selectedBrand"
+            [selectedPlatform]="platform"
+            (suggestionApplied)="onSuggestionApplied($event)">
+          </app-content-assistant-component>
+        </div>
+      </div>
+
+      <!-- MODALE WEBSITE ANALYSIS -->
+      <div class="modal website-analysis-modal" *ngIf="websiteAnalysisModalOpen">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <button class="close-btn" (click)="websiteAnalysisModalOpen = false">×</button>
+          
+          <h2>🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}</h2>
+          
+          <div class="analysis-description">
+            <p>{{ currentLang === 'it' ? 
+              'Incolla l\'URL del tuo sito web e creeremo automaticamente un profilo brand:' : 
+              'Paste your website URL and we will automatically create a brand profile:' }}</p>
+          </div>
+
+          <div class="website-input-section">
+            <label for="websiteUrl">🌐 {{ currentLang === 'it' ? 'URL del sito web' : 'Website URL' }}</label>
+            <input 
+              type="url" 
+              id="websiteUrl"
+              [(ngModel)]="websiteUrl" 
+              placeholder="https://ilmiosito.it"
+              [disabled]="analyzingWebsite">
+          </div>
+
+          <div class="modal-actions">
+            <button 
+              class="btn-outline" 
+              (click)="websiteAnalysisModalOpen = false"
+              [disabled]="analyzingWebsite">
               {{ currentLang === 'it' ? 'Annulla' : 'Cancel' }}
             </button>
-            <button type="button" class="btn-primary" (click)="saveBrand()">
-              {{ editingBrand ? (currentLang === 'it' ? 'Aggiorna Brand' : 'Update Brand') : (currentLang === 'it' ? 'Crea Brand' : 'Create Brand') }}
+            
+            <button 
+              class="btn-primary" 
+              (click)="analyzeWebsite()"
+              [disabled]="!websiteUrl || analyzingWebsite">
+              
+              <span *ngIf="!analyzingWebsite">
+                🚀 {{ currentLang === 'it' ? 'Analizza e Crea Brand' : 'Analyze and Create Brand' }}
+              </span>
+              
+              <span *ngIf="analyzingWebsite" class="analyzing-state">
+                <div class="spinner-small"></div>
+                {{ currentLang === 'it' ? 'Analisi in corso...' : 'Analyzing...' }}
+              </span>
             </button>
           </div>
-        </form>
-      </div>
-    </div>
-
-  
-    <div class="modal" *ngIf="modalOpen" (click)="closeModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <button class="close-btn large-close-btn" (click)="closeModal()" [title]="currentLang === 'it' ? 'Chiudi' : 'Close'">×</button>
-        <div class="modal-header">
-          <h2>{{ formatTitle(selectedKey) }}</h2>
-          <button class="close-btn" (click)="closeModal()">×</button>
-        </div>
-         <!-- <div class="optimization-explanation"> 
-      <h4>💡 {{ currentLang === 'it' ? 'Come funziona l\'ottimizzazione:' : 'How optimization works:' }}</h4>
-      <ol>
-        <li><strong>{{ currentLang === 'it' ? 'Genera' : 'Generate' }}</strong> {{ currentLang === 'it' ? 'contenuto qui nel generator' : 'content in the generator' }}</li>
-        <li><strong>{{ currentLang === 'it' ? 'Vedi i risultati' : 'See results' }}</strong> {{ currentLang === 'it' ? 'in questo modal' : 'in this modal' }}</li>
-        <li><strong>{{ currentLang === 'it' ? 'Ottimizza' : 'Optimize' }}</strong> {{ currentLang === 'it' ? 'i migliori risultati con l\'Assistant' : 'the best results with the Assistant' }}</li>
-       <li><strong>{{ currentLang === 'it' ? 'Copia' : 'Copy' }}</strong> {{ currentLang === 'it' ? 'la versione finale ottimizzata' : 'the final optimized version' }}</li> 
-      </ol>
-    </div> -->
-        <div class="versions-container">
-          <div class="versions">
-            <div class="version" [attr.data-version]="i+1" *ngFor="let v of selectedVersions; let i = index">
-             <div class="version-header">
-        <span class="version-number">Versione {{ i + 1 }}</span>
-        <div class="version-actions">
-          <button class="copy-btn" 
-                  (click)="copyToClipboard(v, $event, i)"
-                  [class.copied]="copiedIndex === i">
-            {{ copiedIndex === i ? translationService.translate('copied') : translationService.translate('copy') }}
-          </button>
-          <button class="save-btn" 
-                  (click)="savePost(v, selectedKey)"
-                  [title]="currentLang === 'it' ? 'Salva nell\'archivio' : 'Save to archive'">
-            {{ translationService.translate('save') }}
-          </button>
-          <button class="optimize-btn" 
-                  (click)="openContentAssistant(v)">
-            🚀 {{ translationService.translate('Ottimizza con assistente AI') }}
-          </button>
         </div>
       </div>
-           <div class="version-content">
-        <p>{{ v }}</p>
-            </div>
 
-             <div class="image-generation-per-post">
-    
-    <!-- Pulsante per generare immagine -->
-    <button class="generate-image-btn" 
-            (click)="generateImageForPost(v, i)"
-            [disabled]="generatingImagesForPost === i">
-      🖼️ {{ translationService.translate('generaImmagine') }}
-    </button>
-    
-    <!-- Contatore crediti richiesti -->
-    <span class="image-credit-cost" *ngIf="!imagesForPost[i]?.length">
-      (0.5 crediti)
-    </span>
-    
-    <!-- Stato di generazione -->
-    <div *ngIf="generatingImagesForPost === i" class="generating-image-status">
-      <div class="spinner-small"></div>
-      <span>Generazione in corso...</span>
-    </div>
-    
-    <!-- Carosello immagini generate per questo post -->
-    <div *ngIf="imagesForPost[i] && imagesForPost[i].length > 0" class="post-images-carousel">
-      <h4>🖼️ Immagini generate per questa versione:</h4>
-      
-      <div class="carousel-container">
-        <button class="carousel-nav prev" (click)="prevImage(i)">‹</button>
-        
-        <div class="carousel-images">
-          <div *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
-               class="carousel-image-wrapper"
-               [class.active]="currentImageIndex[i] === imgIndex">
-            
-            <!-- Immagine -->
-            <img [src]="getImageSource(image)" 
-                 [alt]="'Immagine per versione ' + (i+1)"
-                 class="carousel-image">
-            
-            <!-- Info immagine -->
-            <div class="image-info-mini">
-              <span>{{ getPlatformName(image.platform) }}</span>
-              <span>{{ image.dimensions?.width }}×{{ image.dimensions?.height }}</span>
-            </div>
-            
-            <!-- Azioni immagine -->
-            <div class="image-actions-mini">
-              <button class="btn-tiny" 
-                      [title]="'Copia ' + (image.imageUrl ? 'URL' : 'Base64')"
-                      (click)="copyImageContent(image)">
-                📋
-              </button>
-              
-              <button *ngIf="isTemporaryImage(image)" 
-                      class="btn-tiny btn-save"
-                      [title]="'Salva su Cloudinary'"
-                      [disabled]="imagesToSave.has(image.temporaryId || '')"
-                      (click)="saveImage(image)">
-                {{ imagesToSave.has(image.temporaryId || '') ? '🔄' : '💾' }}
-              </button>
-              
-              <button class="btn-tiny"
-                      title="Download"
-                      (click)="downloadImage(image)">
-                ⬇️
-              </button>
-              
-              <button class="btn-tiny btn-delete-image"
-                      title="Elimina"
-                      (click)="deleteImageFromPost(i, imgIndex)">
-                🗑️
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <button class="carousel-nav next" (click)="nextImage(i)">›</button>
-      </div>
-      
-      <!-- Indicatori del carosello -->
-      <div class="carousel-indicators">
-        <span *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
-              class="indicator"
-              [class.active]="currentImageIndex[i] === imgIndex"
-              (click)="goToImage(i, imgIndex)">
-          ●
-        </span>
-      </div>
-      
-      <!-- Pulsante per generare un'altra immagine -->
-      <button class="generate-another-btn" 
-              (click)="generateAnotherImageForPost(v, i)">
-        + Genera un'altra immagine
-      </button>
-    </div>
-  </div>
-</div>
-    
-
-  <div *ngIf="creditStoreModalOpen" class="modal-overlay" (click)="closeCreditStore()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ currentLang === 'it' ? 'Acquista Credit' : 'Buy Credits' }}</h2>
-        <button class="close-btn" (click)="closeCreditStore()">×</button>
-      </div>
-      <div class="modal-body">
-        <app-credit-store></app-credit-store>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal website-analysis-modal" *ngIf="websiteAnalysisModalOpen" (click)="websiteAnalysisModalOpen = false">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="websiteAnalysisModalOpen = false">×</button>
-    
-    <h2>🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}</h2>
-    
-    <div class="analysis-description">
-      <p>{{ currentLang === 'it' ? 
-        'Incolla l\'URL del tuo sito web e creeremo automaticamente un profilo brand:' : 
-        'Paste your website URL and we will automatically create a brand profile:' }}</p>
-    </div>
-
-    <div class="website-input-section">
-      <label for="websiteUrl">🌐 {{ currentLang === 'it' ? 'URL del sito web' : 'Website URL' }}</label>
-      <input 
-        type="url" 
-        id="websiteUrl"
-        [(ngModel)]="websiteUrl" 
-        placeholder="https://ilmiosito.it"
-        [disabled]="analyzingWebsite">
-    </div>
-
-    <div class="modal-actions">
-      <button 
-        class="btn-outline" 
-        (click)="websiteAnalysisModalOpen = false"
-        [disabled]="analyzingWebsite">
-        {{ currentLang === 'it' ? 'Annulla' : 'Cancel' }}
-      </button>
-      
-      <button 
-        class="btn-primary" 
-        (click)="analyzeWebsite()"
-        [disabled]="!websiteUrl || analyzingWebsite">
-        
-        <span *ngIf="!analyzingWebsite">
-          🚀 {{ currentLang === 'it' ? 'Analizza e Crea Brand' : 'Analyze and Create Brand' }}
-        </span>
-        
-        <span *ngIf="analyzingWebsite" class="analyzing-state">
-          <div class="spinner-small"></div>
-          {{ currentLang === 'it' ? 'Analisi in corso...' : 'Analyzing...' }}
-        </span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="modal large" *ngIf="assistantModalOpen" (click)="closeContentAssistant()">
-  <div class="modal-content large" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="closeContentAssistant()">×</button>
-    
-    <app-content-assistant-component
-      [selectedBrand]="selectedBrand"
-      [selectedPlatform]="platform"
-      (suggestionApplied)="onSuggestionApplied($event)">
-    </app-content-assistant-component>
-  </div>
-</div> 
+    </div> <!-- fine generator-container -->
+  </div> <!-- fine generator-page -->

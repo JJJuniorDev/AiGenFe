@@ -75,7 +75,15 @@ platform = 'linkedin';
      defaultHashtags: [],
      visualStyle: '',
      colorPalette: '',
-     preferredCTAs: []
+     preferredCTAs: [],
+      positioning: '',
+      missionStatement: '',
+      visionStatement: '',
+      brandArchetype: '',
+      preferredWords: [],
+      competitiveDifferentials: '',
+      industryCategory: '',
+      voiceDescription: ''
    };
 
 
@@ -296,6 +304,8 @@ if (this.isGenerating || this.generationStatus === 'queued') {
     console.log('⏸️ Generazione già in corso...');
     return;
   }
+
+  this.resetImages();
       // Reset errori
   this.showBrandError = false;
   this.showManualWarning = false;
@@ -461,6 +471,7 @@ cancelGeneration() {
 
   closeModal() {
     this.modalOpen = false;
+     this.resetImages();
   }
 
   // Formatta il titolo della card
@@ -528,6 +539,7 @@ cancelGeneration() {
     } else {
       this.selectedBrand = brand;
     }
+     this.resetImages();
   }
 
   // Conferma selezione brand
@@ -588,7 +600,14 @@ removeCTA(index: number) {
     preferredCTAs: [],
       defaultHashtags: [],
       visualStyle: '',
-      colorPalette: ''
+      colorPalette: '',
+      missionStatement: '',
+      visionStatement: '',
+      brandArchetype: '',
+      preferredWords: [],
+      competitiveDifferentials: '',
+      industryCategory: '',
+      voiceDescription: ''
     };
     this.tempKeyword = '';
     this.tempHashtag = '';
@@ -1138,8 +1157,12 @@ estimatedWaitTime: number = 0;
 
 // 👇 METODO PER APRIRE MODALE ANALISI
 openWebsiteAnalysisModal() {
+  console.log('🔍 Chiamato openWebsiteAnalysisModal');
+  console.log('Valore attuale websiteAnalysisModalOpen:', this.websiteAnalysisModalOpen);
   this.websiteAnalysisModalOpen = true;
   this.websiteUrl = '';
+  console.log('Valore dopo websiteAnalysisModalOpen:', this.websiteAnalysisModalOpen);
+  
 }
 
 // 👇 METODO PER ANALIZZARE SITO
@@ -1521,4 +1544,12 @@ get temporaryImagesCount(): number {
   get hasUnsavedImages(): boolean {
     return this.temporaryImagesCount > 0;
   }
+
+  resetImages() {
+  this.imagesForPost = {};
+  this.currentImageIndex = {};
+  this.generatingImagesForPost = null;
+  this.generatedImages = [];
+  this.imagesToSave.clear();
+}
 }
