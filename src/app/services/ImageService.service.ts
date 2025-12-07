@@ -5,13 +5,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface ImageGenerationRequest {
-  posts: string[]; // Array di contenuti testuali
-  platform: string;
+  prompt?: string;
   brandProfileId?: string;
   brandName?: string;
   style?: 'realistic' | 'illustrative' | 'minimal' | 'vibrant';
   includeText?: boolean;
-  language?: 'it' | 'en';
+  numberOfImages?: number;
+  aspectRatio?: '1:1' | '4:5' | '16:9';
+  referenceImageUrls?: string[]; // Array di URL immagini di riferimento
 }
 
 export interface GeneratedImage {

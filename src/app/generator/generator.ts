@@ -20,12 +20,14 @@ import { TranslationService } from '../services/TranslationService.service';
 import { SocialCraftService } from '../services/SocialCraftService.service';
 import { PostSalvato } from '../model/PostSalvato.model';
 import { ContentAssistantComponent } from "../content-assistant-component/content-assistant-component";
+
 import { environment } from '../../environments/environment';
 import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest } from '../services/ImageService.service';
+import { ImageGeneratorModalComponent } from "../image-generator-modal-component/image-generator-modal-component";
 
 @Component({
   selector: 'app-generator',
-  imports: [CommonModule, FormsModule, MatIconModule, CreditStore, ContentAssistantComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, CreditStore, ContentAssistantComponent, ImageGeneratorModalComponent],
   templateUrl: './generator.html',
   styleUrl: './generator.css'
 })
@@ -183,10 +185,15 @@ private previousUserId: string | null = null;
   imagesToSave: Set<string> = new Set(); 
 
 
-
   imagesForPost: { [postIndex: number]: GeneratedImage[] } = {};
   currentImageIndex: { [postIndex: number]: number } = {};
   generatingImagesForPost: number | null = null;
+
+
+
+imageGeneratorModalOpen = false;
+currentMode: 'text' | 'images' = 'text';
+
   constructor(
     private authService: AuthService,
     private testimonialService: TestimonialService,
@@ -234,6 +241,16 @@ private previousUserId: string | null = null;
   updateBrandCreationStatus() {
     this.canCreateMoreBrands = this.currentBrands < this.maxBrands;
   }
+
+  switchToImageMode() {
+  this.currentMode = 'images';
+    this.imageGeneratorModalOpen = true;
+}
+
+switchToTextMode() {
+  this.currentMode = 'text';
+   this.imageGeneratorModalOpen = false;
+}
 
   private loadInitialUser() {
     // 1. Prova a recuperare dallo state
@@ -1302,12 +1319,15 @@ generateImageForPost(postContent: string, postIndex: number) {
   this.generatingImagesForPost = postIndex;
 
   const request: ImageGenerationRequest = {
-    posts: [postContent], // Solo questo post
-    platform: this.platform,
+    prompt: postContent, // Solo questo post
     brandProfileId: this.selectedBrand.id!,
     brandName: this.selectedBrand.brandName,
     style: 'realistic',
     includeText: true,
+    numberOfImages: 1,
+    aspectRatio: '1:1',
+    referenceImageUrls: [],
+    
   };
 
   this.imageService.generateImages(request).subscribe({
@@ -1551,5 +1571,26 @@ get temporaryImagesCount(): number {
   this.generatingImagesForPost = null;
   this.generatedImages = [];
   this.imagesToSave.clear();
+}
+
+
+// Metodo per aprire il modale
+openImageGenerator() {
+  if (!this.selectedBrand) {
+    this.showNotification('Seleziona un brand prima di generare immagini!', 'warning');
+    return;
+  }
+  this.imageGeneratorModalOpen = true;
+}
+
+// Metodo per chiudere
+closeImageGenerator() {
+  this.imageGeneratorModalOpen = false;
+}
+
+// Metodo per gestire le immagini generate
+handleImagesGenerated(images: any[]) {
+  console.log('Immagini generate:', images);
+  // Qui puoi fare qualcosa con le immagini generate
 }
 }

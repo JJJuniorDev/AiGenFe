@@ -1,0 +1,110 @@
+<!-- image-generator-modal.component.html -->
+<div class="modal image-generator-modal" *ngIf="isOpen">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="close()">×</button>
+    
+    <div class="modal-header">
+      <h2>🎨 Generatore Immagini per {{ selectedBrand?.brandName }}</h2>
+    </div>
+
+    <!-- SEZIONE UPLOAD IMMAGINI RIFERIMENTO -->
+    <div class="upload-section">
+      <h3>📤 Carica immagini del brand</h3>
+      <div class="upload-area" 
+           (dragover)="handleDragOver($event)"
+           (drop)="handleDrop($event)">
+        <input type="file" 
+               accept="image/*" 
+               (change)="onFileSelected($event)"
+               id="imageUpload"
+               multiple
+               hidden>
+        <label for="imageUpload" class="upload-label">
+          <div class="upload-icon">📤</div>
+          <h4>Carica immagini del brand</h4>
+          <p>Trascina immagini o clicca per selezionare</p>
+          <p class="upload-hint">PNG, JPG, WebP (max 10MB ciascuna)</p>
+          <p class="upload-hint">Puoi caricare fino a 5 immagini alla volta</p>
+        </label>
+      </div>
+
+      <div *ngIf="isUploading" class="upload-progress">
+        <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+        <span>{{ uploadProgress }}%</span>
+      </div>
+
+      <!-- IMMAGINI CARICATE -->
+      <div *ngIf="referenceImages.length > 0" class="reference-section">
+        <h4>Immagini del brand disponibili:</h4>
+        <div class="reference-grid">
+          <div *ngFor="let image of referenceImages" 
+               class="reference-image"
+               [class.selected]="isImageSelected(image)"
+               (click)="toggleImageSelection(image)">
+            <img [src]="image.imageUrl" [alt]="image.imageName || 'Immagine brand'">
+            <div class="image-overlay">
+              <span class="checkmark" *ngIf="isImageSelected(image)">✓</span>
+            </div>
+          </div>
+        </div>
+        <p class="selection-info">
+          {{ selectedReferenceImages.length }} immagine{{ selectedReferenceImages.length !== 1 ? 'i' : '' }} selezionate
+        </p>
+      </div>
+    </div>
+
+    <!-- SEZIONE GENERAZIONE -->
+    <div class="generate-section">
+      <h3>🎨 Genera nuove immagini</h3>
+      
+      <div class="prompt-section">
+        <label>Descrizione dell'immagine che vuoi generare</label>
+        <textarea [(ngModel)]="generationPrompt" 
+                  placeholder="Esempio: Un prodotto in primo piano con sfondo neutro, perfetto per un post Instagram..."
+                  rows="4"></textarea>
+      </div>
+
+      <div class="settings-section">
+        <div class="setting">
+          <label>Stile</label>
+          <select [(ngModel)]="selectedStyle">
+            <option value="realistic">Realistico</option>
+            <option value="illustration">Illustrazione</option>
+            <option value="minimal">Minimal</option>
+            <option value="vibrant">Vibrante</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <label>Numero immagini</label>
+          <select [(ngModel)]="numberOfImages">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="4" selected>4</option>
+            <option value="6">6</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <label>Formato</label>
+          <select [(ngModel)]="aspectRatio">
+            <option value="1:1">Quadrato (1:1)</option>
+            <option value="4:5">Verticale (4:5)</option>
+            <option value="16:9">Orizzontale (16:9)</option>
+            <option value="9:16">Stories (9:16)</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="generate-btn" 
+              (click)="generateImages()"
+              [disabled]="isGenerating || !generationPrompt.trim() || !selectedBrand">
+        {{ isGenerating ? '🎨 Generazione in corso...' : '🎨 Genera Immagini' }}
+      </button>
+      
+      <div *ngIf="selectedReferenceImages.length > 0" class="info-note">
+        ℹ️ Verranno usate {{ selectedReferenceImages.length }} immagine{{ selectedReferenceImages.length !== 1 ? 'i' : '' }} come riferimento
+      </div>
+    </div>
+  </div>
+</div>

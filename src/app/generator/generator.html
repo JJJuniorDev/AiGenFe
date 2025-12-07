@@ -52,8 +52,27 @@
       </div>
     </div>
 
+     <div class="mode-switcher">
+    <button class="mode-btn" 
+            [class.active]="currentMode === 'text'"
+            (click)="switchToTextMode()">
+      📝 {{ currentLang === 'it' ? 'Genera Testo' : 'Generate Text' }}
+    </button>
+    <button class="mode-btn" 
+            [class.active]="currentMode === 'images'"
+            (click)="switchToImageMode()">
+      🖼️ {{ currentLang === 'it' ? 'Genera Immagini' : 'Generate Images' }}
+    </button>
+  </div>
+
+    <!-- <div class="image-generator-section">
+  <button class="image-generator-btn" (click)="openImageGenerator()">
+    🖼️ {{ currentLang === 'it' ? 'Genera Immagini Brand' : 'Generate Brand Images' }}
+  </button>
+</div> -->
+
     <!-- DASHBOARD PRINCIPALE -->
-    <div class="dashboard-container">
+    <div class="dashboard-container" *ngIf="currentMode === 'text'">
       <div class="dashboard">
         <div class="generate-card">
           <h3>{{ translationService.translate('generateContent') }}</h3>
@@ -758,5 +777,37 @@
         </div>
       </div>
 
+
     </div> <!-- fine generator-container -->
+          <div class="images-container" *ngIf="currentMode === 'images' && imageGeneratorModalOpen" >
+            <div class="panel-mode-wrapper">
+  <app-image-generator-modal
+  *ngIf="imageGeneratorModalOpen"
+  [selectedBrand]="selectedBrand"
+  [isOpen]="imageGeneratorModalOpen"
+  (closeModal)="switchToTextMode()"
+  (imagesGenerated)="handleImagesGenerated($event)">
+</app-image-generator-modal>
+</div>
+</div>
   </div> <!-- fine generator-page -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

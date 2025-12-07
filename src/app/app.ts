@@ -7,7 +7,7 @@ import { AnalyticsComponent } from './analytics-component/analytics-component';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, AnalyticsComponent],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
