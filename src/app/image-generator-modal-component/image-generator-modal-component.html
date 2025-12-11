@@ -1,4 +1,3 @@
-<!-- image-generator-modal.component.html -->
 <div class="modal image-generator-modal" *ngIf="isOpen">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <button class="close-btn" (click)="close()">×</button>
@@ -7,8 +6,8 @@
       <h2>🎨 Generatore Immagini per {{ selectedBrand?.brandName }}</h2>
     </div>
 
-    <!-- SEZIONE UPLOAD IMMAGINI RIFERIMENTO -->
-    <div class="upload-section">
+    
+    <!-- <div class="upload-section">
       <h3>📤 Carica immagini del brand</h3>
       <div class="upload-area" 
            (dragover)="handleDragOver($event)"
@@ -33,7 +32,7 @@
         <span>{{ uploadProgress }}%</span>
       </div>
 
-      <!-- IMMAGINI CARICATE -->
+      
       <div *ngIf="referenceImages.length > 0" class="reference-section">
         <h4>Immagini del brand disponibili:</h4>
         <div class="reference-grid">
@@ -51,37 +50,29 @@
           {{ selectedReferenceImages.length }} immagine{{ selectedReferenceImages.length !== 1 ? 'i' : '' }} selezionate
         </p>
       </div>
-    </div>
+    </div> -->
+
 
     <!-- SEZIONE GENERAZIONE -->
     <div class="generate-section">
-      <h3>🎨 Genera nuove immagini</h3>
+      <h3>🎨 Genera nuova immagine</h3>
       
       <div class="prompt-section">
         <label>Descrizione dell'immagine che vuoi generare</label>
-        <textarea [(ngModel)]="generationPrompt" 
-                  placeholder="Esempio: Un prodotto in primo piano con sfondo neutro, perfetto per un post Instagram..."
-                  rows="4"></textarea>
+        <textarea 
+          [(ngModel)]="generationPrompt" 
+          placeholder="Esempio: Un prodotto in primo piano con sfondo neutro, perfetto per un post Instagram..."
+          rows="4"
+        ></textarea>
       </div>
 
       <div class="settings-section">
         <div class="setting">
           <label>Stile</label>
           <select [(ngModel)]="selectedStyle">
-            <option value="realistic">Realistico</option>
-            <option value="illustration">Illustrazione</option>
-            <option value="minimal">Minimal</option>
-            <option value="vibrant">Vibrante</option>
-          </select>
-        </div>
-
-        <div class="setting">
-          <label>Numero immagini</label>
-          <select [(ngModel)]="numberOfImages">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="4" selected>4</option>
-            <option value="6">6</option>
+            <option *ngFor="let style of availableStyles" [value]="style.value">
+              {{ style.label }}
+            </option>
           </select>
         </div>
 
@@ -96,15 +87,130 @@
         </div>
       </div>
 
-      <button class="generate-btn" 
-              (click)="generateImages()"
-              [disabled]="isGenerating || !generationPrompt.trim() || !selectedBrand">
-        {{ isGenerating ? '🎨 Generazione in corso...' : '🎨 Genera Immagini' }}
+      <button 
+        class="generate-btn" 
+        (click)="generateSingleImage()"
+        [disabled]="isGenerating || !generationPrompt.trim()"
+      >
+        {{ isGenerating ? '🎨 Generazione in corso...' : '🎨 Genera Immagine' }}
       </button>
       
       <div *ngIf="selectedReferenceImages.length > 0" class="info-note">
         ℹ️ Verranno usate {{ selectedReferenceImages.length }} immagine{{ selectedReferenceImages.length !== 1 ? 'i' : '' }} come riferimento
       </div>
+    </div>
+
+    <!-- SEZIONE VISUALIZZAZIONE E MODIFICA -->
+    <div *ngIf="generatedImages.length > 0" class="generated-section">
+      <h3>🖼️ Immagini Generate</h3>
+      
+      <!-- Galleria immagini -->
+      <div class="image-gallery">
+        <div 
+          *ngFor="let image of generatedImages; let i = index" 
+          class="image-thumbnail"
+          [class.selected]="image === selectedImageForEditing"
+          (click)="selectImageForEditing(image)"
+        >
+          <div class="thumbnail-container">
+            <img 
+              [src]="'data:image/png;base64,' + image.imageBase64" 
+              [alt]="'Immagine ' + (i + 1)"
+            >
+            <div class="version-badge">V{{ getVersionNumber(image) }}</div>
+            
+            <div class="thumbnail-overlay">
+              <span *ngIf="image.isEdit" class="edit-badge">✏️ #{{ image.editCount || 1 }}</span>
+              <span *ngIf="image.savedToCloudinary" class="cloud-badge">☁️</span>
+            </div>
+          </div>
+          
+          <div class="thumbnail-info">
+            <div class="thumbnail-number">#{{ i + 1 }}</div>
+            <small class="version-text">Versione {{ getVersionNumber(image) }}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visualizzazione immagine selezionata -->
+      <div *ngIf="selectedImageForEditing" class="selected-image-section">
+        <div class="image-preview" >
+          <div class="preview-container">
+            <img 
+              [src]="'data:image/png;base64,' + selectedImageForEditing.imageBase64" 
+              [alt]="'Anteprima immagine ' + (selectedImageForEditing.editCount || 0)"
+              (load)="onImageLoaded()"
+            >
+          </div>
+        </div>
+        
+        <!-- Dettagli immagine -->
+        <div class="image-details">
+          <p><strong>Prompt usato:</strong> {{ selectedImageForEditing.promptUsed }}</p>
+          <p><strong>Piattaforma:</strong> {{ selectedImageForEditing.platform }}</p>
+          <p><strong>Dimensioni:</strong> {{ selectedImageForEditing.dimensions.width }}x{{ selectedImageForEditing.dimensions.height }}</p>
+          <p *ngIf="selectedImageForEditing.isEdit">
+            <strong>Modifiche:</strong> {{ (selectedImageForEditing.editCount || 0) + 1 }} volte
+          </p>
+        </div>
+
+        <!-- Azioni immagine -->
+        <div class="image-actions">
+          <button 
+            class="btn-action" 
+            (click)="downloadImage(selectedImageForEditing)"
+            title="Scarica"
+          >
+            ⬇️ Scarica
+          </button>
+          
+          <button 
+            class="btn-action" 
+            *ngIf="!selectedImageForEditing.savedToCloudinary"
+            (click)="saveImageToCloudinary(selectedImageForEditing)"
+            [disabled]="isSaving"
+            title="Salva su Cloudinary"
+          >
+            {{ isSaving ? 'Salvataggio...' : '☁️ Salva' }}
+          </button>
+          
+          <button 
+            class="btn-action" 
+            *ngIf="selectedImageForEditing.imageUrl"
+            (click)="copyImageUrl(selectedImageForEditing.imageUrl!)"
+            title="Copia URL"
+          >
+            📋 Copia URL
+          </button>
+        </div>
+
+        <!-- Modifica immagine -->
+        <div class="edit-section">
+          <h4>✏️ Modifica questa immagine</h4>
+          <textarea 
+            [(ngModel)]="editPrompt" 
+            placeholder="Descrivi come vuoi modificare l'immagine..."
+            rows="3"
+          ></textarea>
+          <button 
+            class="btn-edit" 
+            (click)="editSelectedImage()"
+            [disabled]="isEditing || !editPrompt.trim()"
+          >
+            {{ isEditing ? 'Modifica in corso...' : 'Applica Modifiche' }}
+          </button>
+          <p class="edit-hint" *ngIf="selectedImageForEditing.isEdit">
+            Questa è la versione #{{ (selectedImageForEditing.editCount || 0) + 1 }} dell'immagine
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stato vuoto -->
+    <div *ngIf="generatedImages.length === 0 && !isGenerating" class="empty-state">
+      <div class="empty-icon">🎨</div>
+      <p>Le immagini generate appariranno qui</p>
+      <small>Scrivi un prompt e clicca "Genera Immagine"</small>
     </div>
   </div>
 </div>

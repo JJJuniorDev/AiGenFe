@@ -1,41 +1,57 @@
-// src/app/components/image-generator-modal/image-generator-modal.component.ts
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrandReferenceImage } from '../model/BrandReferenceImage.model';
 import { BrandProfile } from '../model/BrandProfile.model';
 import { BrandReferenceImageService } from '../services/BrandReferenceImageService.service';
-import { ImageGenerationRequest, ImageService } from '../services/ImageService.service';
+import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest } from '../services/ImageService.service';
 
 @Component({
   selector: 'app-image-generator-modal',
   imports: [CommonModule, FormsModule],
- templateUrl: './image-generator-modal-component.html',
+   templateUrl: './image-generator-modal-component.html',
   styleUrls: ['./image-generator-modal-component.css']
 })
 export class ImageGeneratorModalComponent implements OnInit {
   @Input() selectedBrand: BrandProfile | null = null;
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<void>();
-  @Output() imagesGenerated = new EventEmitter<any[]>();
+  @Output() imagesGenerated = new EventEmitter<GeneratedImage[]>();
 
-  // Immagini di riferimento
   referenceImages: BrandReferenceImage[] = [];
   selectedReferenceImages: BrandReferenceImage[] = [];
   
-  // Upload
-  uploadProgress = 0;
-  isUploading = false;
-  
-  // Generazione
   generationPrompt = '';
-  selectedStyle: 'realistic' | 'illustrative' | 'minimal' | 'vibrant' = 'realistic';
-  numberOfImages = 4;
-  aspectRatio: '1:1' | '4:5' | '16:9' = '1:1';
+  selectedStyle: string = 'cinematic';
+  aspectRatio: '1:1' | '4:5' | '16:9' | '9:16' = '1:1';
   isGenerating = false;
+  isEditing = false;
+  isSaving = false;
+  
+  editPrompt = '';
+  generatedImages: GeneratedImage[] = [];
+  selectedImageForEditing: GeneratedImage | null = null;
+  previewLoaded = false;
 
-  // File upload
-  selectedFiles: File[] = [];
+  availableStyles = [
+    { value: '3d-model', label: 'Modello 3D' },
+    { value: 'analog-film', label: 'Pellicola Analogica' },
+    { value: 'anime', label: 'Anime' },
+    { value: 'cinematic', label: 'Cinematico' },
+    { value: 'comic-book', label: 'Fumetto' },
+    { value: 'digital-art', label: 'Arte Digitale' },
+    { value: 'enhance', label: 'Migliorato' },
+    { value: 'fantasy-art', label: 'Arte Fantasy' },
+    { value: 'isometric', label: 'Isometrico' },
+    { value: 'line-art', label: 'Line Art' },
+    { value: 'low-poly', label: 'Low Poly' },
+    { value: 'modeling-compound', label: 'Modellato' },
+    { value: 'neon-punk', label: 'Neon Punk' },
+    { value: 'origami', label: 'Origami' },
+    { value: 'photographic', label: 'Fotografico' },
+    { value: 'pixel-art', label: 'Pixel Art' },
+    { value: 'tile-texture', label: 'Texture a Piastrelle' }
+  ];
 
   constructor(
     private referenceImageService: BrandReferenceImageService,
@@ -48,185 +64,17 @@ export class ImageGeneratorModalComponent implements OnInit {
     }
   }
 
-  // METODI PER GESTIONE FILE UPLOAD
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length || !this.selectedBrand?.id) return;
-
-    const files = Array.from(input.files);
-    this.handleFilesUpload(files);
-  }
-
-  handleDrop(event: DragEvent) {
-    event.preventDefault();
-    if (!event.dataTransfer?.files.length || !this.selectedBrand?.id) return;
-
-    const files = Array.from(event.dataTransfer.files);
-    this.handleFilesUpload(files);
-  }
-
-  private handleFilesUpload(files: File[]) {
-    // Filtra solo immagini
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
-    if (imageFiles.length === 0) {
-      console.error('Nessuna immagine valida selezionata');
-      return;
-    }
-
-    // Limita a 5 file per volta
-    const filesToUpload = imageFiles.slice(0, 5);
-    this.selectedFiles = filesToUpload;
-    
-    // Upload dei file
-    this.uploadFiles(filesToUpload);
-  }
-
-  private uploadFiles(files: File[]) {
-    if (!this.selectedBrand?.id) return;
-
-    this.isUploading = true;
-    this.uploadProgress = 0;
-    
-    const totalFiles = files.length;
-    let uploadedCount = 0;
-
-    files.forEach((file, index) => {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('brandId', this.selectedBrand!.id!.toString());
-      formData.append('brandName', this.selectedBrand!.brandName);
-      formData.append('description', `Immagine di riferimento per ${this.selectedBrand?.brandName}`);
-      formData.append('fileName', file.name);
-
-      this.referenceImageService.uploadImage(this.selectedBrand!.id!, formData)
-        .subscribe({
-          next: (uploadedImage) => {
-            this.referenceImages.push(uploadedImage);
-            uploadedCount++;
-            
-            // Aggiorna progresso
-            this.uploadProgress = Math.round((uploadedCount / totalFiles) * 100);
-            
-            // Se tutti i file sono stati caricati
-            if (uploadedCount === totalFiles) {
-              this.isUploading = false;
-              this.selectedFiles = [];
-            }
-          },
-          error: (error) => {
-            console.error(`Errore upload file ${file.name}:`, error);
-            uploadedCount++;
-            
-            if (uploadedCount === totalFiles) {
-              this.isUploading = false;
-              this.selectedFiles = [];
-            }
-          }
-        });
-    });
-  }
-
+  // Caricamento immagini di riferimento
   loadReferenceImages() {
     if (!this.selectedBrand?.id) return;
     
     this.referenceImageService.getImagesByBrand(this.selectedBrand.id)
       .subscribe({
-        next: (images) => {
-          this.referenceImages = images;
-        },
-        error: (error) => {
-          console.error('Errore caricamento immagini:', error);
-        }
+        next: (images) => this.referenceImages = images,
+        error: (error) => console.error('Errore caricamento immagini:', error)
       });
   }
 
-  // GENERAZIONE IMMAGINI
-  generateImages() {
-    if (!this.selectedBrand?.id || !this.generationPrompt.trim()) return;
-
-    // Costruisci il prompt combinato con informazioni del brand
-    const enhancedPrompt = this.buildEnhancedPrompt();
-    
-    const request: ImageGenerationRequest = {
-      prompt: enhancedPrompt,
-      brandProfileId: this.selectedBrand.id,
-      brandName: this.selectedBrand.brandName,
-      style: this.selectedStyle,
-      numberOfImages: this.numberOfImages,
-      aspectRatio: this.aspectRatio,
-      referenceImageUrls: this.selectedReferenceImages.map(img => img.imageUrl)
-    };
-
-    this.isGenerating = true;
-
-    this.imageService.generateImages(request).subscribe({
-      next: (response) => {
-        this.isGenerating = false;
-        this.imagesGenerated.emit(response.images);
-        
-        // Reset dei campi dopo la generazione
-        this.generationPrompt = '';
-        this.selectedReferenceImages = [];
-        
-        // Chiudi il modale dopo la generazione
-        this.close();
-      },
-      error: (error) => {
-        console.error('Errore generazione:', error);
-        this.isGenerating = false;
-      }
-    });
-  }
-
-  private buildEnhancedPrompt(): string {
-    let prompt = this.generationPrompt;
-    
-    // Aggiungi informazioni del brand al prompt
-    if (this.selectedBrand) {
-      const brandInfo = [];
-      
-      if (this.selectedBrand.brandDescription) {
-        brandInfo.push(`Brand: ${this.selectedBrand.brandDescription}`);
-      }
-      
-      if (this.selectedBrand.tone) {
-        brandInfo.push(`Tono: ${this.selectedBrand.tone}`);
-      }
-      
-      if (this.selectedBrand.brandValues) {
-        brandInfo.push(`Valori: ${this.selectedBrand.brandValues}`);
-      }
-      
-      if (this.selectedBrand.targetAudience) {
-        brandInfo.push(`Target: ${this.selectedBrand.targetAudience}`);
-      }
-      
-      if (brandInfo.length > 0) {
-        prompt = `${prompt}. Contesto brand: ${brandInfo.join(', ')}`;
-      }
-    }
-    
-    // Aggiungi stile specificato
-    switch (this.selectedStyle) {
-      case 'realistic':
-        prompt += ' Fotorealistico, dettagliato, professional photography';
-        break;
-      case 'illustrative':
-        prompt += ' Illustrazione, artistico, flat design, vector art';
-        break;
-      case 'minimal':
-        prompt += ' Minimalista, pulito, semplice, whitespace';
-        break;
-      case 'vibrant':
-        prompt += ' Colori vibranti, bold, eye-catching, saturated';
-        break;
-    }
-    
-    return prompt;
-  }
-
-  // GESTIONE SELEZIONE IMMAGINI
   toggleImageSelection(image: BrandReferenceImage) {
     const index = this.selectedReferenceImages.findIndex(img => img.id === image.id);
     if (index === -1) {
@@ -240,21 +88,190 @@ export class ImageGeneratorModalComponent implements OnInit {
     return this.selectedReferenceImages.some(img => img.id === image.id);
   }
 
-  // METODI UI
+  // Generazione immagine
+  generateSingleImage() {
+    if (!this.generationPrompt.trim()) {
+      alert('Inserisci un prompt');
+      return;
+    }
+
+    this.isGenerating = true;
+
+    const request: ImageGenerationRequest = {
+      prompt: this.generationPrompt,
+      brandName: this.selectedBrand?.brandName || '',
+      platform: this.mapAspectRatioToPlatform(this.aspectRatio),
+      style: this.selectedStyle,
+      referenceImageUrls: this.selectedReferenceImages.map(img => img.imageUrl)
+    };
+
+    this.imageService.generateSingleImage(request).subscribe({
+      next: (image: GeneratedImage) => {
+        this.isGenerating = false;
+        this.generatedImages.push(image);
+        this.selectImageForEditing(image);
+        this.imagesGenerated.emit([image]);
+      },
+      error: (error) => {
+        console.error('Errore generazione:', error);
+        this.isGenerating = false;
+      }
+    });
+  }
+
+  private mapAspectRatioToPlatform(aspectRatio: string): string {
+    switch (aspectRatio) {
+      case '1:1': return 'instagram';
+      case '4:5': return 'instagram';
+      case '9:16': return 'instagram';
+      case '16:9': return 'linkedin';
+      default: return 'instagram';
+    }
+  }
+
+  // Modifica immagine
+  selectImageForEditing(image: GeneratedImage) {
+    this.previewLoaded = false;
+    this.selectedImageForEditing = image;
+    this.editPrompt = image.promptUsed || '';
+  }
+
+  editSelectedImage() {
+    if (!this.selectedImageForEditing || !this.editPrompt.trim()) return;
+
+    this.isEditing = true;
+    const editStrength = this.determineEditStrength(this.editPrompt);
+
+    this.imageService.editImage(
+      this.selectedImageForEditing.imageBase64!,
+      this.editPrompt,
+      '',
+      this.aspectRatio,
+      this.selectedStyle,
+      this.selectedImageForEditing.editCount || 0,
+      editStrength
+    ).subscribe({
+      next: (editedImage: GeneratedImage) => {
+        this.isEditing = false;
+        this.generatedImages.push(editedImage);
+        this.selectImageForEditing(editedImage);
+        this.imagesGenerated.emit(this.generatedImages);
+      },
+      error: (error) => {
+        console.error('Errore durante la modifica:', error);
+        this.isEditing = false;
+      }
+    });
+  }
+
+  // Salvataggio e download
+  saveImageToCloudinary(image: GeneratedImage) {
+    if (!image.imageBase64) return;
+
+    this.isSaving = true;
+
+    const saveRequest: SaveImageRequest = {
+      imageBase64: image.imageBase64,
+      platform: image.platform,
+      brandName: this.selectedBrand?.brandName
+    };
+
+    this.imageService.saveImage(saveRequest).subscribe({
+      next: (savedImage) => {
+        this.isSaving = false;
+        
+        const index = this.generatedImages.findIndex(img => 
+          img.temporaryId === image.temporaryId
+        );
+        
+        if (index !== -1) {
+          this.generatedImages[index] = {
+            ...this.generatedImages[index],
+            imageUrl: savedImage.imageUrl,
+            savedToCloudinary: true
+          };
+        }
+      },
+      error: (error) => {
+        console.error('Errore salvataggio:', error);
+        this.isSaving = false;
+      }
+    });
+  }
+
+  downloadImage(image: GeneratedImage) {
+    if (!image.imageBase64) return;
+    
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${image.imageBase64}`;
+    const fileName = `${this.selectedBrand?.brandName || 'image'}-${Date.now()}.png`;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async copyImageUrl(imageUrl: string) {
+    try {
+      await navigator.clipboard.writeText(imageUrl);
+    } catch (err) {
+      console.error('Errore copia URL:', err);
+    }
+  }
+
+  // UI Methods
   close() {
-    // Reset dello stato prima di chiudere
     this.selectedReferenceImages = [];
     this.generationPrompt = '';
-    this.selectedFiles = [];
-    this.isUploading = false;
     this.isGenerating = false;
-    
+    this.isEditing = false;
+    this.isSaving = false;
+    this.editPrompt = '';
+    this.selectedImageForEditing = null;
     this.closeModal.emit();
   }
 
-  // METODI PER GESTIONE DRAG & DROP
-  handleDragOver(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
+  onImageLoaded() {
+    this.previewLoaded = true;
   }
+
+  getVersionNumber(image: GeneratedImage): number {
+    if (!image.editCount) return 1;
+    return image.editCount + 1;
+  }
+
+  private determineEditStrength(prompt: string): number {
+    const promptLower = prompt.toLowerCase();
+    
+    const radicalKeywords = [
+      'aggiungi', 'rimuovi', 'cambia', 'trasforma', 'completamente',
+      'totalmente', 'invece', 'diverso', 'nuovo', 'crea', 'trasforma in', 'metti'
+    ];
+
+    const subtleKeywords = [
+      'migliora', 'migliora leggermente', 'ritocca', 'aggiusta',
+      'leggermente', 'un po\'', 'piccolo', 'minimo', 'rifinisci'
+    ];
+
+    let radicalCount = 0;
+    let subtleCount = 0;
+
+    radicalKeywords.forEach(keyword => {
+      if (promptLower.includes(keyword)) radicalCount++;
+    });
+    
+    subtleKeywords.forEach(keyword => {
+      if (promptLower.includes(keyword)) subtleCount++;
+    });
+    
+    if (radicalCount > 0 && radicalCount >= subtleCount) {
+      return 0.15; // Modifica forte
+    } else if (subtleCount > radicalCount) {
+      return 0.65; // Modifica sottile
+    }
+    
+    return 0.35; // Default
+  }
+
+ 
 }

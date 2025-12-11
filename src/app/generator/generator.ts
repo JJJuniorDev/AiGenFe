@@ -23,7 +23,7 @@ import { ContentAssistantComponent } from "../content-assistant-component/conten
 
 import { environment } from '../../environments/environment';
 import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest } from '../services/ImageService.service';
-import { ImageGeneratorModalComponent } from "../image-generator-modal-component/image-generator-modal-component";
+import { ImageGeneratorModalComponent } from '../image-generator-modal-component/image-generator-modal-component';
 
 @Component({
   selector: 'app-generator',
@@ -1322,7 +1322,7 @@ generateImageForPost(postContent: string, postIndex: number) {
     prompt: postContent, // Solo questo post
     brandProfileId: this.selectedBrand.id!,
     brandName: this.selectedBrand.brandName,
-    style: 'realistic',
+    style: 'cinematic',
     includeText: true,
     numberOfImages: 1,
     aspectRatio: '1:1',
@@ -1412,14 +1412,14 @@ deleteImageFromPost(postIndex: number, imageIndex: number) {
     // Se l'immagine è salvata su Cloudinary, puoi anche eliminarla dal server
     if (image.imageUrl && !image.imageBase64) {
       // Opzionale: chiama API per eliminare da Cloudinary
-      this.imageService.deleteImage(image.imageUrl).subscribe({
-        next: () => {
-          console.log('Immagine eliminata da Cloudinary');
-        },
-        error: (err) => {
-          console.warn('Impossibile eliminare da Cloudinary:', err);
-        }
-      });
+      // this.imageService.deleteImage(image.imageUrl).subscribe({
+      //   next: () => {
+      //     console.log('Immagine eliminata da Cloudinary');
+      //   },
+      //   error: (err) => {
+      //     console.warn('Impossibile eliminare da Cloudinary:', err);
+      //   }
+      // });
     }
     
     // Rimuovi dall'array
