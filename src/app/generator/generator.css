@@ -268,6 +268,27 @@ body {
   margin-bottom: 20px;
 }
 
+
+
+.archive-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .platform-selector label {
   display: block;
   margin-bottom: 8px;
@@ -302,6 +323,7 @@ body {
   align-items: center;
   gap: 10px;
   justify-content: space-between;
+  color: white;
 }
 
 .social-icon {
@@ -1801,7 +1823,6 @@ body {
   }
 
   .language-switch,
-  .archive-btn,
   .credit-balance,
   .logout-btn {
     min-height: 40px;
@@ -2763,59 +2784,6 @@ select.error {
 
 
 
-
-
-.archive-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  color: white;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.archive-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.archive-btn:hover::before {
-  left: 100%;
-}
-
-.archive-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.archive-btn:active {
-  transform: translateY(0);
-}
-
-.archive-btn-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  z-index: 1;
-}
-
 .archive-icon {
   font-size: 18px;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
@@ -2885,12 +2853,8 @@ select.error {
 /* Platform Selector Styles */
 .platform-name {
   font-weight: 500;
-  color: #e0e0e0;
+  color: #ffffff;
   font-size: 0.9rem;
-}
-
-.dropdown-option .platform-name {
-  color: inherit;
 }
 
 .selected-option .platform-name {
@@ -3080,9 +3044,7 @@ select.error {
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .website-analysis-modal .modal-content {
-    width: 95%;
-    padding: 1.5rem;
-    margin: 1rem;
+    width: 100%;
     border-radius: 16px;
   }
 
@@ -3148,7 +3110,7 @@ select.error {
 @media (max-height: 600px) {
   .website-analysis-modal {
     align-items: flex-start;
-    padding: 1rem 0;
+   width: 100%;
     overflow-y: auto;
   }
 

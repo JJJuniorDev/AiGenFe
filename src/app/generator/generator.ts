@@ -567,13 +567,13 @@ cancelGeneration() {
 
   // Apri modale creazione/modifica brand
   openBrandFormModal(brand?: BrandProfile) {
-      if (!brand && !this.canCreateMoreBrands) {
-        this.toastr.error(
-      `Limite brand raggiunto! Hai ${this.currentBrands} brand su ${this.maxBrands} disponibili.`,
-      'Limite Raggiunto'
-    );
-    return;
-  }
+  //     if (!brand && !this.canCreateMoreBrands) {
+  //       this.toastr.error(
+  //     `Limite brand raggiunto! Hai ${this.currentBrands} brand su ${this.maxBrands} disponibili.`,
+  //     'Limite Raggiunto'
+  //   );
+  //   return;
+  // }
       if (brand) {
     // Modifica brand esistente
     this.editingBrand = brand;
