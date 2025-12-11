@@ -1161,6 +1161,16 @@ savePost(contenuto: string, key: string) {
 }
 
 
+updateUserFromModal(updatedUser: any) {
+  console.log('Utente aggiornato dal modal:', updatedUser);
+  this.user = updatedUser;
+  
+  // Opzionale: anche aggiornare nello UserStateService se lo usi
+  if (this.userStateService) {
+    this.userStateService.setUser(updatedUser);
+  }
+}
+
 getOutputValue(key: keyof Testimonial): string[] {
   if (!this.output) return [];
   return this.output[key] as string[];

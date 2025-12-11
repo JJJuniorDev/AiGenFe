@@ -5,6 +5,8 @@ import { BrandReferenceImage } from '../model/BrandReferenceImage.model';
 import { BrandProfile } from '../model/BrandProfile.model';
 import { BrandReferenceImageService } from '../services/BrandReferenceImageService.service';
 import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest } from '../services/ImageService.service';
+import { AuthService } from '../services/AuthService.service';
+import { UserStateService } from '../services/UserStateService.service';
 
 @Component({
   selector: 'app-image-generator-modal',
@@ -15,8 +17,10 @@ import { GeneratedImage, ImageGenerationRequest, ImageService, SaveImageRequest 
 export class ImageGeneratorModalComponent implements OnInit {
   @Input() selectedBrand: BrandProfile | null = null;
   @Input() isOpen = false;
+  @Input() user: any = null;
   @Output() closeModal = new EventEmitter<void>();
   @Output() imagesGenerated = new EventEmitter<GeneratedImage[]>();
+@Output() userUpdated = new EventEmitter<any>();
 
   referenceImages: BrandReferenceImage[] = [];
   selectedReferenceImages: BrandReferenceImage[] = [];
@@ -55,7 +59,9 @@ export class ImageGeneratorModalComponent implements OnInit {
 
   constructor(
     private referenceImageService: BrandReferenceImageService,
-    private imageService: ImageService
+    private imageService: ImageService,
+    private authService: AuthService,
+    private userStateService: UserStateService
   ) {}
 
   ngOnInit() {
@@ -95,6 +101,15 @@ export class ImageGeneratorModalComponent implements OnInit {
       return;
     }
 
+     if (this.user && this.user.credits < 1) {
+    this.showNotification(
+      '💳 Crediti insufficienti! Acquista crediti per generare contenuti.', 
+      'error', 
+      5000
+    );
+    return;
+  }
+
     this.isGenerating = true;
 
     const request: ImageGenerationRequest = {
@@ -111,12 +126,18 @@ export class ImageGeneratorModalComponent implements OnInit {
         this.generatedImages.push(image);
         this.selectImageForEditing(image);
         this.imagesGenerated.emit([image]);
+         this.updateUserCredits();
+    console.log('USER: '+this.user);
+       if (this.user && this.user.credits >= 1) {
+    this.user.credits = this.user.credits - 1;
+  }
       },
       error: (error) => {
         console.error('Errore generazione:', error);
         this.isGenerating = false;
       }
     });
+   
   }
 
   private mapAspectRatioToPlatform(aspectRatio: string): string {
@@ -273,5 +294,35 @@ export class ImageGeneratorModalComponent implements OnInit {
     return 0.35; // Default
   }
 
- 
+  notification: any = null;
+  private notificationTimeout: any;
+ showNotification(message: string, type: 'error' | 'warning' | 'success' = 'error', duration: number = 5000) {
+  this.notification = { message, type };
+  
+  // Auto-dismiss dopo la durata
+  clearTimeout(this.notificationTimeout);
+  this.notificationTimeout = setTimeout(() => {
+    this.dismissNotification();
+  }, duration);
+}
+
+// Metodo per chiudere la notifica
+dismissNotification() {
+  this.notification = null;
+  clearTimeout(this.notificationTimeout);
+}
+
+
+updateUserCredits() {
+   this.authService.getCurrentUser().subscribe({
+    next: (user) => {
+      this.user = user;
+      this.userStateService.setUser(user); // Aggiorna anche lo state
+     this.userUpdated.emit(user);
+    },
+    error: (error) => {
+      console.error('Errore aggiornamento crediti:', error);
+    }
+  });
+}
 }

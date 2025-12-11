@@ -33,7 +33,7 @@ export class TranslationService {
       'manual': '✍️ Manuale',
       'guided': '🚀 Guidato',
       'manualPlaceholder': 'Descrivi cosa vuoi comunicare (minimo 10 caratteri)... Es: \'Voglio promuovere il mio nuovo corso di yoga online per principianti, focalizzato sul rilassamento e flessibilità\'',
-      'selectBrand': '🎨 Seleziona o crea Brand Memory',
+      'selectBrand': '🎨 Seleziona un brand già creato o crea Brand',
       'brandSelected': 'Brand selezionato:',
       'platform': 'Piattaforma:',
       'postType': 'Tipo di post:',

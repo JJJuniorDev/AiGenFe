@@ -76,9 +76,36 @@
       <div class="dashboard">
         <div class="generate-card">
           <h3>{{ translationService.translate('generateContent') }}</h3>
-           <button class="btn-analysis" (click)="openWebsiteAnalysisModal()">
+        
+
+
+
+         <!-- BRAND SECTION -->
+            <div class="brand-buttons-container">
+            <button class="brand-manager-btn" 
+                    [class.error]="showBrandError"
+                    (click)="openBrandModal()">
+              {{ translationService.translate('selectBrand') }}
+              <!-- <span class="brand-counter" *ngIf="maxBrands > 0">
+                ({{ currentBrands }}/{{ maxBrands }})
+              </span> -->
+            </button>
+               <button class="btn-analysis" (click)="openWebsiteAnalysisModal()">
           🌐 {{ currentLang === 'it' ? 'Analizza Sito Web per creare il brand in automatico' : 'Analyze Website' }}
         </button>
+            <div *ngIf="selectedBrand" class="selected-brand">
+              <strong>{{ translationService.translate('brandSelected') }}</strong> {{ selectedBrand!.brandName! }}
+              <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
+            </div>
+
+            <!-- <div *ngIf="!canCreateMoreBrands" class="limit-warning">
+              ⚠️ {{ currentLang === 'it' ? 'Limite brand raggiunto! Upgrade per crearne di più.' : 'Brand limit reached! Upgrade to create more.' }}
+            </div> -->
+            <div *ngIf="showBrandError" class="field-error">
+              ⚠️ {{ currentLang === 'it' ? 'Seleziona un brand prima di generare' : 'Select a brand before generating' }}
+            </div>
+          </div>
+
           <!-- MODE SELECTOR -->
           <div class="mode-selector">
             <button class="mode-btn" 
@@ -160,28 +187,7 @@
            
         <hr>
 
-          <!-- BRAND SECTION -->
-          <div class="brand-section">
-            <button class="brand-manager-btn" 
-                    [class.error]="showBrandError"
-                    (click)="openBrandModal()">
-              {{ translationService.translate('selectBrand') }}
-              <span class="brand-counter" *ngIf="maxBrands > 0">
-                ({{ currentBrands }}/{{ maxBrands }})
-              </span>
-            </button>
-            <div *ngIf="selectedBrand" class="selected-brand">
-              <strong>{{ translationService.translate('brandSelected') }}</strong> {{ selectedBrand!.brandName! }}
-              <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
-            </div>
-
-            <div *ngIf="!canCreateMoreBrands" class="limit-warning">
-              ⚠️ {{ currentLang === 'it' ? 'Limite brand raggiunto! Upgrade per crearne di più.' : 'Brand limit reached! Upgrade to create more.' }}
-            </div>
-            <div *ngIf="showBrandError" class="field-error">
-              ⚠️ {{ currentLang === 'it' ? 'Seleziona un brand prima di generare' : 'Select a brand before generating' }}
-            </div>
-          </div>
+         
 
           <!-- PLATFORM SELECTOR -->
           <div class="platform-selector">
@@ -780,6 +786,8 @@
   *ngIf="imageGeneratorModalOpen"
   [selectedBrand]="selectedBrand"
   [isOpen]="imageGeneratorModalOpen"
+  [user]="user"
+  (userUpdated)="updateUserFromModal($event)"
   (closeModal)="switchToTextMode()"
   (imagesGenerated)="handleImagesGenerated($event)">
 </app-image-generator-modal>
