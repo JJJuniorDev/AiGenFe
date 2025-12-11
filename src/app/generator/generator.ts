@@ -1174,12 +1174,10 @@ estimatedWaitTime: number = 0;
 
 // 👇 METODO PER APRIRE MODALE ANALISI
 openWebsiteAnalysisModal() {
-  console.log('🔍 Chiamato openWebsiteAnalysisModal');
-  console.log('Valore attuale websiteAnalysisModalOpen:', this.websiteAnalysisModalOpen);
+
   this.websiteAnalysisModalOpen = true;
   this.websiteUrl = '';
-  console.log('Valore dopo websiteAnalysisModalOpen:', this.websiteAnalysisModalOpen);
-  
+
 }
 
 // 👇 METODO PER ANALIZZARE SITO

@@ -604,25 +604,23 @@
                 </div>
 
                 <div class="image-generation-per-post">
-                  <!-- Pulsante per generare immagine -->
+               
                   <button class="generate-image-btn" 
                           (click)="generateImageForPost(v, i)"
                           [disabled]="generatingImagesForPost === i">
                     🖼️ {{ translationService.translate('generaImmagine') }}
                   </button>
-                  
-                  <!-- Contatore crediti richiesti -->
+             
                   <span class="image-credit-cost" *ngIf="!imagesForPost[i]?.length">
                     (0.5 crediti)
                   </span>
-                  
-                  <!-- Stato di generazione -->
+              
                   <div *ngIf="generatingImagesForPost === i" class="generating-image-status">
                     <div class="spinner-small"></div>
                     <span>Generazione in corso...</span>
                   </div>
                   
-                  <!-- Carosello immagini generate per questo post -->
+                 
                   <div *ngIf="imagesForPost[i] && imagesForPost[i].length > 0" class="post-images-carousel">
                     <h4>🖼️ Immagini generate per questa versione:</h4>
                     
@@ -633,19 +631,16 @@
                         <div *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
                              class="carousel-image-wrapper"
                              [class.active]="currentImageIndex[i] === imgIndex">
-                          
-                          <!-- Immagine -->
+                       
                           <img [src]="getImageSource(image)" 
                                [alt]="'Immagine per versione ' + (i+1)"
                                class="carousel-image">
-                          
-                          <!-- Info immagine -->
+                       
                           <div class="image-info-mini">
                             <span>{{ getPlatformName(image.platform) }}</span>
                             <span>{{ image.dimensions?.width }}×{{ image.dimensions?.height }}</span>
                           </div>
                           
-                          <!-- Azioni immagine -->
                           <div class="image-actions-mini">
                             <button class="btn-tiny" 
                                     [title]="'Copia ' + (image.imageUrl ? 'URL' : 'Base64')"
@@ -679,7 +674,7 @@
                       <button class="carousel-nav next" (click)="nextImage(i)">›</button>
                     </div>
                     
-                    <!-- Indicatori del carosello -->
+                
                     <div class="carousel-indicators">
                       <span *ngFor="let image of imagesForPost[i]; let imgIndex = index" 
                             class="indicator"
@@ -689,7 +684,7 @@
                       </span>
                     </div>
                     
-                    <!-- Pulsante per generare un'altra immagine -->
+               
                     <button class="generate-another-btn" 
                             (click)="generateAnotherImageForPost(v, i)">
                       + Genera un'altra immagine
@@ -730,7 +725,7 @@
 
       <!-- MODALE WEBSITE ANALYSIS -->
       <div class="modal website-analysis-modal" *ngIf="websiteAnalysisModalOpen">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="website-modal-content" (click)="$event.stopPropagation()">
           <button class="close-btn" (click)="websiteAnalysisModalOpen = false">×</button>
           
           <h2>🌐 {{ currentLang === 'it' ? 'Analizza Sito Web' : 'Analyze Website' }}</h2>
