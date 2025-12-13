@@ -93,10 +93,7 @@
                <button class="btn-analysis" (click)="openWebsiteAnalysisModal()">
           🌐 {{ currentLang === 'it' ? 'Analizza Sito Web per creare il brand in automatico' : 'Analyze Website' }}
         </button>
-            <div *ngIf="selectedBrand" class="selected-brand">
-              <strong>{{ translationService.translate('brandSelected') }}</strong> {{ selectedBrand!.brandName! }}
-              <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
-            </div>
+          
 
             <!-- <div *ngIf="!canCreateMoreBrands" class="limit-warning">
               ⚠️ {{ currentLang === 'it' ? 'Limite brand raggiunto! Upgrade per crearne di più.' : 'Brand limit reached! Upgrade to create more.' }}
@@ -105,7 +102,10 @@
               ⚠️ {{ currentLang === 'it' ? 'Seleziona un brand prima di generare' : 'Select a brand before generating' }}
             </div>
           </div>
-
+  <div *ngIf="selectedBrand" class="selected-brand">
+              <strong>{{ translationService.translate('brandSelected') }}</strong> {{ selectedBrand!.brandName! }}
+              <span class="brand-tone">({{ selectedBrand!.tone! }})</span>
+            </div>
           <!-- MODE SELECTOR -->
           <div class="mode-selector">
             <button class="mode-btn" 
