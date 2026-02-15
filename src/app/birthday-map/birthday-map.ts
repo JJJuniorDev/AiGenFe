@@ -67,7 +67,12 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
   playerX: number = 500;
   playerY: number = 325;
   isMobile: boolean = window.innerWidth <= 768;
-  
+   
+  // AGGIUNGI QUESTE DUE PROPRIETÀ
+showWelcomeGift: boolean = true;  // Mostra il regalo all'avvio
+welcomeGiftMessage: string = '🎁 ECCO UN BTP! 🎁';
+welcomeGiftEmoji: string = '📈';
+
   private messageQueue: string[] = [];
   public currentNPC: string | null = null;
   
@@ -86,8 +91,8 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
       avatar: '🍺',
       messages: [
         'Ehi Broder! Finalmente sei arrivato! 🍺',
-        'Senti, ti offro una bionda media, ma poi...',
-        'Devi andare da Fabrizio al Calvario! È importante!',
+        'Me offri la birra muvt...',
+        'Passa a prendere Fabrizio dal Calvario, ten u tabacc',
       ],
       area: 'cafe',
       x: 280,
@@ -105,8 +110,8 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
       emoji: '🍺',
       avatar: '👨‍🍳',
       messages: [
-        '5 euro per la bionda media! 💶',
-        '...ma per gli amici di Lorenzo è offerta! 🎉',
+        '5 euro per la bionda media broder! 💶',
+        '...altre 3 per i cumbagn? Champ🎉',
         'Buon compleanno broder! 🍻'
       ],
       area: 'cafe',
@@ -127,8 +132,8 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
       messages: [
         'Oh broder! ti sto aspettando da 1 ora! ⏰',
         'A Lorenzo hai offerto la birra eh... 🍺',
-        'Senti, ho un affare per te: BTP e birra, ci pensi? 📊',
-        'Ora vai da Simone alla Svolta, ti aspetta!'
+        'Ma un BTBirra quanto vale broder? 📊',
+        'La Svolta ti aspetta'
       ],
       area: 'calvario',
       x: 730,
@@ -147,8 +152,9 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
       avatar: '🎁',
       messages: [
         'Hai superato la Svolta, vedo! 🎯',
+        'con saggezza e con veemenza sono una bestia. Il leporinox',
         'Siamo tutti qui per te broder! ❤️',
-        'Questo regalo è per i tuoi 30 anni! 🎁',
+        'Questo regalo è per i tuoi 25 anni! 🎁',
         'TANTISSIMI AUGURI ANTHONY! 🏆🎉'
       ],
       area: 'svolta',
@@ -180,7 +186,14 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     this.initGame();
+    setTimeout(() => {
+    this.showWelcomeGift = true;
+  }, 1000);
   }
+
+  closeWelcomeGift() {
+  this.showWelcomeGift = false;
+}
 
   ngOnDestroy() {
     if (this.game) {
@@ -404,6 +417,9 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
         ease: 'Power1'
       });
     }
+
+     // AGGIUNGI QUESTA RIGA PER I TESTI "UACIDD"
+  this.createUaciddText(scene);
   }
 
   private createFirework(scene: Phaser.Scene, x: number, y: number) {
@@ -777,9 +793,9 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
   }
 
   startMove(direction: 'up' | 'down' | 'left' | 'right') {
-    if (this.player && !this.currentMessage) {
-      this.movingDirection = direction;
-    }
+     if (this.player && !this.currentMessage && !this.showWelcomeGift) {
+    this.movingDirection = direction;
+  }
   }
 
   stopMove() {
@@ -805,7 +821,8 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
     this.totalMessages = 0;
     this.npcInteractionCooldown.clear();
     this.finalAnimation = null;
-    
+    this.showWelcomeGift = true;
+
     this.areas.forEach(area => {
       if (area.id === 'calvario' || area.id === 'svolta') {
         area.unlocked = false;
@@ -868,4 +885,115 @@ export class BirthdayMap implements OnInit, OnDestroy, AfterViewInit {
       this.nextMessage();
     }
   }
+
+  preventZoom(event: TouchEvent) {
+  if (event.touches.length > 1) {
+    event.preventDefault();
+  }
+}
+
+
+private createUaciddText(scene: Phaser.Scene) {
+  // Crea 10 testi "UACIDD" che appaiono randomicamente
+  for (let i = 0; i < 10; i++) {
+    // Ritarda l'apparizione di ogni testo
+    scene.time.delayedCall(i * 300, () => {
+      const x = 200 + Math.random() * 800;
+      const y = 100 + Math.random() * 400;
+      
+      // Crea il testo con effetto glow
+      const uaciddText = scene.add.text(x, y, 'UACIDD', {
+        fontSize: `${30 + Math.random() * 40}px`,
+        color: this.getRandomColor(),
+        stroke: '#000000',
+        strokeThickness: 6,
+        shadow: { offsetX: 3, offsetY: 3, color: '#000', blur: 8, fill: true },
+        fontStyle: 'bold'
+      } as Phaser.Types.GameObjects.Text.TextStyle);
+      
+      uaciddText.setDepth(25);
+      uaciddText.setAlpha(0);
+      uaciddText.setAngle(Math.random() * 30 - 15); // Leggera rotazione
+      
+      // Animazione di fade in e out
+      scene.tweens.add({
+        targets: uaciddText,
+        alpha: 1,
+        duration: 500,
+        yoyo: true,
+        repeat: 2,
+        ease: 'Power2',
+        onComplete: () => {
+          // Alla fine, fa fluttuare via il testo
+          scene.tweens.add({
+            targets: uaciddText,
+            y: '-=100',
+            alpha: 0,
+            duration: 1000,
+            ease: 'Power1',
+            onComplete: () => uaciddText.destroy()
+          });
+        }
+      });
+      
+      // Aggiungi anche una piccola animazione di scale
+      scene.tweens.add({
+        targets: uaciddText,
+        scale: 1.2,
+        duration: 300,
+        yoyo: true,
+        repeat: 2
+      });
+    });
+  }
+  
+  // Continua a creare nuovi testi ogni 2 secondi per 10 secondi
+  for (let j = 0; j < 5; j++) {
+    scene.time.delayedCall(2000 + j * 2000, () => {
+      for (let k = 0; k < 5; k++) {
+        const x = 150 + Math.random() * 900;
+        const y = 100 + Math.random() * 450;
+        
+        const uaciddText = scene.add.text(x, y, 'UACIDD', {
+          fontSize: `${25 + Math.random() * 35}px`,
+          color: this.getRandomColor(),
+          stroke: '#000000',
+          strokeThickness: 5,
+          shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 6, fill: true }
+        } as Phaser.Types.GameObjects.Text.TextStyle);
+        
+        uaciddText.setDepth(25);
+        uaciddText.setAlpha(0);
+        uaciddText.setAngle(Math.random() * 20 - 10);
+        
+        scene.tweens.add({
+          targets: uaciddText,
+          alpha: 1,
+          scale: 1.3,
+          duration: 400,
+          yoyo: true,
+          repeat: 1,
+          onComplete: () => {
+            scene.tweens.add({
+              targets: uaciddText,
+              y: '-=80',
+              alpha: 0,
+              duration: 800,
+              onComplete: () => uaciddText.destroy()
+            });
+          }
+        });
+      }
+    });
+  }
+}
+
+private getRandomColor(): string {
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#FFD700', '#FF69B4', '#98FB98',
+    '#DDA0DD', '#87CEEB', '#F0E68C', '#FFA07A', '#20B2AA'
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
 }

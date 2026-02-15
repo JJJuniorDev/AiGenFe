@@ -439,3 +439,100 @@
     padding: 3px 8px;
   }
 }
+
+
+/* Messaggio di benvenuto BTP */
+.welcome-gift {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border: 4px solid white;
+  border-radius: 30px;
+  padding: 30px 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 10px rgba(255, 215, 0, 0.3);
+  z-index: 2000;
+  animation: giftAppear 0.5s ease, giftPulse 2s infinite;
+  cursor: pointer;
+  text-align: center;
+}
+
+.gift-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.gift-emoji {
+  font-size: 5rem;
+  filter: drop-shadow(2px 4px 6px black);
+  animation: giftFloat 3s infinite ease-in-out;
+}
+
+.gift-text {
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 3px 3px 0 #000, 5px 5px 0 rgba(0,0,0,0.2);
+  word-break: break-word;
+}
+
+.gift-subtext {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  margin-top: 10px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes giftAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes giftFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes giftPulse {
+  0%, 100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 10px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 20px rgba(255, 215, 0, 0.5); }
+}
+
+/* Fix per mobile - previeni selezione e zoom */
+.game-wrapper {
+  touch-action: pan-y pinch-zoom; /* Permetti solo pan verticale e pinch zoom */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.control-btn {
+  touch-action: manipulation; /* Ottimizza per touch */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Media query per mobile aggiornate */
+@media (max-width: 768px) {
+  .welcome-gift {
+    padding: 20px 15px;
+  }
+  
+  .gift-emoji {
+    font-size: 4rem;
+  }
+  
+  .gift-text {
+    font-size: 1.5rem;
+  }
+}

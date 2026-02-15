@@ -1,5 +1,15 @@
-<div class="game-wrapper">
+<div class="game-wrapper" (touchstart)="preventZoom($event)" (touchmove)="preventZoom($event)">
   <div #gameContainer class="game-container"></div>
+  
+  <!-- Messaggio di benvenuto BTP -->
+  <div class="welcome-gift" *ngIf="showWelcomeGift" (click)="closeWelcomeGift()">
+    <div class="gift-content">
+      
+      <span class="gift-text">🎁 Hai vinto un BTP BRODER! 🎁</span>
+      <span class="gift-subtext">(Tocca per iniziare l'avventura)</span>
+    </div>
+  </div>
+
   
   <!-- Dialogo modale migliorato -->
   <div class="message-modal" *ngIf="currentMessage" (click)="nextMessage()">
@@ -64,24 +74,28 @@
     </div>
   </div>
   
-  <!-- Controlli mobile migliorati -->
-  <div class="mobile-controls" *ngIf="!currentMessage">
+  <!-- Controlli mobile migliorati (con prevenzione zoom) -->
+  <div class="mobile-controls" *ngIf="!currentMessage && !showWelcomeGift">
     <div class="control-pad">
-      <button class="control-btn up" (touchstart)="startMove('up')" 
-              (touchend)="stopMove()" (touchcancel)="stopMove()">
+      <button class="control-btn up" (touchstart)="startMove('up'); $event.preventDefault()" 
+              (touchend)="stopMove(); $event.preventDefault()" 
+              (touchcancel)="stopMove(); $event.preventDefault()">
         <span>⬆️</span>
       </button>
       <div class="horizontal-controls">
-        <button class="control-btn left" (touchstart)="startMove('left')" 
-                (touchend)="stopMove()" (touchcancel)="stopMove()">
+        <button class="control-btn left" (touchstart)="startMove('left'); $event.preventDefault()" 
+                (touchend)="stopMove(); $event.preventDefault()" 
+                (touchcancel)="stopMove(); $event.preventDefault()">
           <span>⬅️</span>
         </button>
-        <button class="control-btn down" (touchstart)="startMove('down')" 
-                (touchend)="stopMove()" (touchcancel)="stopMove()">
+        <button class="control-btn down" (touchstart)="startMove('down'); $event.preventDefault()" 
+                (touchend)="stopMove(); $event.preventDefault()" 
+                (touchcancel)="stopMove(); $event.preventDefault()">
           <span>⬇️</span>
         </button>
-        <button class="control-btn right" (touchstart)="startMove('right')" 
-                (touchend)="stopMove()" (touchcancel)="stopMove()">
+        <button class="control-btn right" (touchstart)="startMove('right'); $event.preventDefault()" 
+                (touchend)="stopMove(); $event.preventDefault()" 
+                (touchcancel)="stopMove(); $event.preventDefault()">
           <span>➡️</span>
         </button>
       </div>
@@ -89,7 +103,7 @@
   </div>
   
   <!-- Mini-mappa (solo mobile) -->
-  <div class="minimap" *ngIf="isMobile">
+  <div class="minimap" *ngIf="isMobile && !showWelcomeGift">
     <div class="minimap-dot" [class.player]="true" 
          [style.left.%]="(playerX / 1200) * 100" 
          [style.top.%]="(playerY / 675) * 100"></div>
@@ -102,7 +116,7 @@
   </div>
   
   <!-- Reset button migliorato -->
-  <button class="reset-btn" (click)="resetGame()">
+  <button class="reset-btn" (click)="resetGame()" *ngIf="!showWelcomeGift">
     <span>🔄</span>
     <span class="reset-text">Ricomincia</span>
   </button>
