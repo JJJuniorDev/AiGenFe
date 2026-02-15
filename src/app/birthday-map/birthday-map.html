@@ -1,0 +1,109 @@
+<div class="game-wrapper">
+  <div #gameContainer class="game-container"></div>
+  
+  <!-- Dialogo modale migliorato -->
+  <div class="message-modal" *ngIf="currentMessage" (click)="nextMessage()">
+    <div class="modal-decoration"></div>
+    <div class="message-content">
+      <div class="speaker-info">
+        <span class="speaker-emoji">{{ messageEmoji }}</span>
+        <span class="speaker-name">{{ currentSpeaker }}</span>
+      </div>
+      <div class="message-bubble">
+        <span class="message-text">{{ currentMessage }}</span>
+      </div>
+    </div>
+    <div class="message-progress">
+      <div class="progress-dots">
+        <span *ngFor="let dot of [].constructor(totalMessages); let i = index" 
+              class="dot" 
+              [class.active]="i === currentMessageIndex"></span>
+      </div>
+      <div class="message-hint" *ngIf="showNextHint">
+        👆 Tocca per continuare
+      </div>
+    </div>
+  </div>
+  
+  <!-- HUD migliorato -->
+  <div class="game-hud">
+    <!-- Indicatore di progressione -->
+    <div class="progress-bar">
+      <div class="progress-step" [class.completed]="gameFlags.talkedToLorenzo" 
+           [class.active]="currentArea === 'cafe'">
+        <div class="step-icon">🍺</div>
+        <div class="step-info">
+          <span class="step-name">Lorenzo</span>
+          <span class="step-status">{{ gameFlags.talkedToLorenzo ? '✅' : '⏳' }}</span>
+        </div>
+      </div>
+      <div class="progress-arrow">➡️</div>
+      <div class="progress-step" [class.completed]="gameFlags.talkedToFabrizio"
+           [class.active]="currentArea === 'calvario'">
+        <div class="step-icon">📈</div>
+        <div class="step-info">
+          <span class="step-name">Fabrizio</span>
+          <span class="step-status">{{ gameFlags.talkedToFabrizio ? '✅' : '⏳' }}</span>
+        </div>
+      </div>
+      <div class="progress-arrow">➡️</div>
+      <div class="progress-step" [class.completed]="gameFlags.talkedToSimone"
+           [class.active]="currentArea === 'svolta'">
+        <div class="step-icon">🎁</div>
+        <div class="step-info">
+          <span class="step-name">Simone</span>
+          <span class="step-status">{{ gameFlags.talkedToSimone ? '🏆' : '⏳' }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Area corrente -->
+    <div class="location-badge">
+      <span class="location-icon">{{ getAreaIcon(currentArea) }}</span>
+      <span class="location-name">{{ getAreaName(currentArea) }}</span>
+    </div>
+  </div>
+  
+  <!-- Controlli mobile migliorati -->
+  <div class="mobile-controls" *ngIf="!currentMessage">
+    <div class="control-pad">
+      <button class="control-btn up" (touchstart)="startMove('up')" 
+              (touchend)="stopMove()" (touchcancel)="stopMove()">
+        <span>⬆️</span>
+      </button>
+      <div class="horizontal-controls">
+        <button class="control-btn left" (touchstart)="startMove('left')" 
+                (touchend)="stopMove()" (touchcancel)="stopMove()">
+          <span>⬅️</span>
+        </button>
+        <button class="control-btn down" (touchstart)="startMove('down')" 
+                (touchend)="stopMove()" (touchcancel)="stopMove()">
+          <span>⬇️</span>
+        </button>
+        <button class="control-btn right" (touchstart)="startMove('right')" 
+                (touchend)="stopMove()" (touchcancel)="stopMove()">
+          <span>➡️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mini-mappa (solo mobile) -->
+  <div class="minimap" *ngIf="isMobile">
+    <div class="minimap-dot" [class.player]="true" 
+         [style.left.%]="(playerX / 1200) * 100" 
+         [style.top.%]="(playerY / 675) * 100"></div>
+    <div class="minimap-dot" *ngIf="gameFlags.talkedToLorenzo" 
+         style="left: 30%; top: 30%; background: #4169E1;"></div>
+    <div class="minimap-dot" *ngIf="gameFlags.talkedToFabrizio" 
+         style="left: 60%; top: 30%; background: #FF69B4;"></div>
+    <div class="minimap-dot" *ngIf="gameFlags.talkedToSimone" 
+         style="left: 85%; top: 50%; background: #FF4500;"></div>
+  </div>
+  
+  <!-- Reset button migliorato -->
+  <button class="reset-btn" (click)="resetGame()">
+    <span>🔄</span>
+    <span class="reset-text">Ricomincia</span>
+  </button>
+</div>

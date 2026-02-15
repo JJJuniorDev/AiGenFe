@@ -20,4 +20,14 @@ export interface BrandProfile {
   competitiveDifferentials?: string;
   industryCategory?: string;
   voiceDescription?: string;
+    brandStyle?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    fontFamily?: string;
+    borderRadius?: string;
+    buttonStyle?: 'filled' | 'outline' | 'ghost';
+    shadowLevel?: 'none' | 'light' | 'medium' | 'heavy';
+    animationStyle?: 'none' | 'subtle' | 'modern';
+  };
 }
