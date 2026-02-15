@@ -10,7 +10,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as Phaser from 'phaser';
-
+type DisplayObject = Phaser.GameObjects.Sprite | 
+                     Phaser.GameObjects.Rectangle | 
+                  
+                     Phaser.GameObjects.Text | 
+                     Phaser.GameObjects.Arc | 
+                     Phaser.GameObjects.Line;
 interface GameFlags {
   talkedToLorenzo: boolean;
   talkedToFabrizio: boolean;
@@ -373,54 +378,62 @@ welcomeGiftEmoji: string = '📈';
   }
 
   private startFinalAnimation() {
-    const scene = this.game.scene.getScene('default');
-    
-    // Crea fuochi d'artificio
-    this.fireworks = scene.add.group();
-    
-    for (let i = 0; i < 5; i++) {
-      scene.time.delayedCall(i * 500, () => {
-        this.createFirework(scene, 400 + Math.random() * 400, 200 + Math.random() * 200);
-      });
-    }
-    
-    // Testo "BUON COMPLEANNO!" che fluttua
-    const finalText = scene.add.text(500, 300, '🎉 BUON COMPLEANNO ANTHONY! 🎉', {
-      fontSize: '48px',
-      color: '#gold',
-      stroke: '#000000',
-      strokeThickness: 8,
-      shadow: { offsetX: 4, offsetY: 4, color: '#000', blur: 10, fill: true }
-    } as Phaser.Types.GameObjects.Text.TextStyle);
-    finalText.setDepth(20);
-    finalText.setScrollFactor(0);
-    finalText.setPosition(400, 300);
-    
-    scene.tweens.add({
-      targets: finalText,
-      y: '+=20',
-      duration: 2000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
+  const scene = this.game.scene.getScene('default');
+  
+  // STEP 1: Fuochi d'artificio e testo principale (immediati)
+  this.fireworks = scene.add.group();
+  
+  for (let i = 0; i < 5; i++) {
+    scene.time.delayedCall(i * 500, () => {
+      this.createFirework(scene, 400 + Math.random() * 400, 200 + Math.random() * 200);
     });
-    
-    // Palloncini che volano via
-    for (let i = 0; i < 10; i++) {
+  }
+  
+  // Testo "BUON COMPLEANNO!" che fluttua
+  const finalText = scene.add.text(400, 300, '🎉 BUON COMPLEANNO ANTHONY! 🎉', {
+    fontSize: '48px',
+    color: '#gold',
+    stroke: '#000000',
+    strokeThickness: 8,
+    shadow: { offsetX: 4, offsetY: 4, color: '#000', blur: 10, fill: true }
+  } as Phaser.Types.GameObjects.Text.TextStyle);
+  finalText.setDepth(20);
+  finalText.setScrollFactor(0);
+  
+  scene.tweens.add({
+    targets: finalText,
+    y: '+=20',
+    duration: 2000,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut'
+  });
+  
+  // STEP 2: Dopo 2 secondi, inizia UACIDD (dura 5 secondi)
+  scene.time.delayedCall(2000, () => {
+    this.createUaciddText(scene);
+  });
+  
+  // STEP 3: Dopo 7 secondi (2 + 5), mostra la nave
+  scene.time.delayedCall(7000, () => {
+    this.createBirthdayBoat(scene);
+  });
+  
+  // Palloncini che volano via (iniziano subito)
+  for (let i = 0; i < 10; i++) {
+    scene.time.delayedCall(i * 200, () => {
       const balloon = scene.add.circle(200 + i * 100, 500, 15, Math.random() * 0xFFFFFF);
       scene.tweens.add({
         targets: balloon,
         y: '-=300',
         x: '+=50',
         duration: 3000,
-        delay: i * 200,
-        ease: 'Power1'
+        ease: 'Power1',
+        onComplete: () => balloon.destroy()
       });
-    }
-
-     // AGGIUNGI QUESTA RIGA PER I TESTI "UACIDD"
-  this.createUaciddText(scene);
+    });
   }
+}
 
   private createFirework(scene: Phaser.Scene, x: number, y: number) {
     const particles = [];
@@ -894,14 +907,14 @@ welcomeGiftEmoji: string = '📈';
 
 
 private createUaciddText(scene: Phaser.Scene) {
-  // Crea 10 testi "UACIDD" che appaiono randomicamente
-  for (let i = 0; i < 10; i++) {
-    // Ritarda l'apparizione di ogni testo
-    scene.time.delayedCall(i * 300, () => {
-      const x = 200 + Math.random() * 800;
-      const y = 100 + Math.random() * 400;
+    const startTime = Date.now();
+  const duration = 5000;
+   const createUacidd = () => {
+    const elapsed = Date.now() - startTime;
+    if (elapsed < duration) {
+      const x = 150 + Math.random() * 900;
+      const y = 100 + Math.random() * 450;
       
-      // Crea il testo con effetto glow
       const uaciddText = scene.add.text(x, y, 'UACIDD', {
         fontSize: `${30 + Math.random() * 40}px`,
         color: this.getRandomColor(),
@@ -912,81 +925,31 @@ private createUaciddText(scene: Phaser.Scene) {
       } as Phaser.Types.GameObjects.Text.TextStyle);
       
       uaciddText.setDepth(25);
-      uaciddText.setAlpha(0);
-      uaciddText.setAngle(Math.random() * 30 - 15); // Leggera rotazione
+      uaciddText.setAlpha(0.9);
+      uaciddText.setAngle(Math.random() * 30 - 15);
       
-      // Animazione di fade in e out
+      // Animazione di fade out e movimento
       scene.tweens.add({
         targets: uaciddText,
-        alpha: 1,
-        duration: 500,
-        yoyo: true,
-        repeat: 2,
-        ease: 'Power2',
-        onComplete: () => {
-          // Alla fine, fa fluttuare via il testo
-          scene.tweens.add({
-            targets: uaciddText,
-            y: '-=100',
-            alpha: 0,
-            duration: 1000,
-            ease: 'Power1',
-            onComplete: () => uaciddText.destroy()
-          });
-        }
+        y: '-=150',
+        alpha: 0,
+        rotation: 0.3,
+        duration: 1500,
+        ease: 'Power1',
+        onComplete: () => uaciddText.destroy()
       });
       
-      // Aggiungi anche una piccola animazione di scale
-      scene.tweens.add({
-        targets: uaciddText,
-        scale: 1.2,
-        duration: 300,
-        yoyo: true,
-        repeat: 2
-      });
-    });
-  }
-  
-  // Continua a creare nuovi testi ogni 2 secondi per 10 secondi
-  for (let j = 0; j < 5; j++) {
-    scene.time.delayedCall(2000 + j * 2000, () => {
-      for (let k = 0; k < 5; k++) {
-        const x = 150 + Math.random() * 900;
-        const y = 100 + Math.random() * 450;
-        
-        const uaciddText = scene.add.text(x, y, 'UACIDD', {
-          fontSize: `${25 + Math.random() * 35}px`,
-          color: this.getRandomColor(),
-          stroke: '#000000',
-          strokeThickness: 5,
-          shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 6, fill: true }
-        } as Phaser.Types.GameObjects.Text.TextStyle);
-        
-        uaciddText.setDepth(25);
-        uaciddText.setAlpha(0);
-        uaciddText.setAngle(Math.random() * 20 - 10);
-        
-        scene.tweens.add({
-          targets: uaciddText,
-          alpha: 1,
-          scale: 1.3,
-          duration: 400,
-          yoyo: true,
-          repeat: 1,
-          onComplete: () => {
-            scene.tweens.add({
-              targets: uaciddText,
-              y: '-=80',
-              alpha: 0,
-              duration: 800,
-              onComplete: () => uaciddText.destroy()
-            });
-          }
-        });
+      // Programma il prossimo se siamo ancora nei 5 secondi
+      if (elapsed < duration - 500) {
+        scene.time.delayedCall(500, createUacidd);
       }
-    });
-  }
+    }
+  };
+  
+  // Inizia a creare testi
+  createUacidd();
 }
+
 
 private getRandomColor(): string {
   const colors = [
@@ -996,4 +959,122 @@ private getRandomColor(): string {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
+
+
+private createBirthdayBoat(scene: Phaser.Scene) {
+  // Usa un CONTAINER invece di un GROUP (molto più semplice!)
+  const boatContainer = scene.add.container(-200, 550);
+  boatContainer.setDepth(15);
+  
+  // Scafo della nave
+  const hull = scene.add.rectangle(0, 0, 200, 40, 0x8B4513);
+  boatContainer.add(hull);
+  
+  // Ponte
+  const deck = scene.add.rectangle(0, -20, 180, 20, 0xDEB887);
+  boatContainer.add(deck);
+  
+  // Cabina
+  const cabin = scene.add.rectangle(0, -50, 60, 40, 0xA0522D);
+  boatContainer.add(cabin);
+  
+  // Finestre
+  const window1 = scene.add.circle(-15, -55, 8, 0x87CEEB);
+  boatContainer.add(window1);
+  
+  const window2 = scene.add.circle(15, -55, 8, 0x87CEEB);
+  boatContainer.add(window2);
+  
+  // Fumaiolo
+  const chimney = scene.add.rectangle(-30, -70, 15, 30, 0x8B0000);
+  boatContainer.add(chimney);
+  
+  // Fumo
+  for (let i = 0; i < 3; i++) {
+    const smoke = scene.add.circle(-30 + i * 8, -90 - i * 10, 8 + i * 3, 0xCCCCCC);
+    smoke.setAlpha(0.7);
+    boatContainer.add(smoke);
+    
+    scene.tweens.add({
+      targets: smoke,
+      y: '-=20',
+      x: '+=10',
+      alpha: 0,
+      duration: 2000,
+      delay: i * 300,
+      repeat: -1
+    });
+  }
+  
+  // UN SOLO OMINO (non 10!)
+  // Testa
+  const head = scene.add.circle(0, -35, 10, 0xFFE0BD);
+  boatContainer.add(head);
+  
+  // Cappello
+  const hat = scene.add.rectangle(0, -50, 16, 6, 0xFFD700);
+  boatContainer.add(hat);
+  
+  // Occhi
+  const eyeL = scene.add.circle(-4, -38, 2, 0x000000);
+  boatContainer.add(eyeL);
+  
+  const eyeR = scene.add.circle(4, -38, 2, 0x000000);
+  boatContainer.add(eyeR);
+  
+  // Bocca (sorridente)
+  const mouth = scene.add.arc(0, -32, 5, 180, 360, false, 0xFF0000);
+  boatContainer.add(mouth);
+  
+  // Braccio che saluta
+  const arm = scene.add.line(12, -38, 0, 0, 12, -5, 0x8B4513, 3);
+  boatContainer.add(arm);
+  
+  // Bandiera
+  const flag = scene.add.text(50, -60, '🎉 MSC', {
+    fontSize: '16px',
+    color: '#FFD700',
+    stroke: '#000000',
+    strokeThickness: 4
+  } as Phaser.Types.GameObjects.Text.TextStyle);
+  boatContainer.add(flag);
+  
+  // ANIMAZIONE SEMPLICE: muovi l'intero container
+  scene.tweens.add({
+    targets: boatContainer,
+    x: 1400, // Va da -200 a 1400 (attraversa tutto lo schermo)
+    duration: 15000,
+    ease: 'Linear',
+    repeat: -1 // Ripete all'infinito
+  });
+  
+  // Animazione del braccio che saluta
+  scene.tweens.add({
+    targets: arm,
+    rotation: 0.3,
+    duration: 500,
+    yoyo: true,
+    repeat: -1
+  });
+  
+  // Aggiungi qualche bolla (opzionale)
+  for (let i = 0; i < 3; i++) {
+    const bubble = scene.add.circle(100 + i * 300, 580, 5, 0x87CEEB);
+    bubble.setAlpha(0.5);
+    
+    scene.tweens.add({
+      targets: bubble,
+      y: '-=40',
+      alpha: 0,
+      duration: 2000,
+      delay: i * 600,
+      repeat: -1,
+      onRepeat: () => {
+        bubble.y = 580;
+        bubble.alpha = 0.5;
+      }
+    });
+  }
 }
+}
+
